@@ -4,109 +4,83 @@ import io
 from functools import partial
 
 from PyQt5.QtGui import QTextCursor, QFont
-from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QPushButton, QSplitter, QHBoxLayout, QVBoxLayout, \
-    QScrollArea
+from PyQt5.QtWidgets import QWidget, QMainWindow, QTextEdit, QPlainTextEdit, QPushButton, QSplitter, QHBoxLayout, QVBoxLayout, \
+    QFrame
 from PyQt5.QtCore import *
-
-from Data import Data
 
 
 # Schermata si pogrammazione
 class CodingWindow(QWidget):
+    '''
     editor_mode = False
     text_font_size = 10
     fixed_line_number = None
     horizontal_code_result_position = True
+    '''
 
-    def __init__(self):
+    def __init__(self, exercise):
         super(CodingWindow, self).__init__(flags=Qt.Window)
         self.setMinimumSize(QSize(800, 400))
         self.setWindowTitle("Gamification")
-        self.data = Data()
+        self.exercise = exercise
 
-        self.make_top_widget()
-        self.make_bottom_left_widget()
-        self.make_bottom_right_widget()
+        box = QHBoxLayout(self)
+        self.make_main_widget()
+        box.addWidget(self.exercise_code_box)
 
-        bottom_widget = QWidget(flags=Qt.Widget)
-        self.bottom_box = QHBoxLayout(self)
-        self.bottom_box.addWidget(self.scroll_area)
-        self.bottom_box.addWidget(self.exercise_code_box)
-        bottom_widget.setLayout(self.bottom_box)
+        #self.text_changed = True
+        #self.set_text_font_size(20)
 
-        window_layaut = QVBoxLayout(self)
-        window_layaut.addWidget(self.top_widget)
-        window_layaut.addWidget(bottom_widget)
-        window_layaut.setContentsMargins(0, 0, 0, 0)
-        window_layaut.setSpacing(0)
-
-        self.text_changed = True
-        self.set_text_font_size(20)
-        self.code_editor.setText(' Seleziona un esercizio ')
-        self.code_editor.setEnabled(False)
-        self.execute_code_button.setEnabled(False)
-
+    '''
     def make_top_widget(self):
-        self.execute_code_button = QPushButton('Play', self)
-        self.execute_code_button.setFixedSize(50, 50)
-        self.execute_code_button.clicked.connect(self.execute_code_button_on_click)
+        self.home_button = QPushButton('HOME', self)
+        self.home_button.setFixedSize(50, 50)
+        self.home_button.clicked.connect(self.controller.open_MainWindow)
 
         self.pos_code_result_button = QPushButton('Swap', self)
         self.pos_code_result_button.setFixedSize(50, 50)
         self.pos_code_result_button.clicked.connect(self.change_code_result_orientation)
 
-        self.top_widget = QWidget(self, flags=Qt.Widget)
-        self.top_box = QHBoxLayout(self)
-        self.top_box.addWidget(self.execute_code_button)
-        self.top_box.addWidget(self.pos_code_result_button)
-        self.top_box.setAlignment(Qt.AlignRight)
-        self.top_widget.setLayout(self.top_box)
-        self.top_widget.setFixedHeight(70)
-
-    def make_bottom_left_widget(self):
-
-        self.scroll_area = QScrollArea()
-        self.scroll_area.setFixedWidth(190)
-
-        self.bottom_left_widget = QWidget(self, flags=Qt.Widget)
-        self.exercises_box = QVBoxLayout(self)
-        self.exercises_box.setAlignment(Qt.AlignLeft)
-        self.exercises_box.setContentsMargins(10, 10, 0, 10)
+        self.exercises_widget = QWidget(self, flags=Qt.Widget)
+        self.exercises_box = QHBoxLayout(self)
+        self.exercises_box.setAlignment(Qt.AlignHCenter)
+        self.exercises_box.setContentsMargins(10, 10, 10, 10)
         self.exercise_buttons = []
-        l = len(self.data.exercises)
-        for i in range(0, l):
+        for i in self.data.exercises:
             button = button_exercise_area()
-            if i < l-1:
-                button.make(self.data.exercises[i], self, True)
-            else:
-                button.make(self.data.exercises[i], self, False)
+            button.make(i, self)
             self.exercises_box.addWidget(button.get_widget())
             self.exercise_buttons.append(button)
-        self.bottom_left_widget.setLayout(self.exercises_box)
-        self.bottom_left_widget.setFixedWidth(160)
-        self.bottom_left_widget.setObjectName("leftStyle")
-        self.bottom_left_widget.setStyleSheet("QWidget#leftStyle {border: 0px solid grey}")
+        self.exercises_widget.setLayout(self.exercises_box)
 
-        self.scroll_area.setWidget(self.bottom_left_widget)
-        self.scroll_area.setWidgetResizable(True)
+        self.top_widget = QWidget(self, flags=Qt.Widget)
+        self.top_box = QHBoxLayout(self)
+        self.top_box.addWidget(self.home_button)
+        self.top_box.addWidget(self.pos_code_result_button)
+        self.top_box.addWidget(self.exercises_widget)
+        self.top_widget.setLayout(self.top_box)
+        self.top_widget.setObjectName("topStyle")
+        self.top_widget.setStyleSheet("QWidget#topStyle {border: 0px solid grey; border-bottom: 1px solid grey}")
+        #self.top_widget.setFixedHeight(70)
+    '''
 
-    def make_bottom_right_widget(self):
+    def make_main_widget(self):
         self.numbers = QTextEdit(self)
         self.numbers.setReadOnly(True)
         self.numbers.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.numbers.setFixedWidth(self.text_font_size * 2 / 3 + 10)
 
         self.code_editor = QTextEdit(self)
         self.code_editor.setLineWrapMode(self.code_editor.NoWrap)
         self.code_editor.textChanged.connect(self.format_text)
         self.code_editor.verticalScrollBar().valueChanged.connect(self.scroll_numbers)
+        self.code_editor.setText(self.exercise.start_code if self.exercise.solution is None else self.exercise.solution)
 
         self.code_text_box_widget = QWidget(self, flags=Qt.Widget)
         self.code_text_box = QHBoxLayout(self)
         self.code_text_box.setSpacing(0)
         self.code_text_box.setContentsMargins(0, 0, 0, 0)
-        self.code_text_box.addWidget(self.numbers)
-        self.code_text_box.addWidget(self.code_editor)
+        self.code_text_box.addWidget(self.numbers, alignment=Qt.AlignLeft)
+        self.code_text_box.addWidget(self.code_editor, alignment=Qt.AlignLeading)
         self.code_text_box_widget.setLayout(self.code_text_box)
 
         self.results = QPlainTextEdit(self)
@@ -122,12 +96,35 @@ class CodingWindow(QWidget):
         self.code_box_widget.addWidget(self.results)
         self.code_box_widget.setSizes([100, 100])
         self.code_box_widget.setChildrenCollapsible(False)
-        self.text_exercise_box = QPlainTextEdit(self)
-        self.text_exercise_box.setReadOnly(True)
+
+        self.text_exercise = QPlainTextEdit(self)
+        self.text_exercise.setReadOnly(True)
+
+        frame = QFrame()
+        frame.setFrameShape(QFrame.StyledPanel)
+        frame.setFixedWidth(250)
+
+        self.text_exercise_box = QWidget(self, flags=Qt.Widget)
+        text_exercise_layout = QHBoxLayout(self)
+        text_exercise_layout.addWidget(frame)
+        text_exercise_layout.addWidget(self.text_exercise)
+        text_exercise_layout.setContentsMargins(10,10,10,0)
+        self.text_exercise_box.setLayout(text_exercise_layout)
+
+        frame = QFrame()
+        frame.setFrameShape(QFrame.StyledPanel)
+        frame.setFixedWidth(150)
+
+        bottom_widget = QWidget(self, flags=Qt.Widget)
+        bottom_box = QHBoxLayout(self)
+        bottom_box.addWidget(frame)
+        bottom_box.addWidget(self.code_box_widget)
+        bottom_box.setContentsMargins(10,5,10,10)
+        bottom_widget.setLayout(bottom_box)
 
         self.exercise_code_box = QSplitter(Qt.Vertical)
         self.exercise_code_box.addWidget(self.text_exercise_box)
-        self.exercise_code_box.addWidget(self.code_box_widget)
+        self.exercise_code_box.addWidget(bottom_widget)
         self.exercise_code_box.setSizes([100, 200])
         self.exercise_code_box.setChildrenCollapsible(False)
         self.text_exercise_box.hide()
@@ -296,7 +293,7 @@ class CodingWindow(QWidget):
         self.code_editor.setFont(font)
         self.results.setFont(font)
         self.numbers.setFont(font)
-        self.text_exercise_box.setFont(font)
+        self.text_exercise.setFont(font)
 
     def change_code_result_orientation(self):
         self.horizontal_code_result_position = not self.horizontal_code_result_position
@@ -307,7 +304,7 @@ class CodingWindow(QWidget):
 
     def set_exercise(self, exercise):
         for i in self.exercise_buttons:
-            if exercise.title == i.get_title():
+            if exercise.id == i.get_id():
                 i.activate()
             else:
                 i.disable()
@@ -316,13 +313,9 @@ class CodingWindow(QWidget):
         self.fixed_line_number = exercise.line_limit
         self.editor_mode = not exercise.white_paper_mode
         self.code_editor.setEnabled(True)
-        if exercise.executable:
-            self.execute_code_button.setEnabled(True)
-        else:
-            self.execute_code_button.setEnabled(False)
         self.code_editor.setText('<pre><span style=\" color: #000000;\">' + exercise.start_code + '</span></pre>')
         self.results.setPlainText('')
-        self.text_exercise_box.setPlainText(exercise.text)
+        self.text_exercise.setPlainText(exercise.text)
         if exercise.executable:
             self.results.show()
         else:
@@ -334,23 +327,23 @@ class CodingWindow(QWidget):
 
     def deliver_exercise(self, exercise):
         for i in self.exercise_buttons:
-            if exercise.title == i.get_title():
+            if exercise.id == i.get_id():
+                self.data.deliver(exercise.id)
                 i.deliver()
         exercise.set_solution(self.code_editor.toPlainText())
+        self.code_editor.setText(' Seleziona un esercizio ')
+        self.code_editor.setEnabled(False)
+        self.text_exercise_box.hide()
+        self.results.setPlainText('')
 
 
 class button_exercise_area:
     widget = None
-    exercise_title = None
-    exercise_solution = False
+    exercise = None
 
-    def make(self, exercise, windows, not_last):
+    def make(self, exercise, windows):
         self.widget = QWidget(windows, flags=Qt.Widget)
-        self.exercise_title = exercise.title
-        if exercise.solution is None:
-            self.exercise_solution = False
-        else:
-            self.exercise_solution = True
+        self.exercise = exercise
         self.top_button = QPushButton(exercise.title)
         self.top_button.setFixedSize(100, 50)
         self.top_button.clicked.connect(partial(windows.set_exercise, exercise))
@@ -360,56 +353,53 @@ class button_exercise_area:
         self.left_button.clicked.connect(partial(windows.deliver_exercise, exercise))
         self.left_button.setStyleSheet('background-color:yellow')
 
-        right_button = QPushButton('Ricomincia')
-        right_button.setFixedSize(70, 40)
-        right_button.clicked.connect(partial(windows.restart_exercise, exercise))
-        right_button.setStyleSheet('background-color:yellow')
+        self.right_button = QPushButton('Ricomincia')
+        self.right_button.setFixedSize(70, 40)
+        self.right_button.clicked.connect(partial(windows.restart_exercise, exercise))
+        self.right_button.setStyleSheet('background-color:yellow')
 
-        self.widget.setFixedWidth(160)
         self.widget.setContentsMargins(0, 0, 0, 0)
-        external_box = QVBoxLayout(windows)
+        self.external_box = QHBoxLayout(windows)
         self.widget.setObjectName("exerciseAreaStyle")
         self.widget.setStyleSheet('QWidget#exerciseAreaStyle {border: 0px solid grey}')
-        external_box.setContentsMargins(0, 0, 0, 0)
-        if not_last:
-            self.widget.setStyleSheet('QWidget#exerciseAreaStyle {border-bottom: 1px solid grey}')
-            external_box.setContentsMargins(0, 0, 0, 10)
-        external_box.setAlignment(Qt.AlignLeft)
-        self.internal_widget = QWidget(windows, flags=Qt.Widget)
-        self.internal_box = QHBoxLayout(windows)
-        self.internal_box.setAlignment(Qt.AlignLeft)
-        self.internal_box.setContentsMargins(0, 0, 0, 0)
-        self.internal_box.addWidget(self.left_button)
-        self.internal_box.addWidget(right_button)
-        self.internal_widget.setLayout(self.internal_box)
-        external_box.addWidget(self.top_button)
-        external_box.addWidget(self.internal_widget)
-        self.widget.setLayout(external_box)
+        self.external_box.setContentsMargins(0, 0, 0, 0)
+        self.external_box.setAlignment(Qt.AlignLeft)
+        self.external_box.addWidget(self.top_button)
+        if exercise.executable:
+            self.execute_code_button = QPushButton('Play')
+            self.execute_code_button.setFixedSize(50, 40)
+            self.execute_code_button.clicked.connect(windows.execute_code_button_on_click)
+            self.execute_code_button.setStyleSheet('background-color:green')
+            self.external_box.addWidget(self.execute_code_button)
+        self.external_box.addWidget(self.left_button)
+        self.external_box.addWidget(self.right_button)
+        self.widget.setLayout(self.external_box)
         self.disable()
-        if self.exercise_solution:
-            self.deliver()
 
     def disable(self):
-        self.internal_widget.hide()
-        if self.exercise_solution:
-            self.top_button.setStyleSheet('background-color:green')
-        else:
-            self.top_button.setStyleSheet("background-color: red")
+        self.left_button.hide()
+        self.right_button.hide()
+        if self.exercise.executable:
+            self.execute_code_button.hide()
+        self.external_box.setContentsMargins(0,0,0,0)
+        self.widget.setStyleSheet('QWidget#exerciseAreaStyle {border: 0px solid grey}')
+        self.top_button.setStyleSheet("background-color: red")
 
     def activate(self):
-        self.internal_widget.show()
-        if self.exercise_solution:
-            self.top_button.setStyleSheet('background-color:green')
-        else:
-            self.top_button.setStyleSheet("background-color: red")
+        self.left_button.show()
+        self.right_button.show()
+        if self.exercise.executable:
+            self.execute_code_button.show()
+        self.external_box.setContentsMargins(0,0,7,0)
+        self.widget.setStyleSheet('QWidget#exerciseAreaStyle {border: 1px solid grey}')
+        self.top_button.setStyleSheet("background-color: red")
 
-    def get_title(self):
-        return self.exercise_title
+    def get_id(self):
+        return self.exercise.id
 
     def get_widget(self):
         return self.widget
 
     def deliver(self):
-        self.left_button.hide()
-        self.top_button.setStyleSheet('background-color:green')
-        self.exercise_solution = True
+        self.widget.hide()
+
