@@ -5,7 +5,7 @@ from functools import partial
 
 from PyQt5.QtGui import QTextCursor, QFont
 from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QPushButton, QSplitter, QHBoxLayout, QVBoxLayout, \
-    QLineEdit, QCheckBox, QCalendarWidget, QLabel
+    QLineEdit, QCheckBox, QCalendarWidget, QLabel, QScrollArea
 from PyQt5.QtCore import *
 
 from Data import Exercise
@@ -19,6 +19,14 @@ class CreateHomeworkWindow(QWidget):
         self.setWindowTitle("Gamification - Creazione di un nuovo esercizio")
         self.data = data
         self.text_changed = True
+        self.functions = {
+                'if': 0,
+                'elif': 0,
+                'else': 0,
+                'for': 0,
+                'while': 0,
+                'def': 0
+            }
 
         self.closer_controller = closer_controller
         self.white_paper_mode = False
@@ -28,6 +36,9 @@ class CreateHomeworkWindow(QWidget):
         settings_widget = QWidget(self, flags=Qt.Widget)
         settings_widget.setLayout(self.get_settings_layout())
         settings_widget.setFixedWidth(400)
+        settings_widget.setObjectName("settings_widget")
+        settings_widget.setStyleSheet("QWidget#settings_widget {border: 0px solid grey; "
+                                      "border-right: 1px solid grey}")
 
         self.text_exercise = QPlainTextEdit(self)
         self.text_exercise.setPlaceholderText("  Inserire qui il testo dell'esercizio")
@@ -73,8 +84,10 @@ class CreateHomeworkWindow(QWidget):
         splitter2.addWidget(self.coding_widget)
         splitter2.setSizes([100, 500])
         splitter2.setChildrenCollapsible(False)
+        splitter2.setContentsMargins(10,10,10,10)
 
         box = QHBoxLayout(self)
+        box.setContentsMargins(0,0,0,0)
         box.addWidget(settings_widget)
         box.addWidget(splitter2)
 
@@ -91,8 +104,8 @@ class CreateHomeworkWindow(QWidget):
         font.setPixelSize(20)
         self.title_widget = QLineEdit(self)
         self.title_widget.setPlaceholderText("  Inserire Titolo")
-        self.title_widget.setContentsMargins(10, 10, 10, 10)
-        self.title_widget.textChanged.connect(partial(self.title_form_changed))
+        self.title_widget.setContentsMargins(20, 20, 20, 10)
+        self.title_widget.textChanged.connect(self.title_form_changed)
         self.title_widget.setStyleSheet("QWidget {color: red}")
         self.title_widget.setFont(font)
         self.title_ready = False
@@ -103,7 +116,7 @@ class CreateHomeworkWindow(QWidget):
         self.calendar_widget.setContentsMargins(0, 20, 0, 20)
         self.calendar_widget.setFixedHeight(300)
         self.calendar_widget.setGridVisible(True)
-        self.calendar_widget.clicked.connect(partial(self.title_form_changed))
+        self.calendar_widget.clicked.connect(self.title_form_changed)
 
         executable_intro = QLabel(self)
         executable_intro.setStyleSheet("border: 0px solid grey; border-bottom: 1px solid grey")
@@ -111,7 +124,7 @@ class CreateHomeworkWindow(QWidget):
 
         self.executable_check = QCheckBox(self)
         self.executable_check.setChecked(True)
-        self.executable_check.clicked.connect(partial(self.executable_check_on_click))
+        self.executable_check.clicked.connect(self.executable_check_on_click)
 
         white_paper_mode_intro = QLabel(self)
         white_paper_mode_intro.setStyleSheet("border: 0px solid grey; border-bottom: 1px solid grey")
@@ -121,11 +134,105 @@ class CreateHomeworkWindow(QWidget):
         white_paper_mode_check.setChecked(False)
         white_paper_mode_check.clicked.connect(partial(self.white_paper_mode_check_on_click, white_paper_mode_check))
 
+        line_limit_intro = QLabel(self)
+        line_limit_intro.setStyleSheet("border: 0px solid grey; border-bottom: 1px solid grey")
+        line_limit_intro.setText("Limite numero linee codice: ")
+
         self.line_limit_form = QLineEdit(self)
-        self.line_limit_form.setPlaceholderText("  Inserire limite numero linee codice (Non Obbligatorio)")
+        self.line_limit_form.setPlaceholderText(" (Non Obbligatorio)")
         self.line_limit_form.textChanged.connect(self.line_limit_form_changed)
-        self.line_limit_form.setContentsMargins(10, 10, 10, 10)
+        self.line_limit_form.setFixedWidth(150)
         self.line_limit_ready = True
+
+        variables_limit_intro = QLabel(self)
+        variables_limit_intro.setStyleSheet("border: 0px solid grey; border-bottom: 1px solid grey")
+        variables_limit_intro.setText("Limite variabili utilizzabili: ")
+
+        self.variables_limit_form = QLineEdit(self)
+        self.variables_limit_form.setPlaceholderText(" (Non Obbligatorio)")
+        self.variables_limit_form.textChanged.connect(self.update_function_counters)
+        self.variables_limit_form.setFixedWidth(150)
+        self.variables_limit_ready = True
+
+        conditions_limit_intro = QLabel(self)
+        conditions_limit_intro.setStyleSheet("border: 0px solid grey; border-bottom: 1px solid grey")
+        conditions_limit_intro.setText("Limite condizioni utilizzabili: ")
+
+        self.conditions_limit_form = QLineEdit(self)
+        self.conditions_limit_form.setPlaceholderText(" (Non Obbligatorio)")
+        self.conditions_limit_form.textChanged.connect(self.update_function_counters)
+        self.conditions_limit_form.setFixedWidth(150)
+        self.conditions_limit_ready = True
+
+        if_limit_intro = QLabel(self)
+        if_limit_intro.setStyleSheet("border: 0px solid grey; border-bottom: 1px solid grey")
+        if_limit_intro.setText("Limite di if: ")
+
+        self.if_limit_form = QLineEdit(self)
+        self.if_limit_form.setPlaceholderText(" (Non Obbligatorio)")
+        self.if_limit_form.setFixedWidth(150)
+        self.if_limit_form.textChanged.connect(self.update_function_counters)
+        self.if_limit_ready = True
+
+        elif_limit_intro = QLabel(self)
+        elif_limit_intro.setStyleSheet("border: 0px solid grey; border-bottom: 1px solid grey")
+        elif_limit_intro.setText("Limite di elif: ")
+
+        self.elif_limit_form = QLineEdit(self)
+        self.elif_limit_form.setPlaceholderText(" (Non Obbligatorio)")
+        self.elif_limit_form.setFixedWidth(150)
+        self.elif_limit_form.textChanged.connect(self.update_function_counters)
+        self.elif_limit_ready = True
+
+        else_limit_intro = QLabel(self)
+        else_limit_intro.setStyleSheet("border: 0px solid grey; border-bottom: 1px solid grey")
+        else_limit_intro.setText("Limite di elif: ")
+
+        self.else_limit_form = QLineEdit(self)
+        self.else_limit_form.setPlaceholderText(" (Non Obbligatorio)")
+        self.else_limit_form.setFixedWidth(150)
+        self.else_limit_form.textChanged.connect(self.update_function_counters)
+        self.else_limit_ready = True
+
+        cycles_limit_intro = QLabel(self)
+        cycles_limit_intro.setStyleSheet("border: 0px solid grey; border-bottom: 1px solid grey")
+        cycles_limit_intro.setText("Limite cicli utilizzabili: ")
+
+        self.cycles_limit_form = QLineEdit(self)
+        self.cycles_limit_form.setPlaceholderText(" (Non Obbligatorio)")
+        self.cycles_limit_form.textChanged.connect(self.update_function_counters)
+        self.cycles_limit_form.setFixedWidth(150)
+        self.cycles_limit_ready = True
+
+        for_limit_intro = QLabel(self)
+        for_limit_intro.setStyleSheet("border: 0px solid grey; border-bottom: 1px solid grey")
+        for_limit_intro.setText("Limite di for: ")
+
+        self.for_limit_form = QLineEdit(self)
+        self.for_limit_form.setPlaceholderText(" (Non Obbligatorio)")
+        self.for_limit_form.setFixedWidth(150)
+        self.for_limit_form.textChanged.connect(self.update_function_counters)
+        self.for_limit_ready = True
+
+        while_limit_intro = QLabel(self)
+        while_limit_intro.setStyleSheet("border: 0px solid grey; border-bottom: 1px solid grey")
+        while_limit_intro.setText("Limite di while: ")
+
+        self.while_limit_form = QLineEdit(self)
+        self.while_limit_form.setPlaceholderText(" (Non Obbligatorio)")
+        self.while_limit_form.setFixedWidth(150)
+        self.while_limit_form.textChanged.connect(self.update_function_counters)
+        self.while_limit_ready = True
+
+        functions_limit_intro = QLabel(self)
+        functions_limit_intro.setStyleSheet("border: 0px solid grey; border-bottom: 1px solid grey")
+        functions_limit_intro.setText("Limite fuzioni utilizzabili: ")
+
+        self.functions_limit_form = QLineEdit(self)
+        self.functions_limit_form.setPlaceholderText(" (Non Obbligatorio)")
+        self.functions_limit_form.textChanged.connect(self.update_function_counters)
+        self.functions_limit_form.setFixedWidth(150)
+        self.functions_limit_ready = True
 
         level_intro = QLabel(self)
         level_intro.setText("Difficoltà: ")
@@ -151,12 +258,13 @@ class CreateHomeworkWindow(QWidget):
         self.send_button.clicked.connect(self.send_button_on_click)
 
         box = QHBoxLayout(self)
-        box.setContentsMargins(0, 0, 0, 0)
+        box.setAlignment(Qt.AlignCenter)
+        box.setSpacing(50)
         box.addWidget(self.play_button)
         box.addWidget(swap_button)
         widget0 = QWidget(self, flags=Qt.Widget)
         widget0.setLayout(box)
-        widget0.setFixedHeight(70)
+        widget0.setFixedHeight(100)
 
         box = QHBoxLayout(self)
         box.addWidget(executable_intro)
@@ -171,10 +279,86 @@ class CreateHomeworkWindow(QWidget):
         widget3.setLayout(box)
 
         box = QHBoxLayout(self)
+        box.addWidget(if_limit_intro)
+        box.addWidget(self.if_limit_form)
+        box.setContentsMargins(0, 0, 0, 0)
+        if_limit_widget = QWidget(self, flags=Qt.Widget)
+        if_limit_widget.setLayout(box)
+
+        box = QHBoxLayout(self)
+        box.addWidget(elif_limit_intro)
+        box.addWidget(self.elif_limit_form)
+        box.setContentsMargins(0, 0, 0, 0)
+        elif_limit_widget = QWidget(self, flags=Qt.Widget)
+        elif_limit_widget.setLayout(box)
+
+        box = QHBoxLayout(self)
+        box.addWidget(else_limit_intro)
+        box.addWidget(self.else_limit_form)
+        box.setContentsMargins(0, 0, 0, 0)
+        else_limit_widget = QWidget(self, flags=Qt.Widget)
+        else_limit_widget.setLayout(box)
+
+        box = QVBoxLayout(self)
+        box.setContentsMargins(20,0,70,0)
+        box.addWidget(if_limit_widget)
+        box.addWidget(elif_limit_widget)
+        box.addWidget(else_limit_widget)
+        if_elif_else_widget = QWidget(self, flags=Qt.Widget)
+        if_elif_else_widget.setLayout(box)
+
+        box = QHBoxLayout(self)
+        box.addWidget(conditions_limit_intro)
+        box.addWidget(self.conditions_limit_form)
+        box.setContentsMargins(0, 0, 0, 0)
+        conditions_limit_widget = QWidget(self, flags=Qt.Widget)
+        conditions_limit_widget.setLayout(box)
+
+        box = QVBoxLayout(self)
+        box.addWidget(conditions_limit_widget)
+        box.addWidget(if_elif_else_widget)
+        if_elif_else_widget = QWidget(self, flags=Qt.Widget)
+        if_elif_else_widget.setLayout(box)
+
+        box = QHBoxLayout(self)
+        box.addWidget(for_limit_intro)
+        box.addWidget(self.for_limit_form)
+        box.setContentsMargins(0, 0, 0, 0)
+        for_limit_widget = QWidget(self, flags=Qt.Widget)
+        for_limit_widget.setLayout(box)
+
+        box = QHBoxLayout(self)
+        box.addWidget(while_limit_intro)
+        box.addWidget(self.while_limit_form)
+        box.setContentsMargins(0, 0, 0, 0)
+        while_limit_widget = QWidget(self, flags=Qt.Widget)
+        while_limit_widget.setLayout(box)
+
+        box = QVBoxLayout(self)
+        box.setContentsMargins(20,0,70,0)
+        box.addWidget(for_limit_widget)
+        box.addWidget(while_limit_widget)
+        for_while_widget = QWidget(self, flags=Qt.Widget)
+        for_while_widget.setLayout(box)
+
+        box = QHBoxLayout(self)
+        box.addWidget(cycles_limit_intro)
+        box.addWidget(self.cycles_limit_form)
+        box.setContentsMargins(0, 0, 0, 0)
+        cycles_limit_widget = QWidget(self, flags=Qt.Widget)
+        cycles_limit_widget.setLayout(box)
+
+        box = QVBoxLayout(self)
+        box.addWidget(cycles_limit_widget)
+        box.addWidget(for_while_widget)
+        for_while_widget = QWidget(self, flags=Qt.Widget)
+        for_while_widget.setLayout(box)
+
+        box = QHBoxLayout(self)
+        box.setContentsMargins(0,0,0,0)
         box.addWidget(easy_button)
         box.addWidget(medium_button)
         box.addWidget(hard_button)
-        box.setContentsMargins(0, 0, 0, 0)
         box.setSpacing(0)
         widget3_4 = QWidget(self, flags=Qt.Widget)
         widget3_4.setLayout(box)
@@ -185,26 +369,65 @@ class CreateHomeworkWindow(QWidget):
         widget4 = QWidget(self, flags=Qt.Widget)
         widget4.setLayout(box)
 
+        box = QHBoxLayout(self)
+        box.addWidget(line_limit_intro)
+        box.addWidget(self.line_limit_form)
+        box.setContentsMargins(10, 10, 10, 10)
+        line_limit_widget = QWidget(self, flags=Qt.Widget)
+        line_limit_widget.setLayout(box)
+
+        box = QHBoxLayout(self)
+        box.addWidget(variables_limit_intro)
+        box.addWidget(self.variables_limit_form)
+        box.setContentsMargins(10, 10, 10, 10)
+        variables_limit_widget = QWidget(self, flags=Qt.Widget)
+        variables_limit_widget.setLayout(box)
+
+        box = QHBoxLayout(self)
+        box.addWidget(functions_limit_intro)
+        box.addWidget(self.functions_limit_form)
+        box.setContentsMargins(10, 10, 10, 10)
+        functions_limit_widget = QWidget(self, flags=Qt.Widget)
+        functions_limit_widget.setLayout(box)
+
         settings_box = QVBoxLayout(self)
         settings_box.setAlignment(Qt.AlignTop)
-        settings_box.setContentsMargins(0, 25, 0, 25)
         settings_box.addWidget(self.title_widget)
         settings_box.addWidget(self.calendar_widget)
         settings_box.addWidget(widget2)
         settings_box.addWidget(widget3)
-        settings_box.addWidget(self.line_limit_form)
+        settings_box.addWidget(line_limit_widget)
+        settings_box.addWidget(variables_limit_widget)
+        settings_box.addWidget(if_elif_else_widget)
+        settings_box.addWidget(for_while_widget)
+        settings_box.addWidget(functions_limit_widget)
         settings_box.addWidget(widget4)
         settings = QWidget(self)
         settings.setLayout(settings_box)
-        settings.setObjectName("box")
-        settings.setStyleSheet("QWidget#box {border: 0px solid grey; "
-                               "border-top: 1px solid grey; border-bottom: 1px solid grey}")
+
+        box = QHBoxLayout(self)
+        box.setContentsMargins(20,20,20,20)
+        box.addWidget(self.send_button, alignment=Qt.AlignLeft)
+        send_button = QWidget(self, flags=Qt.Widget)
+        send_button.setLayout(box)
 
         box = QVBoxLayout(self)
-        box.addWidget(widget0)
+        box.setSpacing(0)
+        box.setContentsMargins(0,0,0,0)
         box.addWidget(settings)
-        box.addWidget(self.send_button)
-        box.setSpacing(20)
+        box.addWidget(send_button)
+        options_widget = QWidget(self, flags=Qt.Widget)
+        options_widget.setLayout(box)
+
+        scroll_area = QScrollArea()
+        scroll_area.setWidget(options_widget)
+        scroll_area.setWidgetResizable(True)
+
+        box = QVBoxLayout(self)
+        box.setSpacing(0)
+        box.setContentsMargins(0,0,0,0)
+        box.addWidget(widget0)
+        box.addWidget(scroll_area)
         return box
 
     def play_button_on_click(self):
@@ -286,7 +509,6 @@ class CreateHomeworkWindow(QWidget):
             self.line_limit_form.setStyleSheet("QWidget {color: black}")
             self.line_limit_ready = True
             self.line_limit = None
-        self.check_send_button_ready()
 
     def set_difficulty_on_click(self, b1, b2, b3, difficulty):
         b1.setStyleSheet('background-color:green')
@@ -295,7 +517,10 @@ class CreateHomeworkWindow(QWidget):
         self.difficulty = difficulty
 
     def check_send_button_ready(self):
-        if self.title_ready and self.text_exercise_ready and self.line_limit_ready:
+        if self.title_ready and self.text_exercise_ready and self.line_limit_ready and self.variables_limit_ready \
+                and self.conditions_limit_ready and self.if_limit_ready and self.elif_limit_ready \
+                and self.else_limit_ready and self.for_limit_ready and self.while_limit_ready \
+                and self.cycles_limit_ready and self.functions_limit_ready:
             self.send_button.setEnabled(True)
         else:
             self.send_button.setEnabled(False)
@@ -310,10 +535,55 @@ class CreateHomeworkWindow(QWidget):
         white_paper_mode = self.white_paper_mode
         start_code = self.code_editor.toPlainText()
         line_limit = self.line_limit
+        variables_limit = None
+        try:
+            if_limit = int(self.if_limit_form.text())
+        except ValueError:
+            if_limit = None
+        try:
+            elif_limit = int(self.elif_limit_form.text())
+        except ValueError:
+            elif_limit = None
+        try:
+            else_limit = int(self.else_limit_form.text())
+        except ValueError:
+            else_limit = None
+        try:
+            conditions_limit = int(self.conditions_limit_form.text())
+        except ValueError:
+            conditions_limit = None
+        try:
+            for_limit = int(self.for_limit_form.text())
+        except ValueError:
+            for_limit = None
+        try:
+            while_limit = int(self.while_limit_form.text())
+        except ValueError:
+            while_limit = None
+        try:
+            cycles_limit = int(self.cycles_limit_form.text())
+        except ValueError:
+            cycles_limit = None
+        try:
+            functions_limit = int(self.functions_limit_form.text())
+        except ValueError:
+            functions_limit = None
+        limits = {
+                'lines': line_limit,
+                'variables': variables_limit,
+                'if': if_limit,
+                'elif': elif_limit,
+                'else': else_limit,
+                'conditions': conditions_limit,
+                'for': for_limit,
+                'while': while_limit,
+                'cycles': cycles_limit,
+                'def': functions_limit
+            }
         executable = self.executable_check.isChecked()
         color_styles = None
-        self.data.addExercise(Exercise(id, creator, date, title, text, level, white_paper_mode, start_code,
-                                       line_limit, executable, color_styles))
+        self.data.addExercise(Exercise(id, creator, date, title, text, level, white_paper_mode, start_code, limits,
+                                       executable, color_styles))
         self.closer_controller.close_CreateHomeworkWindow()
 
     def set_text_font_size(self, num):
@@ -325,15 +595,18 @@ class CreateHomeworkWindow(QWidget):
         self.text_exercise.setFont(font)
 
     @staticmethod
-    def my_replace(text, word, new_word):
+    def my_find_and_replace(text, word, new_word, replace):
         new_text = ""
+        count = 0
         pos = re.search(r'\b(' + word + r')\b', text)
         while pos is not None:
-            new_text += text[0: pos.start()] + new_word
-            text = text[pos.start() + len(word): len(text)]
-            pos = re.search(r'\b(' + word + r')\b', text)
+            count += 1
+            if replace:
+                new_text += text[0: pos.start()] + new_word
+                text = text[pos.start() + len(word): len(text)]
+                pos = re.search(r'\b(' + word + r')\b', text)
         new_text += text
-        return new_text
+        return new_text, count
 
     def color_strings(self, text):
         texts = []
@@ -402,14 +675,197 @@ class CreateHomeworkWindow(QWidget):
         texts.append(text[start:i])
         return texts
 
+    def update_function_counters(self):
+        text = self.variables_limit_form.text()
+        i = False # i è inutile, da eliminare quando ci sarà il numero di variabili
+        if text != '':
+            try:
+                if i:  # int(text) < self.functions['variables']:
+                    self.variables_limit_form.setStyleSheet("QWidget {color: red}")
+                    self.variables_limit_ready = False
+                else:
+                    self.variables_limit_form.setStyleSheet("QWidget {color: black}")
+                    self.variables_limit_ready = True
+            except ValueError:
+                self.variables_limit_form.setStyleSheet("QWidget {color: red}")
+                self.variables_limit_ready = False
+        else:
+            self.variables_limit_form.setStyleSheet("QWidget {color: black}")
+            self.variables_limit_ready = True
+
+        if_limit = None
+        text = self.if_limit_form.text()
+        if text != '':
+            try:
+                if_limit = int(text)
+                if int(text) < self.functions['if']:
+                    self.if_limit_form.setStyleSheet("QWidget {color: red}")
+                    self.if_limit_ready = False
+                else:
+                    self.if_limit_form.setStyleSheet("QWidget {color: black}")
+                    self.if_limit_ready = True
+            except ValueError:
+                self.if_limit_form.setStyleSheet("QWidget {color: red}")
+                self.if_limit_ready = False
+        else:
+            self.if_limit_form.setStyleSheet("QWidget {color: black}")
+            self.if_limit_ready = True
+
+        elif_limit = None
+        text = self.elif_limit_form.text()
+        if text != '':
+            try:
+                elif_limit = int(text)
+                if int(text) < self.functions['elif']:
+                    self.elif_limit_form.setStyleSheet("QWidget {color: red}")
+                    self.elif_limit_ready = False
+                else:
+                    self.elif_limit_form.setStyleSheet("QWidget {color: black}")
+                    self.elif_limit_ready = True
+            except ValueError:
+                self.elif_limit_form.setStyleSheet("QWidget {color: red}")
+                self.elif_limit_ready = False
+        else:
+            self.elif_limit_form.setStyleSheet("QWidget {color: black}")
+            self.elif_limit_ready = True
+
+        else_limit = None
+        text = self.else_limit_form.text()
+        if text != '':
+            try:
+                else_limit = int(text)
+                if int(text) < self.functions['else']:
+                    self.else_limit_form.setStyleSheet("QWidget {color: red}")
+                    self.else_limit_ready = False
+                else:
+                    self.else_limit_form.setStyleSheet("QWidget {color: black}")
+                    self.else_limit_ready = True
+            except ValueError:
+                self.else_limit_form.setStyleSheet("QWidget {color: red}")
+                self.else_limit_ready = False
+        else:
+            self.else_limit_form.setStyleSheet("QWidget {color: black}")
+            self.else_limit_ready = True
+
+        if if_limit is None or elif_limit is None or else_limit is None:
+            if not self.conditions_limit_form.isEnabled():
+                self.conditions_limit_form.setEnabled(True)
+                self.conditions_limit_form.setText('')
+            text = self.conditions_limit_form.text()
+            if text != '':
+                try:
+                    if int(text) < self.functions['if'] + self.functions['elif'] + self.functions['else']:
+                        self.conditions_limit_form.setStyleSheet("QWidget {color: red}")
+                        self.conditions_limit_ready = False
+                    else:
+                        self.conditions_limit_form.setStyleSheet("QWidget {color: black}")
+                        self.conditions_limit_ready = True
+                except ValueError:
+                    self.conditions_limit_form.setStyleSheet("QWidget {color: red}")
+                    self.conditions_limit_ready = False
+            else:
+                self.conditions_limit_form.setStyleSheet("QWidget {color: black}")
+                self.conditions_limit_ready = True
+        else:
+            self.conditions_limit_form.setText(str(int(if_limit) + int(elif_limit) + int(else_limit)))
+            self.conditions_limit_form.setEnabled(False)
+
+        for_limit = None
+        text = self.for_limit_form.text()
+        if text != '':
+            try:
+                for_limit = int(text)
+                if int(text) < self.functions['for']:
+                    self.for_limit_form.setStyleSheet("QWidget {color: red}")
+                    self.for_limit_ready = False
+                else:
+                    self.for_limit_form.setStyleSheet("QWidget {color: black}")
+                    self.for_limit_ready = True
+            except ValueError:
+                self.for_limit_form.setStyleSheet("QWidget {color: red}")
+                self.for_limit_ready = False
+        else:
+            self.for_limit_form.setStyleSheet("QWidget {color: black}")
+            self.for_limit_ready = True
+
+        while_limit = None
+        text = self.while_limit_form.text()
+        if text != '':
+            try:
+                while_limit = int(text)
+                if int(text) < self.functions['while']:
+                    self.while_limit_form.setStyleSheet("QWidget {color: red}")
+                    self.while_limit_ready = False
+                else:
+                    self.while_limit_form.setStyleSheet("QWidget {color: black}")
+                    self.while_limit_ready = True
+            except ValueError:
+                self.while_limit_form.setStyleSheet("QWidget {color: red}")
+                self.while_limit_ready = False
+        else:
+            self.while_limit_form.setStyleSheet("QWidget {color: black}")
+            self.while_limit_ready = True
+
+        print('1')
+        if for_limit is None or while_limit is None:
+            if not self.cycles_limit_form.isEnabled():
+                self.cycles_limit_form.setEnabled(True)
+                self.cycles_limit_form.setText('')
+            text = self.cycles_limit_form.text()
+            if text != '':
+                try:
+                    if int(text) < self.functions['for'] + self.functions['while']:
+                        self.cycles_limit_form.setStyleSheet("QWidget {color: red}")
+                        self.cycles_limit_ready = False
+                    else:
+                        self.cycles_limit_form.setStyleSheet("QWidget {color: black}")
+                        self.cycles_limit_ready = True
+                except ValueError:
+                    self.cycles_limit_form.setStyleSheet("QWidget {color: red}")
+                    self.cycles_limit_ready = False
+            else:
+                self.cycles_limit_form.setStyleSheet("QWidget {color: black}")
+                self.cycles_limit_ready = True
+        else:
+            self.cycles_limit_form.setText(str(int(for_limit) + int(while_limit)))
+            self.cycles_limit_form.setEnabled(False)
+        print('2')
+
+        text = self.functions_limit_form.text()
+        if text != '':
+            try:
+                if int(text) < self.functions['def']:
+                    self.functions_limit_form.setStyleSheet("QWidget {color: red}")
+                    self.functions_limit_ready = False
+                else:
+                    self.functions_limit_form.setStyleSheet("QWidget {color: black}")
+                    self.functions_limit_ready = True
+            except ValueError:
+                self.functions_limit_form.setStyleSheet("QWidget {color: red}")
+                self.functions_limit_ready = False
+        else:
+            self.functions_limit_form.setStyleSheet("QWidget {color: black}")
+            self.functions_limit_ready = True
+
+        self.check_send_button_ready()
+
     def format_text(self):
         if self.text_changed:
             self.text_changed = False
-
             text = self.code_editor.toPlainText()
+            self.functions = {
+                'if': 0,
+                'elif': 0,
+                'else': 0,
+                'for': 0,
+                'while': 0,
+                'def': 0
+            }
+
             if text is '':
                 self.update_rows_number()
                 self.text_changed = True
+                self.update_function_counters()
                 return
             if (self.line_limit is not None) and len(text.split('\n')) > self.line_limit:
                 self.code_editor.undo()
@@ -420,14 +876,18 @@ class CreateHomeworkWindow(QWidget):
             x_cur, y_cur = code_editor_cursor.blockNumber(), code_editor_cursor.columnNumber()
             x_bar, y_bar = self.code_editor.verticalScrollBar().value(), self.code_editor.horizontalScrollBar().value()
 
-            if not self.white_paper_mode:
-                texts = self.color_strings(text)
-                text = ''
-                for i in range(0, len(texts)):
-                    if texts[i] != '' and texts[i][0] != '<':
-                        for word in self.data.color_styles.keyWords:
-                            texts[i] = self.my_replace(texts[i], word.word, word.tagged_word())
-                    text += texts[i]
+            temp_text = text
+            texts = self.color_strings(text)
+            text = ''
+            for i in range(0, len(texts)):
+                if texts[i] != '' and texts[i][0] != '<':
+                    for word in self.data.color_styles.keyWords:
+                        texts[i], num = self.my_find_and_replace(texts[i], word.word, word.tagged_word(), True)
+                        if self.functions.get(word.word, None) is not None:
+                            self.functions[word.word] = self.functions[word.word] + num
+                text += texts[i]
+            if self.white_paper_mode:
+                text = temp_text
             if text[0] == '\n':
                 text = ' ' + text
             if text[-1] == '\n':
@@ -445,6 +905,7 @@ class CreateHomeworkWindow(QWidget):
             self.code_editor.horizontalScrollBar().setValue(y_bar)
 
             self.update_rows_number()
+            self.update_function_counters()
         self.text_changed = True
 
     def update_rows_number(self):

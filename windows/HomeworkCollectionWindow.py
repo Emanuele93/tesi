@@ -1,6 +1,6 @@
 from functools import partial
 
-from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QPushButton, QHBoxLayout, QVBoxLayout
+from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QPushButton, QHBoxLayout, QVBoxLayout, QScrollArea
 from PyQt5.QtCore import *
 
 from windows.CreateHomeworkWindow import CreateHomeworkWindow
@@ -18,7 +18,7 @@ class HomeworkCollectionWindow(QWidget):
         self.new_exercise = None
 
         self.bottom_box = QVBoxLayout(self)
-        self.bottom_widget = QWidget(self, flags=Qt.Widget)
+        self.bottom_widget = QScrollArea(self)
         self.top_box = QHBoxLayout(self)
         self.top_widget = QWidget(self, flags=Qt.Widget)
         self.home_button = QPushButton('HOME', self)
@@ -121,7 +121,10 @@ class HomeworkCollectionWindow(QWidget):
             exercises_widget = QWidget(self, flags=Qt.Widget)
             exercises_widget.setLayout(exercises_box)
             self.bottom_box.addWidget(exercises_widget)
-        self.bottom_widget.setLayout(self.bottom_box)
+        bottom_widget = QWidget(self, flags=Qt.Widget)
+        bottom_widget.setLayout(self.bottom_box)
+        self.bottom_widget.setWidget(bottom_widget)
+        self.bottom_widget.setWidgetResizable(True)
 
     def open_ExerciseWindow(self, exercise):
         for i in self.exercise_windows:

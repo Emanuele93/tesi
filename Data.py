@@ -15,7 +15,7 @@ class KeyWord:
 
 
 class Exercise:
-    def __init__(self, ex_id, creator, date, title, text, level, white_paper_mode, start_code, line_limit, executable,
+    def __init__(self, ex_id, creator, date, title, text, level, white_paper_mode, start_code, limits, executable,
                  color_styles, delivery_date=None, solution=None):
         self.id = ex_id
         self.creator = creator
@@ -25,7 +25,7 @@ class Exercise:
         self.level = level
         self.white_paper_mode = white_paper_mode
         self.start_code = start_code
-        self.line_limit = line_limit
+        self.limits = limits
         self.executable = executable
         self.color_styles = color_styles
         self.delivery_date = delivery_date
@@ -48,17 +48,38 @@ class Data:
 
         self.exercises = self.get_homework()
 
+        self.owned_variables = self.get_owned_variables_numbers()
+
+    def get_owned_variables_numbers(self):
+        # ToDo da prendere da file
+        lib = {
+            'lines': 10,
+            'variables': 4,
+            'if': 3,
+            'elif': 5,
+            'else': 3,
+            'for': 3,
+            'while': 2,
+            'functions': 0
+        }
+        return lib
+
     def get_my_color_styles(self):
         # ToDo guardare da file le mie preferenze
         return DefaultColorStyles()
 
     def get_homework(self):
         # ToDo da prendere online
+        functions_limit0 = {'lines': 10, 'variables': 4, 'if': 1, 'elif': 3, 'else': 1, 'conditions': 5, 'for': 2, 'while': 1, 'cycles': 3, 'def': 0}
+        functions_limit1 = {'lines': 10, 'variables': 4, 'if': 1, 'elif': 3, 'else': 1, 'conditions': 5, 'for': 2, 'while': 1, 'cycles': 3, 'def': 0}
+        functions_limit2 = {'lines': 10, 'variables': 4, 'if': 1, 'elif': 3, 'else': 1, 'conditions': 5, 'for': 2, 'while': 1, 'cycles': 3, 'def': 0}
+        functions_limit3 = {'lines': 10, 'variables': 4, 'if': 1, 'elif': 3, 'else': 1, 'conditions': 5, 'for': 2, 'while': 1, 'cycles': 3, 'def': 0}
+
         exercises = [
-            Exercise(0, self.my_proff, "08/01/2019", 'Esercizio 1', 'Fai i compiti', 'Difficile', False, 'print("ciao")', 5, True, None),
-            Exercise(1, self.my_proff, "08/01/2019", 'Esercizio 2', 'Fai tutti i compiti', 'Difficile', True, '', None, True, None),
-            Exercise(2, self.my_proff, "20/01/2019", 'Esercizio 3', 'Fai qualche compito', 'Medio', False, 'print("ciao a tutti")', 10, False, None, ),
-            Exercise(3, self.my_proff, "20/01/2019", 'Esercizio 4', 'Non fare i compiti', 'Facile', True, 'print("ciao a lele")', 1, False, None)
+            Exercise(0, self.my_proff, "08/01/2019", 'Esercizio 1', 'Fai i compiti', 'Difficile', False, 'print("ciao")', functions_limit0, True, None),
+            Exercise(1, self.my_proff, "08/01/2019", 'Esercizio 2', 'Fai tutti i compiti', 'Difficile', True, '', functions_limit1, True, None),
+            Exercise(2, self.my_proff, "20/01/2019", 'Esercizio 3', 'Fai qualche compito', 'Medio', False, 'print("ciao a tutti")', functions_limit2, False, None, ),
+            Exercise(3, self.my_proff, "20/01/2019", 'Esercizio 4', 'Non fare i compiti', 'Facile', True, 'print("ciao a lele")', functions_limit3, False, None)
         ]
 
         # Todo predere da file lo stile e la soluzione
@@ -95,18 +116,21 @@ class DefaultColorStyles:
         self.multi_line_comment_tag_end = '</span>'
 
         self.keyWords = [
-            KeyWord('print', '#0000ff', False),
             KeyWord('if', '#0000ff', True),
-            KeyWord('True', '#00ff00', False),
-            KeyWord('False', '#00ff00', False),
+            KeyWord('elif', '#0000ff', True),
+            KeyWord('else', '#0000ff', True),
             KeyWord('for', '#0000ff', True),
-            KeyWord('in', '#0000ff', True),
+            KeyWord('while', '#0000ff', True),
             KeyWord('def', '#0000ff', True),
             KeyWord('import', '#0000ff', True),
             KeyWord('is', '#0000ff', True),
+            KeyWord('in', '#0000ff', True),
             KeyWord('not', '#0000ff', True),
             KeyWord('None', '#0000ff', True),
-            KeyWord('class', '#0000ff', True)
+            KeyWord('class', '#0000ff', True),
+            KeyWord('print', '#0000ff', False),
+            KeyWord('True', '#00ff00', False),
+            KeyWord('False', '#00ff00', False)
         ]
 
         '''

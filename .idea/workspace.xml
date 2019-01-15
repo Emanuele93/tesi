@@ -2,16 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d46dabcd-8ea8-45fa-bcbd-12f39d40a546" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/MyCalendar.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/windows/CreateHomeworkWindow.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/windows/ExerciseWindow.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/windows/HomeWindow.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/windows/HomeworkCollectionWindow.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Data.py" beforeDir="false" afterPath="$PROJECT_DIR$/Data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/windows/CodingWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/windows/No_CodingWindow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/windows/CreateHomeworkWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/windows/CreateHomeworkWindow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/windows/ExerciseWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/windows/ExerciseWindow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/windows/HomeworkCollectionWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/windows/HomeworkCollectionWindow.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -24,8 +20,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Data.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1275">
-              <caret line="75" column="8" selection-start-line="75" selection-start-column="8" selection-end-line="75" selection-end-column="8" />
+            <state relative-caret-position="850">
+              <caret line="50" column="28" selection-start-line="50" selection-start-column="13" selection-end-line="50" selection-end-column="28" />
             </state>
           </provider>
         </entry>
@@ -33,8 +29,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="68">
-              <caret line="19" column="36" selection-start-line="19" selection-start-column="36" selection-end-line="19" selection-end-column="36" />
+            <state relative-caret-position="238">
+              <caret line="23" selection-start-line="23" selection-end-line="23" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
@@ -45,10 +41,22 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/windows/CreateHomeworkWindow.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1632">
-              <caret line="107" column="33" selection-start-line="107" selection-start-column="28" selection-end-line="107" selection-end-column="33" />
+            <state relative-caret-position="170">
+              <caret line="423" column="44" lean-forward="true" selection-start-line="421" selection-start-column="8" selection-end-line="423" selection-end-column="44" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/windows/ExerciseWindow.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="153">
+              <caret line="96" column="17" selection-start-line="96" selection-start-column="17" selection-end-line="96" selection-end-column="17" />
+              <folding>
+                <element signature="e#0#15#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -63,25 +71,13 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/windows/HomeworkCollectionWindow.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="833">
-              <caret line="55" column="110" selection-start-line="55" selection-start-column="57" selection-end-line="55" selection-end-column="110" />
+            <state relative-caret-position="348">
+              <caret line="126" column="26" selection-start-line="126" selection-start-column="26" selection-end-line="126" selection-end-column="26" />
               <folding>
                 <element signature="e#0#29#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/windows/ExerciseWindow.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="58">
-              <caret line="257" selection-start-line="257" selection-end-line="257" />
-              <folding>
-                <element signature="e#0#15#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -110,42 +106,68 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>widget0</find>
-      <find>ExerciseW</find>
-      <find>partial</find>
-      <find>AlignTop</find>
-      <find>qui</find>
-      <find>ischec</find>
-      <find>self.white_paper_mode</find>
-      <find>gette</find>
-      <find>text_exercise</find>
-      <find>text_exercise_changed</find>
-      <find>cal</find>
-      <find>setda</find>
-      <find>title_</find>
-      <find>cale</find>
-      <find>print</find>
-      <find>color: red</find>
-      <find>title_widget</find>
-      <find>id =</find>
-      <find>executable</find>
-      <find>default_color_styles</find>
-      <find>line_limit</find>
-      <find>intro</find>
-      <find>limite</find>
-      <find>closer_controller</find>
-      <find>save</find>
-      <find>ExerciseWindow</find>
-      <find>spa</find>
-      <find>label</find>
-      <find>border</find>
-      <find>lable</find>
+      <find>update</find>
+      <find>line_</find>
+      <find>variables</find>
+      <find>functions</find>
+      <find>format_text</find>
+      <find>if_limit</find>
+      <find>self.exercise.functions_limit[</find>
+      <find>functions_used_number</find>
+      <find>self.functions =</find>
+      <find>functions_owned_number</find>
+      <find>if</find>
+      <find>functions_</find>
+      <find>while</find>
+      <find>setS</find>
+      <find>elif</find>
+      <find>else</find>
+      <find>for</find>
+      <find>lines_limit_number</find>
+      <find>'ff5500</find>
+      <find>self.exercise.</find>
+      <find>send</find>
+      <find>self.data.func</find>
+      <find>_form</find>
+      <find>exercise.limit</find>
+      <find>scrollA</find>
+      <find>spacing</find>
+      <find>' '</find>
+      <find>cycles_limit_for</find>
+      <find>font</find>
+      <find>scroll_are</find>
     </findStrings>
     <replaceStrings>
-      <replace>self.code_editor</replace>
-      <replace>start_code_</replace>
       <replace>color_styles</replace>
       <replace>label</replace>
+      <replace>used</replace>
+      <replace>create_label_intro</replace>
+      <replace>create_label_number</replace>
+      <replace>create_label_limit</replace>
+      <replace>self.</replace>
+      <replace>_used_number)</replace>
+      <replace>owned</replace>
+      <replace>limit</replace>
+      <replace>create_margin_label</replace>
+      <replace>5</replace>
+      <replace>create_label</replace>
+      <replace>create_margin_number_label</replace>
+      <replace>make_group_number_widget</replace>
+      <replace>variables_</replace>
+      <replace>conditions</replace>
+      <replace>cycles</replace>
+      <replace>self.functions</replace>
+      <replace>update_function_counters</replace>
+      <replace>str(self.exercise.functions_limit[</replace>
+      <replace>def</replace>
+      <replace>while_</replace>
+      <replace>elif</replace>
+      <replace>if</replace>
+      <replace>else</replace>
+      <replace>for</replace>
+      <replace>while</replace>
+      <replace>functions</replace>
+      <replace>'#ff5500</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -160,12 +182,12 @@
         <option value="$PROJECT_DIR$/windows/CodingWindow.py" />
         <option value="$PROJECT_DIR$/Vuoto_Prove.py" />
         <option value="$PROJECT_DIR$/MyCalendar.py" />
-        <option value="$PROJECT_DIR$/windows/CreateHomeworkWindow.py" />
         <option value="$PROJECT_DIR$/Main.py" />
         <option value="$PROJECT_DIR$/windows/HomeWindow.py" />
         <option value="$PROJECT_DIR$/Data.py" />
-        <option value="$PROJECT_DIR$/windows/HomeworkCollectionWindow.py" />
+        <option value="$PROJECT_DIR$/windows/CreateHomeworkWindow.py" />
         <option value="$PROJECT_DIR$/windows/ExerciseWindow.py" />
+        <option value="$PROJECT_DIR$/windows/HomeworkCollectionWindow.py" />
       </list>
     </option>
   </component>
@@ -315,7 +337,7 @@
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.17911434" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.17911434" />
       <window_info id="Structure" order="1" weight="0.25" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -332,6 +354,24 @@
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
     </layout>
+    <layout-to-restore>
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.17911434" />
+      <window_info id="Structure" order="1" weight="0.25" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.31444758" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.39943343" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Version Control" order="7" />
+      <window_info anchor="bottom" id="Educational.CheckDetails" order="8" />
+      <window_info anchor="bottom" id="Terminal" order="9" />
+      <window_info anchor="bottom" id="Python Console" order="10" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+    </layout-to-restore>
   </component>
   <component name="VcsManagerConfiguration">
     <ignored-roots>
@@ -395,18 +435,8 @@
     <entry file="file://$PROJECT_DIR$/Vuoto_Prove.py" />
     <entry file="file://$PROJECT_DIR$/Data.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1275">
-          <caret line="75" column="8" selection-start-line="75" selection-start-column="8" selection-end-line="75" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/windows/CreateHomeworkWindow.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1632">
-          <caret line="107" column="33" selection-start-line="107" selection-start-column="28" selection-end-line="107" selection-end-column="33" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="850">
+          <caret line="50" column="28" selection-start-line="50" selection-start-column="13" selection-end-line="50" selection-end-column="28" />
         </state>
       </provider>
     </entry>
@@ -414,16 +444,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="170">
           <caret line="10" column="60" selection-start-line="10" selection-start-column="60" selection-end-line="10" selection-end-column="60" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/windows/HomeworkCollectionWindow.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="833">
-          <caret line="55" column="110" selection-start-line="55" selection-start-column="57" selection-end-line="55" selection-end-column="110" />
-          <folding>
-            <element signature="e#0#29#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -439,20 +459,40 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="19" column="36" selection-start-line="19" selection-start-column="36" selection-end-line="19" selection-end-column="36" />
+        <state relative-caret-position="238">
+          <caret line="23" selection-start-line="23" selection-end-line="23" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/windows/CreateHomeworkWindow.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="170">
+          <caret line="423" column="44" lean-forward="true" selection-start-line="421" selection-start-column="8" selection-end-line="423" selection-end-column="44" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/windows/ExerciseWindow.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="58">
-          <caret line="257" selection-start-line="257" selection-end-line="257" />
+        <state relative-caret-position="153">
+          <caret line="96" column="17" selection-start-line="96" selection-start-column="17" selection-end-line="96" selection-end-column="17" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/windows/HomeworkCollectionWindow.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="348">
+          <caret line="126" column="26" selection-start-line="126" selection-start-column="26" selection-end-line="126" selection-end-column="26" />
+          <folding>
+            <element signature="e#0#29#0" expanded="true" />
           </folding>
         </state>
       </provider>
