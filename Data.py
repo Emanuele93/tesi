@@ -16,7 +16,7 @@ class KeyWord:
 
 class Exercise:
     def __init__(self, ex_id, creator, date, title, text, level, white_paper_mode, start_code, limits, executable,
-                 color_styles, delivery_date=None, solution=None):
+                 color_styles, delivery_date=None, solution=None,  resources_used=None):
         self.id = ex_id
         self.creator = creator
         self.date = date
@@ -30,6 +30,7 @@ class Exercise:
         self.color_styles = color_styles
         self.delivery_date = delivery_date
         self.solution = solution
+        self.resources_used = resources_used
 
     def set_solution(self, solution):
         self.solution = solution

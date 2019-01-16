@@ -4,8 +4,11 @@ import contextlib
 import io
 
 from PyQt5.QtGui import QTextCursor, QFont
-from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QPushButton, QSplitter, QHBoxLayout, QVBoxLayout, QLabel
+from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QPushButton, QSplitter, QHBoxLayout, QVBoxLayout, \
+    QLabel, QDialog
 from PyQt5.QtCore import *
+
+from windows.ConfirmWindow import ConfirmWindow
 
 
 class ExerciseWindow(QWidget):
@@ -18,6 +21,8 @@ class ExerciseWindow(QWidget):
         self.closer_controller = closer_controller
         self.text_changed = True
         self.more_options_is_visible = False
+        self.resources_used = {'lines': 0, 'variables': 0, 'if': 0, 'elif': 0, 'else': 0, 'conditions': 0,
+                               'for': 0, 'while': 0, 'cycles': 0, 'def': 0}
 
         play_option_widget = QWidget(self, flags=Qt.Widget)
         play_option_widget.setLayout(self.get_play_option_widget())
@@ -164,9 +169,47 @@ class ExerciseWindow(QWidget):
             with contextlib.redirect_stdout(stream):
                 exec(self.code_editor.toPlainText(), globals(), temp_vars)
             result = stream.getvalue()
+            code_compile = True
         except Exception as E:
             result = str(E)
+            code_compile = False
+
+            i = 0
+            temp_result = ''
+            texts = self.code_editor.toPlainText().split('\n')
+            text = texts[i]
+            while i < len(texts):
+                try:
+                    stream = io.StringIO()
+                    with contextlib.redirect_stdout(stream):
+                        exec(text, globals(), temp_vars)
+                    temp_result = stream.getvalue()
+                except Exception as E:
+                    temp_result = temp_result
+                i += 1
+                if i < len(texts):
+                    text += '\n' + texts[i]
+            if temp_result != '':
+                result = temp_result + '\n' + result
+
         self.results.setPlainText(result)
+        if code_compile:
+            self.results.setStyleSheet('color: black')
+        else:
+            self.results.setStyleSheet('color: red')
+
+        self.variables_used_number.setText(str(len(temp_vars)))
+        self.resources_used['variables'] = len(temp_vars)
+        if self.exercise.limits['variables'] is not None and len(temp_vars) > self.exercise.limits['variables']:
+            color = 'red'
+        elif len(temp_vars) > self.data.owned_variables['variables']:
+            color = '#ff5500'
+        else:
+            color = 'black'
+        self.set_border_number(self.variables_used_number, color=color)
+        self.set_border_number(self.variables_owned_number, color=color)
+        self.set_border_limit(self.variables_limit_number, color=color)
+        return code_compile
 
     def save_button_on_click(self):
         self.exercise.solution = self.code_editor.toPlainText()
@@ -187,10 +230,65 @@ class ExerciseWindow(QWidget):
         return
 
     def send_button_on_click(self):
-        self.exercise.solution = self.code_editor.toPlainText()
-        self.exercise.delivery_date = datetime.datetime.now()
-        self.data.send_exercise(self.exercise)
-        self.closer_controller.close_ExerciseWindow(self.exercise)
+        code_compile = self.play_button_on_click()
+        warning = False
+        confermation_text = "Sei sicuro di voler inviare l'esercizio?<br>" \
+                            "La tua soluzione non potrà più essere modificata!"
+
+        if self.resources_used['lines'] > self.data.owned_variables['lines'] \
+                or self.resources_used['variables'] > self.data.owned_variables['variables'] \
+                or self.resources_used['if'] > self.data.owned_variables['if'] \
+                or self.resources_used['elif'] > self.data.owned_variables['elif'] \
+                or self.resources_used['else'] > self.data.owned_variables['else'] \
+                or self.resources_used['for'] > self.data.owned_variables['for'] \
+                or self.resources_used['while'] > self.data.owned_variables['while'] \
+                or self.resources_used['def'] > self.data.owned_variables['functions']:
+            confermation_text += "<br><br><span style=\" color: #ff5500;\">" \
+                                 "Attenzione, hai usato più risorse di quelle che possiedi!<br>" \
+                                 "In questo modo non guadagnerai soldini magici!</span>"
+            warning = True
+
+        if self.exercise.limits['lines'] is not None and self.resources_used['lines'] > self.exercise.limits['lines'] \
+                or self.exercise.limits['variables'] is not None \
+                and self.resources_used['variables'] > self.exercise.limits['variables'] \
+                or self.exercise.limits['if'] is not None \
+                and self.resources_used['if'] > self.exercise.limits['if'] \
+                or self.exercise.limits['elif'] is not None \
+                and self.resources_used['elif'] > self.exercise.limits['elif'] \
+                or self.exercise.limits['else'] is not None \
+                and self.resources_used['else'] > self.exercise.limits['else'] \
+                or self.exercise.limits['conditions'] is not None \
+                and self.resources_used['conditions'] > self.exercise.limits['conditions'] \
+                or self.exercise.limits['for'] is not None \
+                and self.resources_used['for'] > self.exercise.limits['for'] \
+                or self.exercise.limits['while'] is not None \
+                and self.resources_used['while'] > self.exercise.limits['while'] \
+                or self.exercise.limits['cycles'] is not None \
+                and self.resources_used['cycles'] > self.exercise.limits['cycles'] \
+                or self.exercise.limits['def'] is not None \
+                and self.resources_used['def'] > self.exercise.limits['def']:
+            confermation_text += "<br><br><span style=\" color: red;\">" \
+                                 "Attenzione, hai usato più risorse rispetto al limite assegnato!<br>" \
+                                 "In questo modo l'esercizio potrebbe esser valutato sbagliato!</span>"
+            warning = True
+
+        if not code_compile:
+            confermation_text += "<br><br><span style=\" color: red;\">" \
+                                 "Attenzione, il tuo codice ha degli errori e non viene eseguito interamente!<br>" \
+                                 "In questo modo l'esercizio potrebbe esser valutato sbagliato!</span>"
+            warning = True
+
+        ok_text = 'Invia comunque' if warning else 'Invia'
+        confirm = ConfirmWindow('Gamification - "' + self.exercise.title + '" by ' + self.exercise.creator,
+                                confermation_text, parent=self, ok=ok_text, cancel='Annulla')
+
+        if confirm.exec_() == QDialog.Accepted:
+            self.exercise.solution = self.code_editor.toPlainText()
+            self.exercise.delivery_date = datetime.datetime.now()
+            self.exercise.resources_used = self.resources_used
+            self.data.send_exercise(self.exercise)
+            self.closer_controller.close_ExerciseWindow(self.exercise)
+        confirm.deleteLater()
 
     def restart_button_on_click(self):
         self.code_editor.setText(self.exercise.start_code)
@@ -280,6 +378,14 @@ class ExerciseWindow(QWidget):
         widget = QWidget(self, flags=Qt.Widget)
         widget.setLayout(box)
         return widget
+
+    def make_separator(self):
+        separator = QLabel(self)
+        separator.setFixedHeight(5)
+        separator.setObjectName("separator")
+        separator.setStyleSheet("QWidget#separator {border: 0px solid grey; border-bottom: 1px solid grey; "
+                                 "border-top: 1px solid grey}")
+        return separator
 
     def get_counter_functions_layout(self):
         font = QFont()
@@ -372,14 +478,20 @@ class ExerciseWindow(QWidget):
         limit_cycles = self.set_border_limit(self.make_group_number_widget([self.for_limit_number, self.while_limit_number],
                                                                     self.cycles_limit_number))
 
+        separator1 = self.make_separator()
+        separator2 = self.make_separator()
+        separator3 = self.make_separator()
+        separator4 = self.make_separator()
+
         box = QVBoxLayout(self)
         box.setContentsMargins(0, 5, 0, 5)
         box.addWidget(intro_title)
         box.addWidget(intro_lines)
-        box.addWidget(intro_variables)
         box.addWidget(intro_cond)
         box.addWidget(intro_cycles)
         box.addWidget(intro_functions)
+        box.addWidget(separator1)
+        box.addWidget(intro_variables)
         widget_intro = QWidget(self, flags=Qt.Widget)
         widget_intro.setLayout(box)
 
@@ -387,10 +499,11 @@ class ExerciseWindow(QWidget):
         box.setContentsMargins(0, 5, 0, 5)
         box.addWidget(intro_used, alignment=Qt.AlignHCenter)
         box.addWidget(self.lines_used_number)
-        box.addWidget(self.variables_used_number)
         box.addWidget(used_conditions)
         box.addWidget(used_cycles)
         box.addWidget(self.functions_used_number)
+        box.addWidget(separator2)
+        box.addWidget(self.variables_used_number)
         widget_used_number = QWidget(self, flags=Qt.Widget)
         widget_used_number.setLayout(box)
         widget_used_number.setObjectName("widget_used_number")
@@ -401,10 +514,11 @@ class ExerciseWindow(QWidget):
         box.setContentsMargins(0, 5, 0, 5)
         box.addWidget(intro_owned, alignment=Qt.AlignHCenter)
         box.addWidget(self.lines_owned_number)
-        box.addWidget(self.variables_owned_number)
         box.addWidget(owned_conditions)
         box.addWidget(owned_cycles)
         box.addWidget(self.functions_owned_number)
+        box.addWidget(separator3)
+        box.addWidget(self.variables_owned_number)
         widget_owned_number = QWidget(self, flags=Qt.Widget)
         widget_owned_number.setLayout(box)
 
@@ -412,10 +526,11 @@ class ExerciseWindow(QWidget):
         box.setContentsMargins(0, 5, 0, 5)
         box.addWidget(intro_limit, alignment=Qt.AlignHCenter)
         box.addWidget(self.lines_limit_number)
-        box.addWidget(self.variables_limit_number)
         box.addWidget(limit_conditions)
         box.addWidget(limit_cycles)
         box.addWidget(self.functions_limit_number)
+        box.addWidget(separator4)
+        box.addWidget(self.variables_limit_number)
         widget_limit_number = QWidget(self, flags=Qt.Widget)
         widget_limit_number.setLayout(box)
         widget_limit_number.setObjectName("widget_limit_number")
@@ -640,11 +755,11 @@ class ExerciseWindow(QWidget):
         texts.append(text[start:i])
         return texts
 
-    def update_function_counters(self, functions):
-        self.if_used_number.setText(str(functions['if']))
-        if self.exercise.limits['if'] is not None and functions['if'] > self.exercise.limits['if']:
+    def update_function_counters(self):
+        self.if_used_number.setText(str(self.resources_used['if']))
+        if self.exercise.limits['if'] is not None and self.resources_used['if'] > self.exercise.limits['if']:
             color = 'red'
-        elif functions['if'] > self.data.owned_variables['if']:
+        elif self.resources_used['if'] > self.data.owned_variables['if']:
             color = '#ff5500'
         else:
             color = 'black'
@@ -652,10 +767,10 @@ class ExerciseWindow(QWidget):
         self.if_owned_number.setStyleSheet("QWidget {color: " + color + "}")
         self.if_limit_number.setStyleSheet("QWidget {color: " + color + "}")
 
-        self.elif_used_number.setText(str(functions['elif']))
-        if self.exercise.limits['elif'] is not None and functions['elif'] > self.exercise.limits['elif']:
+        self.elif_used_number.setText(str(self.resources_used['elif']))
+        if self.exercise.limits['elif'] is not None and self.resources_used['elif'] > self.exercise.limits['elif']:
             color = 'red'
-        elif functions['elif'] > self.data.owned_variables['elif']:
+        elif self.resources_used['elif'] > self.data.owned_variables['elif']:
             color = '#ff5500'
         else:
             color = 'black'
@@ -663,10 +778,10 @@ class ExerciseWindow(QWidget):
         self.elif_owned_number.setStyleSheet("QWidget {color: " + color + "}")
         self.elif_limit_number.setStyleSheet("QWidget {color: " + color + "}")
 
-        self.else_used_number.setText(str(functions['else']))
-        if self.exercise.limits['else'] is not None and functions['else'] > self.exercise.limits['else']:
+        self.else_used_number.setText(str(self.resources_used['else']))
+        if self.exercise.limits['else'] is not None and self.resources_used['else'] > self.exercise.limits['else']:
             color = 'red'
-        elif functions['else'] > self.data.owned_variables['else']:
+        elif self.resources_used['else'] > self.data.owned_variables['else']:
             color = '#ff5500'
         else:
             color = 'black'
@@ -674,12 +789,14 @@ class ExerciseWindow(QWidget):
         self.else_owned_number.setStyleSheet("QWidget {color: " + color + "}")
         self.else_limit_number.setStyleSheet("QWidget {color: " + color + "}")
 
-        self.conditions_used_number.setText(str(functions['if'] + functions['elif'] + functions['else']))
+        self.conditions_used_number.setText(str(self.resources_used['if'] + self.resources_used['elif']
+                                                + self.resources_used['else']))
         if self.exercise.limits['conditions'] is not None \
-                and functions['if'] + functions['elif'] + functions['else'] > self.exercise.limits['conditions']:
+                and self.resources_used['if'] + self.resources_used['elif'] \
+                + self.resources_used['else'] > self.exercise.limits['conditions']:
             color = 'red'
-        elif functions['if'] + functions['elif'] + functions['else'] > self.data.owned_variables['if'] \
-                + self.data.owned_variables['elif'] + self.data.owned_variables['else']:
+        elif self.resources_used['if'] + self.resources_used['elif'] + self.resources_used['else'] > \
+                self.data.owned_variables['if'] + self.data.owned_variables['elif'] + self.data.owned_variables['else']:
             color = '#ff5500'
         else:
             color = 'black'
@@ -687,10 +804,10 @@ class ExerciseWindow(QWidget):
         self.conditions_owned_number.setStyleSheet("QWidget {color: " + color + "}")
         self.conditions_limit_number.setStyleSheet("QWidget {color: " + color + "}")
 
-        self.for_used_number.setText(str(functions['for']))
-        if self.exercise.limits['for'] is not None and functions['for'] > self.exercise.limits['for']:
+        self.for_used_number.setText(str(self.resources_used['for']))
+        if self.exercise.limits['for'] is not None and self.resources_used['for'] > self.exercise.limits['for']:
             color = 'red'
-        elif functions['for'] > self.data.owned_variables['for']:
+        elif self.resources_used['for'] > self.data.owned_variables['for']:
             color = '#ff5500'
         else:
             color = 'black'
@@ -698,10 +815,10 @@ class ExerciseWindow(QWidget):
         self.for_owned_number.setStyleSheet("QWidget {color: " + color + "}")
         self.for_limit_number.setStyleSheet("QWidget {color: " + color + "}")
 
-        self.while_used_number.setText(str(functions['while']))
-        if self.exercise.limits['while'] is not None and functions['while'] > self.exercise.limits['while']:
+        self.while_used_number.setText(str(self.resources_used['while']))
+        if self.exercise.limits['while'] is not None and self.resources_used['while'] > self.exercise.limits['while']:
             color = 'red'
-        elif functions['while'] > self.data.owned_variables['while']:
+        elif self.resources_used['while'] > self.data.owned_variables['while']:
             color = '#ff5500'
         else:
             color = 'black'
@@ -709,11 +826,11 @@ class ExerciseWindow(QWidget):
         self.while_owned_number.setStyleSheet("QWidget {color: " + color + "}")
         self.while_limit_number.setStyleSheet("QWidget {color: " + color + "}")
 
-        self.cycles_used_number.setText(str(functions['for'] + functions['while']))
+        self.cycles_used_number.setText(str(self.resources_used['for'] + self.resources_used['while']))
         if self.exercise.limits['cycles'] is not None \
-                and functions['for'] + functions['while'] > self.exercise.limits['cycles']:
+                and self.resources_used['for'] + self.resources_used['while'] > self.exercise.limits['cycles']:
             color = 'red'
-        elif functions['for'] + functions['while'] \
+        elif self.resources_used['for'] + self.resources_used['while'] \
                 > self.data.owned_variables['for'] + self.data.owned_variables['while']:
             color = '#ff5500'
         else:
@@ -722,10 +839,10 @@ class ExerciseWindow(QWidget):
         self.cycles_owned_number.setStyleSheet("QWidget {color: " + color + "}")
         self.cycles_limit_number.setStyleSheet("QWidget {color: " + color + "}")
 
-        self.functions_used_number.setText(str(functions['def']))
-        if self.exercise.limits['def'] is not None and functions['def'] > self.exercise.limits['def']:
+        self.functions_used_number.setText(str(self.resources_used['def']))
+        if self.exercise.limits['def'] is not None and self.resources_used['def'] > self.exercise.limits['def']:
             color = 'red'
-        elif functions['def'] > self.data.owned_variables['functions']:
+        elif self.resources_used['def'] > self.data.owned_variables['functions']:
             color = '#ff5500'
         else:
             color = 'black'
@@ -737,14 +854,12 @@ class ExerciseWindow(QWidget):
         if self.text_changed:
             self.text_changed = False
             text = self.code_editor.toPlainText()
-            functions = {
-                'if': 0,
-                'elif': 0,
-                'else': 0,
-                'for': 0,
-                'while': 0,
-                'def': 0
-            }
+            self.resources_used['if'] = 0
+            self.resources_used['elif'] = 0
+            self.resources_used['else'] = 0
+            self.resources_used['for'] = 0
+            self.resources_used['while'] = 0
+            self.resources_used['def'] = 0
 
             if text != self.exercise.solution:
                 self.save_button.setStyleSheet('background-color:yellow')
@@ -753,12 +868,14 @@ class ExerciseWindow(QWidget):
             if text is '':
                 self.update_rows_number()
                 self.text_changed = True
-                self.update_function_counters(functions)
+                self.update_function_counters()
                 return
+            '''
             if (self.exercise.limits['lines'] is not None) and len(text.split('\n')) > self.exercise.limits['lines']:
                 self.code_editor.undo()
                 self.text_changed = True
                 return
+            '''
 
             code_editor_cursor = self.code_editor.textCursor()
             x_cur, y_cur = code_editor_cursor.blockNumber(), code_editor_cursor.columnNumber()
@@ -771,8 +888,8 @@ class ExerciseWindow(QWidget):
                 if texts[i] != '' and texts[i][0] != '<':
                     for word in self.exercise.color_styles.keyWords:
                         texts[i], num = self.my_find_and_replace(texts[i], word.word, word.tagged_word(), True)
-                        if functions.get(word.word, None) is not None:
-                            functions[word.word] = functions[word.word] + num
+                        if self.resources_used.get(word.word, None) is not None:
+                            self.resources_used[word.word] = self.resources_used[word.word] + num
                 text += texts[i]
             if self.exercise.white_paper_mode:
                 text = temp_text
@@ -793,7 +910,7 @@ class ExerciseWindow(QWidget):
             self.code_editor.horizontalScrollBar().setValue(y_bar)
 
             self.update_rows_number()
-            self.update_function_counters(functions)
+            self.update_function_counters()
         self.text_changed = True
 
     def update_rows_number(self):
@@ -814,6 +931,7 @@ class ExerciseWindow(QWidget):
         self.numbers.setFixedWidth(c * self.data.code_font_size * 2 / 3 + 10)
 
         self.lines_used_number.setText(str(num))
+        self.resources_used['lines'] = num
         if self.exercise.limits['lines'] is not None and num > self.exercise.limits['lines']:
             color = 'red'
         elif num > self.data.owned_variables['lines']:

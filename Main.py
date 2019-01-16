@@ -1,10 +1,11 @@
 import sys
 
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QWidget, QHBoxLayout
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QApplication, QDialog
 from PyQt5.QtCore import *
 
 from Data import Data
+from windows.ConfirmWindow import ConfirmWindow
 from windows.CreateHomeworkWindow import CreateHomeworkWindow
 from windows.HomeWindow import HomeWindow
 from windows.HomeworkCollectionWindow import HomeworkCollectionWindow
@@ -38,10 +39,11 @@ class WindowsController(QWidget):
 
 
 if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     win = WindowsController()
     win.show()
     sys.exit(app.exec_())
+
 
 """
 import sys
