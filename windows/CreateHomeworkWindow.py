@@ -94,13 +94,9 @@ class CreateHomeworkWindow(QWidget):
         box.addWidget(splitter2)
 
     def get_settings_layout(self):
-        self.play_button = QPushButton('PLAY', self)
-        self.play_button.setFixedSize(50, 50)
+        self.play_button = QPushButton('Prova codice', self)
+        self.play_button.setFixedSize(100, 50)
         self.play_button.clicked.connect(self.play_button_on_click)
-
-        swap_button = QPushButton('Swap', self)
-        swap_button.setFixedSize(50, 50)
-        swap_button.clicked.connect(self.swap_button_on_click)
 
         font = QFont()
         font.setPixelSize(20)
@@ -249,11 +245,16 @@ class CreateHomeworkWindow(QWidget):
         self.send_button.setEnabled(False)
         self.send_button.clicked.connect(self.send_button_on_click)
 
+        font.setPixelSize(25)
+        tit = QLabel(self)
+        tit.setFont(font)
+        tit.setText('Creazione Compito')
+
         box = QHBoxLayout(self)
         box.setAlignment(Qt.AlignCenter)
         box.setSpacing(50)
-        box.addWidget(self.play_button)
-        box.addWidget(swap_button)
+        box.addWidget(tit)
+        box.addWidget(self.send_button)
         widget0 = QWidget(self, flags=Qt.Widget)
         widget0.setLayout(box)
         widget0.setFixedHeight(100)
@@ -399,7 +400,7 @@ class CreateHomeworkWindow(QWidget):
 
         box = QHBoxLayout(self)
         box.setContentsMargins(20, 20, 20, 20)
-        box.addWidget(self.send_button, alignment=Qt.AlignLeft)
+        box.addWidget(self.play_button, alignment=Qt.AlignLeft)
         send_button = QWidget(self, flags=Qt.Widget)
         send_button.setLayout(box)
 
@@ -459,10 +460,6 @@ class CreateHomeworkWindow(QWidget):
             self.results.setStyleSheet('color: black')
         self.update_function_counters()
         return errors
-
-    def swap_button_on_click(self):
-        # ToDo
-        return
 
     def text_exercise_changed(self):
         if self.text_exercise.toPlainText() == '':

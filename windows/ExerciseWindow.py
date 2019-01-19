@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QPushButton, QSp
 from PyQt5.QtCore import *
 
 from windows.ConfirmWindow import ConfirmWindow
+from windows.SettingsWindow import SettingsWindow
 
 
 class ExerciseWindow(QWidget):
@@ -21,8 +22,11 @@ class ExerciseWindow(QWidget):
         self.closer_controller = closer_controller
         self.text_changed = True
         self.more_options_is_visible = False
+        self.code_compile = True
         self.resources_used = {'lines': 0, 'variables': 0, 'if': 0, 'elif': 0, 'else': 0, 'conditions': 0,
                                'for': 0, 'while': 0, 'cycles': 0, 'def': 0}
+
+        self.color_styles = data.color_styles if exercise.color_styles is None else exercise.color_styles
 
         play_option_widget = QWidget(self, flags=Qt.Widget)
         play_option_widget.setLayout(self.get_play_option_widget())
@@ -43,22 +47,32 @@ class ExerciseWindow(QWidget):
         self.numbers.setReadOnly(True)
         self.numbers.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.numbers.setFixedWidth(50)
+        self.numbers.setObjectName("code_editor")
+        self.numbers.setStyleSheet("QWidget#code_editor {background-color: " + self.color_styles.code_background_color
+                                   + "; color: " + self.color_styles.code_text_color + ";}")
 
         self.code_editor = QTextEdit(self)
         self.code_editor.setLineWrapMode(self.code_editor.NoWrap)
         self.code_editor.textChanged.connect(self.format_text)
         self.code_editor.verticalScrollBar().valueChanged.connect(self.scroll_numbers)
         self.code_editor.setText(self.exercise.start_code if self.exercise.solution is None else self.exercise.solution)
+        self.code_editor.setObjectName("code_editor")
+        self.code_editor.setStyleSheet("QWidget#code_editor {background-color: "
+                                       + self.color_styles.code_background_color + "; color: "
+                                       + self.color_styles.code_text_color + ";}")
         if self.exercise.delivery_date is not None:
             self.code_editor.setReadOnly(True)
 
         self.results = QPlainTextEdit(self)
         self.results.setReadOnly(True)
         self.results.setLineWrapMode(self.results.NoWrap)
+        self.results.setObjectName("results")
+        self.results.setStyleSheet("QWidget#results {background-color: " + self.color_styles.results_background_color
+                                       + "; color: " + self.color_styles.results_text_color + ";}")
         if not self.exercise.executable:
             self.results.hide()
 
-        self.set_text_font_size(self.data.code_font_size)
+        self.set_text_font_size(self.data.code_font_size, self.data.code_font_family)
 
         box = QVBoxLayout(self)
         box.addWidget(play_option_widget)
@@ -81,11 +95,11 @@ class ExerciseWindow(QWidget):
         widget2.setLayout(box)
 
         self.coding_widget = QSplitter()
-        self.coding_widget.setOrientation(Qt.Horizontal if data.code_result_horizontal_orientation else Qt.Vertical)
         self.coding_widget.addWidget(widget2)
         self.coding_widget.addWidget(self.results)
         self.coding_widget.setSizes([150, 100])
         self.coding_widget.setChildrenCollapsible(False)
+        self.update_text_result_orientation()
 
         splitter2 = QSplitter(Qt.Vertical)
         splitter2.addWidget(self.text_exercise)
@@ -98,6 +112,9 @@ class ExerciseWindow(QWidget):
         box.addWidget(widget1)
         box.addWidget(splitter2)
         box.setContentsMargins(0, 0, 0, 0)
+
+    def update_text_result_orientation(self):
+        self.coding_widget.setOrientation(Qt.Horizontal if self.data.code_result_horizontal_orientation else Qt.Vertical)
 
     def get_play_option_widget(self):
         play_button = QPushButton('PLAY', self)
@@ -121,7 +138,7 @@ class ExerciseWindow(QWidget):
             self.save_button.hide()
             more_button.hide()
 
-        swap_button = QPushButton('Swap', self)
+        swap_button = QPushButton('Impo', self)
         swap_button.setFixedSize(50, 50)
         swap_button.clicked.connect(self.swap_button_on_click)
 
@@ -169,10 +186,10 @@ class ExerciseWindow(QWidget):
             with contextlib.redirect_stdout(stream):
                 exec(self.code_editor.toPlainText(), globals(), temp_vars)
             result = stream.getvalue()
-            code_compile = True
+            self.code_compile = True
         except Exception as E:
             result = str(E)
-            code_compile = False
+            self.code_compile = False
 
             i = 0
             temp_result = ''
@@ -193,10 +210,13 @@ class ExerciseWindow(QWidget):
                 result = temp_result + '\n' + result
 
         self.results.setPlainText(result)
-        if code_compile:
-            self.results.setStyleSheet('color: black')
+        if self.code_compile:
+            self.results.setStyleSheet("QWidget#results {background-color: " + self.color_styles.results_background_color
+                                       + "; color: " + self.color_styles.results_text_color + ";}")
         else:
-            self.results.setStyleSheet('color: red')
+            self.results.setStyleSheet("QWidget#results {background-color: "
+                                       + self.color_styles.error_results_background_color + "; color: "
+                                       + self.color_styles.error_results_text_color + ";}")
 
         self.variables_used_number.setText(str(len(temp_vars)))
         self.resources_used['variables'] = len(temp_vars)
@@ -209,7 +229,6 @@ class ExerciseWindow(QWidget):
         self.set_border_number(self.variables_used_number, color=color)
         self.set_border_number(self.variables_owned_number, color=color)
         self.set_border_limit(self.variables_limit_number, color=color)
-        return code_compile
 
     def save_button_on_click(self):
         self.exercise.solution = self.code_editor.toPlainText()
@@ -226,11 +245,16 @@ class ExerciseWindow(QWidget):
         return
 
     def swap_button_on_click(self):
-        # ToDo
+        confirm = SettingsWindow('Gamification - settings - "' + self.exercise.title + '" by ' + self.exercise.creator,
+                                self.data, self, parent=self)
+
+        if confirm.exec_() == QDialog.Accepted:
+            print('ok')
+        confirm.deleteLater()
         return
 
     def send_button_on_click(self):
-        code_compile = self.play_button_on_click()
+        self.play_button_on_click()
         warning = False
         confermation_text = "Sei sicuro di voler inviare l'esercizio?<br>" \
                             "La tua soluzione non potrà più essere modificata!"
@@ -272,7 +296,7 @@ class ExerciseWindow(QWidget):
                                  "In questo modo l'esercizio potrebbe esser valutato sbagliato!</span>"
             warning = True
 
-        if not code_compile:
+        if not self.code_compile:
             confermation_text += "<br><br><span style=\" color: red;\">" \
                                  "Attenzione, il tuo codice ha degli errori e non viene eseguito interamente!<br>" \
                                  "In questo modo l'esercizio potrebbe esser valutato sbagliato!</span>"
@@ -554,122 +578,21 @@ class ExerciseWindow(QWidget):
         box.addWidget(widget)
         return box
 
-    '''
-    
-    def create_label(self, text):
+    def set_text_font_size(self, num=None, family=None):
         font = QFont()
-        font.setPixelSize(15)
-        label = QLabel(self)
-        label.setText(text)
-        label.setFont(font)
-        return label
-    
-    def counter_widget(self, intro, number, margins):
-        box = QHBoxLayout(self)
-        box.setContentsMargins(margins[0], margins[1], margins[2], margins[3])
-        box.addWidget(intro, alignment=Qt.AlignLeft)
-        box.addWidget(number, alignment=Qt.AlignRight)
-        widget = QWidget(self, flags=Qt.Widget)
-        widget.setLayout(box)
-        return widget
+        if family is not None:
+            font.setFamily(family)
+        if num is not None:
+            font.setPixelSize(num)
+        self.code_editor.setFont(font)
+        self.results.setFont(font)
+        self.numbers.setFont(font)
+        self.text_exercise.setFont(font)
 
-    def complex_widget(self, elements, margins, horizontal=True, h_spacing=10, v_spacing=0):
-        if horizontal:
-            box = QHBoxLayout(self)
-            box.setSpacing(h_spacing)
-        else:
-            box = QVBoxLayout(self)
-            box.setSpacing(v_spacing)
-        box.setContentsMargins(margins[0], margins[1], margins[2], margins[3])
-        for i in elements:
-            box.addWidget(i)
-        widget = QWidget(self, flags=Qt.Widget)
-        widget.setLayout(box)
-        return widget
-
-    def get_counter_functions_layout(self):
+    def update_text_font_size(self):
         font = QFont()
-        font.setPixelSize(20)
-        counters_title = QLabel(self)
-        counters_title.setContentsMargins(10, 10, 10, 10)
-        counters_title.setText("Contatori")
-        counters_title.setFont(font)
-
-        intro_lines = self.create_label("Linee di codice ")
-        intro_variables = self.create_label("Variabili ")
-        intro_if = self.create_label("if")
-        intro_elif = self.create_label("elif")
-        intro_else = self.create_label("else")
-        intro_conditions = self.create_label("Conditions ")
-        intro_for = self.create_label("For ")
-        intro_while = self.create_label("While ")
-        intro_cycles = self.create_label("Cicli ")
-        intro_functions = self.create_label("Funzioni ")
-        self.lines_number = self.create_label('0')
-        self.variables_number = self.create_label('0')
-        self.if_number = self.create_label('0')
-        self.elif_number = self.create_label('0')
-        self.else_number = self.create_label('0')
-        self.conditions_number = self.create_label('0')
-        self.for_number = self.create_label('0')
-        self.while_number = self.create_label('0')
-        self.cycles_number = self.create_label('0')
-        self.functions_number = self.create_label('0')
-
-        lines_widget = self.counter_widget(intro_lines, self.lines_number, [10, 10, 10, 10])
-        lines_widget.setObjectName("lines_widget")
-        lines_widget.setStyleSheet("QWidget#lines_widget {border: 1px solid grey}")
-
-        variables_widget = self.counter_widget(intro_variables, self.variables_number, [10, 10, 10, 10])
-        variables_widget.setObjectName("variables_widget")
-        variables_widget.setStyleSheet("QWidget#variables_widget {border: 1px solid grey}")
-
-        if_widget = self.counter_widget(intro_if, self.if_number, [10, 10, 10, 0])
-        elif_widget = self.counter_widget(intro_elif, self.elif_number, [10, 10, 10, 0])
-        else_widget = self.counter_widget(intro_else, self.else_number, [10, 10, 10, 10])
-        condition_widget = self.counter_widget(intro_conditions, self.conditions_number, [10, 10, 10, 10])
-
-        if_elif_else_widget = self.complex_widget([if_widget, elif_widget, else_widget], [0, 0, 0, 0], horizontal=False)
-        if_elif_else_widget.setObjectName("if_elif_else_widget")
-        if_elif_else_widget.setStyleSheet("QWidget#if_elif_else_widget "
-                                          "{border: 0px solid grey; border-bottom: 1px solid grey}")
-
-        conditions_widget = self.complex_widget([if_elif_else_widget, condition_widget], [0, 0, 0, 0], horizontal=False)
-        conditions_widget.setObjectName("conditions_widget")
-        conditions_widget.setStyleSheet("QWidget#conditions_widget {border: 1px solid grey}")
-
-        for_widget = self.counter_widget(intro_for, self.for_number, [10, 10, 10, 0])
-        while_widget = self.counter_widget(intro_while, self.while_number, [10, 10, 10, 10])
-        cycle_widget = self.counter_widget(intro_cycles, self.cycles_number, [10, 10, 10, 10])
-
-        for_while_widget = self.complex_widget([for_widget, while_widget], [0, 0, 0, 0], horizontal=False)
-        for_while_widget.setObjectName("for_while_widget")
-        for_while_widget.setStyleSheet("QWidget#for_while_widget "
-                                       "{border: 0px solid grey; border-bottom: 1px solid grey}")
-
-        cycles_widget = self.complex_widget([for_while_widget, cycle_widget], [0, 0, 0, 0], horizontal=False)
-        cycles_widget.setObjectName("cycles_widget")
-        cycles_widget.setStyleSheet("QWidget#cycles_widget {border: 1px solid grey}")
-
-        functions_widget = self.counter_widget(intro_functions, self.functions_number, [10, 10, 10, 10])
-        functions_widget.setObjectName("functions_widget")
-        functions_widget.setStyleSheet("QWidget#functions_widget {border: 1px solid grey}")
-
-        box = QVBoxLayout(self)
-        box.setAlignment(Qt.AlignTop)
-        box.addWidget(counters_title, alignment=Qt.AlignHCenter)
-        box.addWidget(lines_widget)
-        box.addWidget(variables_widget)
-        box.addWidget(conditions_widget)
-        box.addWidget(cycles_widget)
-        box.addWidget(functions_widget)
-
-        return box
-    '''
-
-    def set_text_font_size(self, num):
-        font = QFont()
-        font.setPixelSize(num)
+        font.setFamily(self.data.code_font_family)
+        font.setPixelSize(self.data.code_font_size)
         self.code_editor.setFont(font)
         self.results.setFont(font)
         self.numbers.setFont(font)
@@ -697,8 +620,9 @@ class ExerciseWindow(QWidget):
                 if i != start:
                     texts.append(text[start:i])
                     start = i
-                text = text[0:i] + self.exercise.color_styles.comment_tag_start + text[i:len(text)]
-                i += len(self.exercise.color_styles.comment_tag_start)
+                text = text[0:i] + '<span style=\" color:' + self.color_styles.comment_color \
+                       + ';\">' + text[i:len(text)]
+                i += len('<span style=\" color:' + self.color_styles.comment_color + ';\">')
                 comment = True
             elif (text[i] == '"' or text[i] == "'") and comment is False:
                 if string_start is None:
@@ -706,42 +630,43 @@ class ExerciseWindow(QWidget):
                         if i != start:
                             texts.append(text[start:i])
                             start = i
-                        text = text[0:i] + self.exercise.color_styles.multi_line_comment_tag_start + text[i:len(text)]
-                        i += len(self.exercise.color_styles.multi_line_comment_tag_start) + 2
+                        text = text[0:i] + '<span style=\" color:' + self.color_styles.multi_line_comment_color\
+                               + ';\">' + text[i:len(text)]
+                        i += len('<span style=\" color:' + self.color_styles.multi_line_comment_color + ';\">') + 2
                         multi_line_comment = True
                         string_start = text[i]
                     elif not multi_line_comment:
                         if i != start:
                             texts.append(text[start:i])
                             start = i
-                        text = text[0:i] + self.exercise.color_styles.string_tag_start + text[i:len(text)]
-                        i += len(self.exercise.color_styles.string_tag_start)
+                        text = text[0:i] + '<span style=\" color:' + self.color_styles.string_color \
+                               + ';\">' + text[i:len(text)]
+                        i += len('<span style=\" color:' + self.color_styles.string_color + ';\">')
                         string_start = text[i]
                 elif text[i] == string_start:
                     if multi_line_comment and i + 2 < len(text) and text[i + 1] == text[i] and text[i + 2] == text[i]:
-                        text = text[0:i + 3] + self.exercise.color_styles.multi_line_comment_tag_end \
-                               + text[i + 3:len(text)]
-                        i += len(self.exercise.color_styles.multi_line_comment_tag_end) + 2
+                        text = text[0:i + 3] + '</span>' + text[i + 3:len(text)]
+                        i += len('</span>') + 2
                         texts.append(text[start:i + 1])
                         start = i + 1
                         multi_line_comment = False
                         string_start = None
                     elif not multi_line_comment:
-                        text = text[0:i + 1] + self.exercise.color_styles.string_tag_end + text[i + 1:len(text)]
-                        i += len(self.exercise.color_styles.string_tag_end)
+                        text = text[0:i + 1] + '</span>' + text[i + 1:len(text)]
+                        i += len('</span>')
                         texts.append(text[start:i + 1])
                         start = i + 1
                         string_start = None
             elif text[i] == '\n' and not multi_line_comment:
                 if comment:
-                    text = text[0:i] + self.exercise.color_styles.comment_tag_end + text[i:len(text)]
-                    i += len(self.exercise.color_styles.comment_tag_end)
+                    text = text[0:i] + '</span>' + text[i:len(text)]
+                    i += len('</span>')
                     texts.append(text[start:i + 1])
                     start = i + 1
                     comment = False
                 elif string_start is not None:
-                    text = text[0:i] + self.exercise.color_styles.string_tag_end + text[i:len(text)]
-                    i += len(self.exercise.color_styles.string_tag_end)
+                    text = text[0:i] + '</span>' + text[i:len(text)]
+                    i += len('</span>')
                     texts.append(text[start:i + 1])
                     start = i + 1
                     string_start = None
@@ -886,7 +811,7 @@ class ExerciseWindow(QWidget):
             text = ''
             for i in range(0, len(texts)):
                 if texts[i] != '' and texts[i][0] != '<':
-                    for word in self.exercise.color_styles.keyWords:
+                    for word in self.color_styles.keyWords:
                         texts[i], num = self.my_find_and_replace(texts[i], word.word, word.tagged_word(), True)
                         if self.resources_used.get(word.word, None) is not None:
                             self.resources_used[word.word] = self.resources_used[word.word] + num
@@ -944,3 +869,26 @@ class ExerciseWindow(QWidget):
 
     def scroll_numbers(self):
         self.numbers.verticalScrollBar().setValue(self.code_editor.verticalScrollBar().value())
+
+    def set_color_styles(self, color_styles):
+        self.exercise.color_styles = color_styles
+        self.color_styles = color_styles
+        # Todo da segnare su file
+
+        self.code_editor.setStyleSheet("QWidget#code_editor {background-color: " + color_styles.code_background_color
+                                       + "; color: " + color_styles.code_text_color + ";}")
+        self.numbers.setStyleSheet("QWidget#code_editor {background-color: " + color_styles.code_background_color
+                                   + "; color: " + color_styles.code_text_color + ";}")
+        if self.code_compile:
+            self.results.setStyleSheet("QWidget#results {background-color: " + color_styles.results_background_color
+                                       + "; color: " + color_styles.results_text_color + ";}")
+        else:
+            self.results.setStyleSheet("QWidget#results {background-color: "
+                                       + color_styles.error_results_background_color + "; color: "
+                                       + color_styles.error_results_text_color + ";}")
+        self.format_text()
+
+    def show(self):
+        super(ExerciseWindow, self).show()
+        self.update_text_result_orientation()
+        self.update_text_font_size()

@@ -45,11 +45,28 @@ class Data:
 
         self.code_font_size = 20
 
+        self.code_font_family = 'Courier New'
+
         self.color_styles = self.get_my_color_styles()
 
         self.exercises = self.get_homework()
 
         self.owned_variables = self.get_owned_variables_numbers()
+
+        self.owned_colors = self.get_owned_colors()
+
+        self.current_image = self.get_current_image()
+
+        self.owned_images = self.get_owned_images()
+
+    def get_current_image(self):
+        return 'img/1.png'
+
+    def get_owned_colors(self):
+        return ['white', 'red', 'green', 'blue', '#990099', 'black']
+
+    def get_owned_images(self):
+        return ['img/1.png','img/2.png']
 
     def get_owned_variables_numbers(self):
         # ToDo da prendere da file
@@ -84,8 +101,8 @@ class Data:
         ]
 
         # Todo predere da file lo stile e la soluzione
-        for i in exercises:
-            i.color_styles = self.color_styles
+        # for i in exercises:
+        #    i.color_styles = self.color_styles
         exercises[0].solution = "print('nooo')"
         exercises[2].solution='print("ciao a tutti")'
 
@@ -107,14 +124,16 @@ class Data:
 
 class DefaultColorStyles:
     def __init__(self):
-        self.string_tag_start = '<span style=\" color: #ff0000;\">'
-        self.string_tag_end = '</span>'
+        self.code_background_color = 'white'
+        self.code_text_color = 'black'
+        self.results_background_color = 'white'
+        self.results_text_color = 'black'
+        self.error_results_background_color = 'white'
+        self.error_results_text_color = 'red'
 
-        self.comment_tag_start = '<span style=\" color: #999999;\">'
-        self.comment_tag_end = '</span>'
-
-        self.multi_line_comment_tag_start = '<span style=\" color: #990099;\">'
-        self.multi_line_comment_tag_end = '</span>'
+        self.string_color = '#ff0000'
+        self.comment_color = '#999999'
+        self.multi_line_comment_color = '#990099'
 
         self.keyWords = [
             KeyWord('if', '#0000ff', True),
@@ -134,16 +153,22 @@ class DefaultColorStyles:
             KeyWord('False', '#00ff00', False)
         ]
 
-        '''
-        self.exercises_delivered = [
-            Exercise(4, "07/01/2019", 'Esercizio 5', 'Fai i compiti', 'Difficile', False, 'print("ciao")', 5, True)
-        ]
-        '''
+    def __copy__(self):
+        color_styles = DefaultColorStyles()
 
-    '''
-    def deliver(self, id):
-        for es in self.exercises:
-            if es.id == id:
-                self.exercises.remove(es)
-                self.exercises_delivered.append(es)
-    '''
+        color_styles.code_background_color = self.code_background_color
+        color_styles.code_text_color = self.code_text_color
+        color_styles.results_background_color = self.results_background_color
+        color_styles.results_text_color = self.results_text_color
+        color_styles.error_results_background_color = self.error_results_background_color
+        color_styles.error_results_text_color = self.error_results_text_color
+
+        color_styles.string_color = self.string_color
+        color_styles.comment_color = self.comment_color
+        color_styles.multi_line_comment_color = self.multi_line_comment_color
+
+        color_styles.keyWords = []
+
+        for i in self.keyWords:
+            color_styles.keyWords.append(KeyWord(i.word, i.color, i.bold))
+        return color_styles
