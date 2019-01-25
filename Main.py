@@ -1,12 +1,10 @@
 import sys
 
-from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QApplication, QDialog
 from PyQt5.QtCore import *
 
 from Data import Data
-from windows.ConfirmWindow import ConfirmWindow
-from windows.CreateHomeworkWindow import CreateHomeworkWindow
+from windows.AbilitiesWindow import AbilitiesWindow
 from windows.HomeWindow import HomeWindow
 from windows.HomeworkCollectionWindow import HomeworkCollectionWindow
 
@@ -14,7 +12,7 @@ from windows.HomeworkCollectionWindow import HomeworkCollectionWindow
 class WindowsController(QWidget):
     def __init__(self):
         super(WindowsController, self).__init__(flags=Qt.Window)
-        self.setMinimumSize(QSize(800, 400))
+        self.setFixedSize(QSize(800, 600))
         self.setWindowTitle("Gamification")
 
         self.data = Data()
@@ -36,6 +34,9 @@ class WindowsController(QWidget):
 
     def open_HomeworkCollectionWindow(self):
         self.open_window(HomeworkCollectionWindow(self, self.data))
+
+    def open_Abilities_Window(self):
+        self.open_window(AbilitiesWindow(self, self.data))
 
 
 if __name__ == "__main__":

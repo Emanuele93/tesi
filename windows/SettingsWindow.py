@@ -1,21 +1,25 @@
 from functools import partial
 
 from PyQt5.QtCore import QSize, Qt
-from PyQt5.QtGui import QFont, QPixmap, QColor
+from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtWidgets import QDialog, QPushButton, QWidget, QVBoxLayout, QLabel, QHBoxLayout, QScrollArea, QCheckBox, \
     QButtonGroup, QAbstractButton
-from django.dispatch import Signal
+
+from Data import DefaultColorStyles
 
 
 class SettingsWindow(QDialog):
     def __init__(self, title, data, exercise_window, parent=None):
         QDialog.__init__(self, parent)
         self.setWindowTitle(title)
-        self.setMinimumSize(QSize(450, 600))
+        self.setFixedSize(QSize(450, 600))
         self.exercise_window = exercise_window
         self.data = data
         self.current_button = None
         self.current_key = None
+        self.color_buttons = {}
+        self.color_keys = {}
+        self.check_keys = {}
         self.color_styles = \
             data.color_styles.__copy__() if exercise_window is None or exercise_window.exercise.color_styles is None \
                 else exercise_window.exercise.color_styles
@@ -23,13 +27,12 @@ class SettingsWindow(QDialog):
             'Colore sfondo (codice): ': self.color_styles.code_background_color,
             'Colore sfondo (risultati): ': self.color_styles.results_background_color,
             'Colore sfondo (risultati sbagliati): ': self.color_styles.error_results_background_color,
-            'Colore texto (codice): ': self.color_styles.code_text_color,
-            'Colore texto (risultati): ': self.color_styles.results_text_color,
-            'Colore texto (risultati sbagliati): ': self.color_styles.error_results_text_color,
+            'Colore testo (codice): ': self.color_styles.code_text_color,
+            'Colore testo (risultati): ': self.color_styles.results_text_color,
+            'Colore testo (risultati sbagliati): ': self.color_styles.error_results_text_color,
             'Colore commenti (# linea unica): ': self.color_styles.comment_color,
             "Colore commenti (''' più linee): ": self.color_styles.multi_line_comment_color,
             'Colore stringhe: ': self.color_styles.string_color
-
         }
 
         font = QFont()
@@ -151,7 +154,7 @@ class SettingsWindow(QDialog):
         intro_code_orientation.setText('Disposizione codice e risultati: ')
         check_h = QCheckBox("Orizzontale")
         check_h.setChecked(self.data.code_result_horizontal_orientation)
-        check_v = QCheckBox("Vericale")
+        check_v = QCheckBox("Verticale")
         check_v.setChecked(not self.data.code_result_horizontal_orientation)
 
         self.bg2 = QButtonGroup()
@@ -186,12 +189,20 @@ class SettingsWindow(QDialog):
         widget = QWidget(self, flags=Qt.Widget)
         widget.setLayout(box)
 
-        button = QPushButton('Salva come impostazioni preferite', self)
-        button.clicked.connect(self.set_preferences)
+        button1 = QPushButton('Ritorna alle impostazioni preferite', self)
+        button1.clicked.connect(self.set_style_preferred)
+
+        button2 = QPushButton('Ritorna alle impostazioni di default', self)
+        button2.clicked.connect(self.set_style_default)
+
+        button3 = QPushButton('Salva come impostazioni preferite', self)
+        button3.clicked.connect(self.set_preferences)
 
         box = QVBoxLayout(self)
         box.addWidget(widget)
-        box.addWidget(button)
+        box.addWidget(button1)
+        box.addWidget(button2)
+        box.addWidget(button3)
         widget = QWidget(self, flags=Qt.Widget)
         widget.setLayout(box)
         return widget
@@ -207,6 +218,8 @@ class SettingsWindow(QDialog):
         button.clicked.connect(partial(self.show_selection_color_widget, text, button))
         button.setStyleSheet('background-color: ' + color)
         button.setFixedSize(50, 30)
+
+        self.color_buttons[text] = button
 
         space=QWidget(self, flags=Qt.Widget)
         space.setFixedWidth(100)
@@ -232,10 +245,14 @@ class SettingsWindow(QDialog):
         button.setStyleSheet('background-color: ' + color)
         button.setFixedSize(50, 30)
 
+        self.color_keys[word] = button
+
         check = QCheckBox("Grassetto")
         check.setChecked(bold)
         check.stateChanged.connect(partial(self.set_bold, word, check))
         check.setFixedWidth(100)
+
+        self.check_keys[word] = check
 
         box = QHBoxLayout(self)
         box.addWidget(label)
@@ -322,11 +339,11 @@ class SettingsWindow(QDialog):
             self.lib[self.current_key] = color
 
             self.color_styles.code_background_color = self.lib['Colore sfondo (codice): ']
-            self.color_styles.code_text_color = self.lib['Colore texto (codice): ']
+            self.color_styles.code_text_color = self.lib['Colore testo (codice): ']
             self.color_styles.results_background_color = self.lib['Colore sfondo (risultati): ']
-            self.color_styles.results_text_color = self.lib['Colore texto (risultati): ']
+            self.color_styles.results_text_color = self.lib['Colore testo (risultati): ']
             self.color_styles.error_results_background_color = self.lib['Colore sfondo (risultati sbagliati): ']
-            self.color_styles.error_results_text_color = self.lib['Colore texto (risultati sbagliati): ']
+            self.color_styles.error_results_text_color = self.lib['Colore testo (risultati sbagliati): ']
             self.color_styles.string_color = self.lib['Colore stringhe: ']
             self.color_styles.comment_color = self.lib['Colore commenti (# linea unica): ']
             self.color_styles.multi_line_comment_color = self.lib["Colore commenti (''' più linee): "]
@@ -368,4 +385,38 @@ class SettingsWindow(QDialog):
         self.data.current_image = name
 
     def set_preferences(self):
-        self.data.color_styles = self.color_styles
+        self.data.color_styles = self.color_styles.__copy__()
+
+    def set_style_preferred(self):
+        self.color_styles = self.data.color_styles.__copy__()
+        self.color_style_changed(None)
+
+    def set_style_default(self):
+        self.color_styles = DefaultColorStyles()
+        self.color_style_changed(self.color_styles)
+
+    def color_style_changed(self, cs):
+        self.color_buttons['Colore sfondo (codice): ']\
+            .setStyleSheet('background-color: ' + self.color_styles.code_background_color)
+        self.color_buttons['Colore sfondo (risultati): ']\
+            .setStyleSheet('background-color: ' + self.color_styles.results_background_color)
+        self.color_buttons['Colore sfondo (risultati sbagliati): ']\
+            .setStyleSheet('background-color: ' + self.color_styles.error_results_background_color)
+        self.color_buttons['Colore testo (codice): ']\
+            .setStyleSheet('background-color: ' + self.color_styles.code_text_color)
+        self.color_buttons['Colore testo (risultati): ']\
+            .setStyleSheet('background-color: ' + self.color_styles.results_text_color)
+        self.color_buttons['Colore testo (risultati sbagliati): ']\
+            .setStyleSheet('background-color: ' + self.color_styles.error_results_text_color)
+        self.color_buttons['Colore commenti (# linea unica): ']\
+            .setStyleSheet('background-color: ' + self.color_styles.comment_color)
+        self.color_buttons["Colore commenti (''' più linee): "]\
+            .setStyleSheet('background-color: ' + self.color_styles.multi_line_comment_color)
+        self.color_buttons['Colore stringhe: ']\
+            .setStyleSheet('background-color: ' + self.color_styles.string_color)
+
+        for i in self.color_styles.keyWords:
+            self.color_keys[i.word].setStyleSheet('background-color: ' + i.color)
+            self.check_keys[i.word].setChecked(i.bold)
+        self.exercise_window.set_color_styles(cs)
+

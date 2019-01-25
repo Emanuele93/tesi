@@ -37,9 +37,33 @@ class Exercise:
 
 
 class Data:
+    variables_numbers = {
+            'lines': [0,5,10,12,14,16,18,20,30,40,50,100],
+            'variables': [0,2,4,5,6,7,8,10,15,20],
+            'if': [0,1,2,3,5,7,10],
+            'elif': [0,1,2,3,5,7,10,15],
+            'else': [0,1,2,3,5,7,10],
+            'for': [0,1,2,3,5,7],
+            'while': [0,1,2,3,5,7],
+            'functions': [0,1,2,3,5,7]
+        }
+    
+    variables_cost = {
+            'lines': [2,4,8,20,40,80,80,80,100,100,100,200],
+            'variables': [2,20,20,20,20,20,20,40,50,100],
+            'if': [2,20,20,20,50,50,100],
+            'elif': [2,10,10,20,20,40,50,100],
+            'else': [2,20,20,20,50,50,100],
+            'for': [20,20,20,50,50,100],
+            'while': [20,20,20,50,50,100],
+            'functions': [40,40,40,50,50,100]
+        }
+
     def __init__(self):
         self.my_name = "Emanuele"
         self.my_proff = "Proff"
+
+        self.money = 1500
 
         self.code_result_horizontal_orientation = True
 
@@ -51,7 +75,11 @@ class Data:
 
         self.exercises = self.get_homework()
 
+        self.level_variables = self.get_level_variables()
+
         self.owned_variables = self.get_owned_variables_numbers()
+
+        self.all_colors = self.get_colors()
 
         self.owned_colors = self.get_owned_colors()
 
@@ -59,26 +87,58 @@ class Data:
 
         self.owned_images = self.get_owned_images()
 
+        self.all_images = self.get_images()
+
+        self.make_homework_coin = False
+
+        self.watch_homework_coin = False
+
     def get_current_image(self):
         return 'img/1.png'
 
+    def get_colors(self):
+        return ['#ffffff', '#ff0000', '#00ff00', '#0000ff', '#990099'
+            , '#000000', '#964218', '#85ff74', '#126597', '#337744'
+            , '#974631', '#712893', '#256947', '#256914', '#367469']
+
     def get_owned_colors(self):
-        return ['white', 'red', 'green', 'blue', '#990099', 'black']
+        return ['#ffffff', '#ff0000', '#00ff00', '#0000ff', '#990099'
+            , '#000000', '#964218', '#85ff74', '#126597', '#337744'
+            , '#974631', '#712893', '#256947', '#256914']
+
+    def get_images(self):
+        return {'img/1.png':100,'img/2.png':100,'img/3.png':100,'img/4.png':100,'img/5.png':100,
+                'img/6.png':500,'img/7.png':500,'img/8.png':500,'img/9.png':500,'img/10.png':500,
+                'img/11.png':1000,'img/12.png':1000,'img/13.png':1000,'img/14.png':1000,'img/15.png':1000}
 
     def get_owned_images(self):
         return ['img/1.png','img/2.png']
 
-    def get_owned_variables_numbers(self):
+    def get_level_variables(self):
         # ToDo da prendere da file
-        lib = {
-            'lines': 10,
-            'variables': 4,
-            'if': 3,
-            'elif': 5,
-            'else': 3,
-            'for': 3,
-            'while': 2,
+
+        liv = {
+            'lines': 0,
+            'variables': 0,
+            'if': 0,
+            'elif': 0,
+            'else': 0,
+            'for': 0,
+            'while': 0,
             'functions': 0
+        }
+        return liv
+
+    def get_owned_variables_numbers(self):
+        lib = {
+            'lines': None if self.level_variables['lines'] == len(self.variables_numbers['lines']) else self.variables_numbers['lines'][self.level_variables['lines']],
+            'variables': None if self.level_variables['variables'] == len(self.variables_numbers['variables']) else self.variables_numbers['variables'][self.level_variables['variables']],
+            'if': None if self.level_variables['if'] == len(self.variables_numbers['if']) else self.variables_numbers['if'][self.level_variables['if']],
+            'elif': None if self.level_variables['elif'] == len(self.variables_numbers['elif']) else self.variables_numbers['elif'][self.level_variables['elif']],
+            'else': None if self.level_variables['else'] == len(self.variables_numbers['else']) else self.variables_numbers['else'][self.level_variables['else']],
+            'for': None if self.level_variables['for'] == len(self.variables_numbers['for']) else self.variables_numbers['for'][self.level_variables['for']],
+            'while': None if self.level_variables['while'] == len(self.variables_numbers['while']) else self.variables_numbers['while'][self.level_variables['while']],
+            'functions': None if self.level_variables['functions'] == len(self.variables_numbers['functions']) else self.variables_numbers['functions'][self.level_variables['functions']]
         }
         return lib
 

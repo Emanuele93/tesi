@@ -9,7 +9,6 @@ from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QPushButton, QSp
 from PyQt5.QtCore import *
 
 from Data import Exercise
-from MyCalendar import MyCalendar
 from windows.ConfirmWindow import ConfirmWindow
 
 
@@ -601,6 +600,7 @@ class CreateHomeworkWindow(QWidget):
             color_styles = None
             self.data.addExercise(Exercise(id, creator, date, title, text, level, white_paper_mode, start_code, limits,
                                            executable, color_styles))
+            self.data.make_homework_coin = False
             self.closer_controller.close_CreateHomeworkWindow()
         confirm.deleteLater()
 
@@ -968,3 +968,13 @@ class CreateHomeworkWindow(QWidget):
 
     def scroll_numbers(self):
         self.numbers.verticalScrollBar().setValue(self.code_editor.verticalScrollBar().value())
+
+
+class MyCalendar(QCalendarWidget):
+    def __init__(self, parent=None):
+        QCalendarWidget.__init__(self, parent)
+
+    def paintCell(self, painter, rect, date, **kwargs):
+        QCalendarWidget.paintCell(self, painter, rect, date)
+        if date == self.selectedDate():
+            painter.drawText(rect.bottomLeft(), "   ------")

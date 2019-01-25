@@ -10,8 +10,7 @@ from windows.ExerciseWindow import ExerciseWindow
 class HomeworkCollectionWindow(QWidget):
     def __init__(self, controller, data):
         super(HomeworkCollectionWindow, self).__init__(controller, flags=Qt.Widget)
-        self.setMinimumSize(QSize(800, 400))
-        self.setWindowTitle("Gamification")
+        controller.setWindowTitle("Gamification - Compiti")
         self.data = data
         self.controller = controller
         self.exercise_windows = []
@@ -45,6 +44,8 @@ class HomeworkCollectionWindow(QWidget):
         button = QPushButton('AGGIUNGI COMPITO', self)
         button.clicked.connect(self.open_CreateHomeworkWindow)
         button.setFixedWidth(200)
+        if not self.data.make_homework_coin:
+            button.setEnabled(False)
 
         self.top_box.addWidget(self.home_button)
         self.top_box.addWidget(title)
