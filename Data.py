@@ -89,7 +89,7 @@ class Data:
 
         self.all_images = self.get_images()
 
-        self.make_homework_coin = False
+        self.make_homework_coin = True
 
         self.watch_homework_coin = False
 
@@ -156,8 +156,18 @@ class Data:
         exercises = [
             Exercise(0, self.my_proff, "08/01/2019", 'Esercizio 1', 'Fai i compiti', 'Difficile', False, 'print("ciao")', functions_limit0, True, None),
             Exercise(1, self.my_proff, "08/01/2019", 'Esercizio 2', 'Fai tutti i compiti', 'Difficile', True, '', functions_limit1, True, None),
-            Exercise(2, self.my_proff, "20/01/2019", 'Esercizio 3', 'Fai qualche compito', 'Medio', False, 'print("ciao a tutti")', functions_limit2, False, None, ),
-            Exercise(3, self.my_proff, "20/01/2019", 'Esercizio 4', 'Non fare i compiti', 'Facile', True, 'print("ciao a lele")', functions_limit3, False, None)
+            Exercise(2, self.my_proff, "20/01/2019", 'Esercizio 1', 'Fai qualche compito', 'Medio', False, 'print("ciao a tutti")', functions_limit2, False, None, ),
+            Exercise(3, self.my_proff, "20/01/2019", 'Esercizio 2', 'Non fare i compiti', 'Facile', True, 'print("ciao a lele")', functions_limit3, False, None),
+            Exercise(4, self.my_proff, "20/01/2019", 'Esercizio 3', 'Non fare i compiti', 'Facile', True, 'print("ciao a lele")', functions_limit3, False, None),
+            Exercise(5, self.my_proff, "20/01/2019", 'Esercizio 4', 'Non fare i compiti', 'Facile', True, 'print("ciao a lele")', functions_limit3, False, None),
+            Exercise(6, self.my_proff, "20/01/2019", 'Esercizio 5', 'Non fare i compiti', 'Facile', True, 'print("ciao a lele")', functions_limit3, False, None),
+            Exercise(7, self.my_proff, "20/01/2019", 'Esercizio 6', 'Non fare i compiti', 'Facile', True, 'print("ciao a lele")', functions_limit3, False, None),
+            Exercise(8, self.my_name, "08/01/2019", 'Esercizio 3', 'Fai tutti i compiti', 'Difficile', True, '', functions_limit1, True, None),
+            Exercise(9, self.my_name, "08/01/2019", 'Esercizio 4', 'Fai tutti i compiti', 'Difficile', True, '', functions_limit1, True, None),
+            Exercise(10, self.my_name, "08/01/2019", 'Esercizio 5', 'Fai tutti i compiti', 'Difficile', True, '', functions_limit1, True, None),
+            Exercise(11, self.my_name, "08/01/2019", 'Esercizio 6', 'Fai tutti i compiti', 'Difficile', True, '', functions_limit1, True, None),
+            Exercise(12, self.my_name, "08/01/2019", 'Esercizio 7', 'Fai tutti i compiti', 'Difficile', True, '', functions_limit1, True, None),
+            Exercise(13, self.my_name, "08/01/2019", 'Esercizio 8', 'Fai tutti i compiti', 'Difficile', True, '', functions_limit1, True, None)
         ]
 
         # Todo predere da file lo stile e la soluzione

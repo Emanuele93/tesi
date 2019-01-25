@@ -18,7 +18,7 @@ class WindowsController(QWidget):
         self.data = Data()
         self.box = QHBoxLayout(self)
         self.box.setContentsMargins(0, 0, 0, 0)
-        self.mainWin = HomeWindow(self)
+        self.mainWin = HomeWindow(self, self.data)
         self.box.addWidget(self.mainWin)
 
         self.mainWin.show()
@@ -30,13 +30,13 @@ class WindowsController(QWidget):
         self.mainWin.show()
 
     def open_MainWindow(self):
-        self.open_window(HomeWindow(self))
+        self.open_window(HomeWindow(self, self.data))
 
     def open_HomeworkCollectionWindow(self):
         self.open_window(HomeworkCollectionWindow(self, self.data))
 
-    def open_Abilities_Window(self):
-        self.open_window(AbilitiesWindow(self, self.data))
+    def open_Abilities_Window(self, page, event):
+        self.open_window(AbilitiesWindow(self, self.data, page))
 
 
 if __name__ == "__main__":

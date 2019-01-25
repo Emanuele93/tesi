@@ -6,7 +6,7 @@ from PyQt5.QtCore import *
 
 
 class AbilitiesWindow(QWidget):
-    def __init__(self, home, data):
+    def __init__(self, home, data, page=1):
         super(AbilitiesWindow, self).__init__(home, flags=Qt.Widget)
         home.setWindowTitle("Gamification - Negozio")
         self.data = data
@@ -44,12 +44,24 @@ class AbilitiesWindow(QWidget):
         page3 = self.make_page3()
         page4 = self.make_page4()
 
-        button1.clicked.connect(partial(self.open_subpage,button1,page1,button2,page2,button3,page3,button4,page4))
-        button2.clicked.connect(partial(self.open_subpage,button2,page2,button1,page1,button3,page3,button4,page4))
-        button3.clicked.connect(partial(self.open_subpage,button3,page3,button2,page2,button1,page1,button4,page4))
-        button4.clicked.connect(partial(self.open_subpage,button4,page4,button2,page2,button3,page3,button1,page1))
+        button1.clicked.connect(
+            partial(self.open_subpage, button1, page1, button2, page2, button3, page3, button4, page4))
+        button2.clicked.connect(
+            partial(self.open_subpage, button2, page2, button1, page1, button3, page3, button4, page4))
+        button3.clicked.connect(
+            partial(self.open_subpage, button3, page3, button2, page2, button1, page1, button4, page4))
+        button4.clicked.connect(
+            partial(self.open_subpage, button4, page4, button2, page2, button3, page3, button1, page1))
 
-        self.open_subpage(button1,page1,button2,page2,button3,page3,button4,page4)
+        print(page)
+        if page == 1:
+            self.open_subpage(button1, page1, button2, page2, button3, page3, button4, page4)
+        elif page == 2:
+            self.open_subpage(button2, page2, button1, page1, button3, page3, button4, page4)
+        elif page == 3:
+            self.open_subpage(button3, page3, button1, page1, button2, page2, button4, page4)
+        elif page == 4:
+            self.open_subpage(button4, page4, button1, page1, button2, page2, button3, page3)
 
         self.soldi = QLabel(str(self.data.money) + ' soldi', self)
         self.soldi.setFont(font)
@@ -59,7 +71,7 @@ class AbilitiesWindow(QWidget):
 
         home_box = QHBoxLayout(self)
         home_box.addWidget(home_button)
-        home_box.setContentsMargins(0,0,40,0)
+        home_box.setContentsMargins(0, 0, 40, 0)
         home_widget = QWidget(self, flags=Qt.Widget)
         home_widget.setLayout(home_box)
         home_widget.setFixedWidth(180)
@@ -80,7 +92,7 @@ class AbilitiesWindow(QWidget):
 
         box = QHBoxLayout(self)
         box.addWidget(self.soldi)
-        box.setContentsMargins(20,10,20,10)
+        box.setContentsMargins(20, 10, 20, 10)
         box.setAlignment(Qt.AlignRight)
         bottom_widget = QWidget(self, flags=Qt.Widget)
         bottom_widget.setLayout(box)
@@ -90,7 +102,7 @@ class AbilitiesWindow(QWidget):
         bottom_widget.setFixedHeight(50)
 
         window_layaut = QVBoxLayout(self)
-        window_layaut.setContentsMargins(0,0,0,0)
+        window_layaut.setContentsMargins(0, 0, 0, 0)
         window_layaut.addWidget(top_widget)
         window_layaut.addWidget(bottom_widget, alignment=Qt.AlignRight)
         window_layaut.addWidget(page1)
@@ -99,7 +111,7 @@ class AbilitiesWindow(QWidget):
         window_layaut.addWidget(page4)
         window_layaut.setSpacing(0)
 
-    def open_subpage(self,b1,p1,b2,p2,b3,p3,b4,p4):
+    def open_subpage(self, b1, p1, b2, p2, b3, p3, b4, p4):
         p1.setVisible(True)
         p2.setVisible(False)
         p3.setVisible(False)
@@ -111,21 +123,21 @@ class AbilitiesWindow(QWidget):
 
     def make_page1(self):
         box = QHBoxLayout(self)
-        box.setContentsMargins(0,0,0,0)
+        box.setContentsMargins(0, 0, 0, 0)
         box.addWidget(self.counter_upgrade_widget('Righe di codice'))
         box.setAlignment(Qt.AlignLeft)
         widget_lines = QWidget(self, flags=Qt.Widget)
         widget_lines.setLayout(box)
 
         box = QHBoxLayout(self)
-        box.setContentsMargins(0,0,0,0)
+        box.setContentsMargins(0, 0, 0, 0)
         box.addWidget(self.counter_upgrade_widget('Variabili'))
         box.setAlignment(Qt.AlignLeft)
         widget_variables = QWidget(self, flags=Qt.Widget)
         widget_variables.setLayout(box)
 
         box = QHBoxLayout(self)
-        box.setContentsMargins(0,0,0,0)
+        box.setContentsMargins(0, 0, 0, 0)
         box.addWidget(self.counter_upgrade_widget('if'))
         box.addWidget(self.counter_upgrade_widget('elif'))
         box.addWidget(self.counter_upgrade_widget('else'))
@@ -134,7 +146,7 @@ class AbilitiesWindow(QWidget):
         widget_conditions.setLayout(box)
 
         box = QHBoxLayout(self)
-        box.setContentsMargins(0,0,0,0)
+        box.setContentsMargins(0, 0, 0, 0)
         box.addWidget(self.counter_upgrade_widget('for'))
         box.addWidget(self.counter_upgrade_widget('while'))
         box.setAlignment(Qt.AlignLeft)
@@ -142,7 +154,7 @@ class AbilitiesWindow(QWidget):
         widget_cycles.setLayout(box)
 
         box = QHBoxLayout(self)
-        box.setContentsMargins(0,0,0,0)
+        box.setContentsMargins(0, 0, 0, 0)
         box.addWidget(self.counter_upgrade_widget('def'))
         box.setAlignment(Qt.AlignLeft)
         widget_functions = QWidget(self, flags=Qt.Widget)
@@ -150,7 +162,7 @@ class AbilitiesWindow(QWidget):
 
         box = QVBoxLayout(self)
         box.setSpacing(25)
-        box.setContentsMargins(0,0,0,0)
+        box.setContentsMargins(0, 0, 0, 0)
         box.addWidget(widget_lines)
         box.addWidget(widget_variables)
         box.setAlignment(Qt.AlignTop)
@@ -158,7 +170,7 @@ class AbilitiesWindow(QWidget):
         widget1.setLayout(box)
 
         box = QVBoxLayout(self)
-        box.setContentsMargins(0,0,0,0)
+        box.setContentsMargins(0, 0, 0, 0)
         box.setSpacing(25)
         box.addWidget(widget_conditions)
         box.addWidget(widget_cycles)
@@ -168,7 +180,7 @@ class AbilitiesWindow(QWidget):
         widget2.setLayout(box)
 
         box = QHBoxLayout(self)
-        box.setContentsMargins(0,50,0,0)
+        box.setContentsMargins(0, 50, 0, 0)
         box.setSpacing(50)
         box.addWidget(widget1)
         box.addWidget(widget2)
@@ -183,7 +195,7 @@ class AbilitiesWindow(QWidget):
 
         name_label = QLabel(self)
         name_label.setText(name)
-        name_label.setContentsMargins(10,0,10,0)
+        name_label.setContentsMargins(10, 0, 10, 0)
         name_label.setFont(font)
 
         if name == 'Righe di codice':
@@ -195,7 +207,7 @@ class AbilitiesWindow(QWidget):
 
         lev = self.data.level_variables[name]
         numbers_upgrade = QLabel(self)
-        if lev < len(self.data.variables_numbers[name])-1:
+        if lev < len(self.data.variables_numbers[name]) - 1:
             numbers_upgrade.setText(str(self.data.variables_numbers[name][lev]) + ' &#8594; '
                                     + str(self.data.variables_numbers[name][lev + 1]))
         elif lev < len(self.data.variables_numbers[name]):
@@ -203,7 +215,7 @@ class AbilitiesWindow(QWidget):
         else:
             numbers_upgrade.setText(' ')
         numbers_upgrade.setTextFormat(Qt.RichText)
-        numbers_upgrade.setContentsMargins(10,0,10,0)
+        numbers_upgrade.setContentsMargins(10, 0, 10, 0)
         numbers_upgrade.setFont(font)
 
         cost = QPushButton(self)
@@ -225,7 +237,7 @@ class AbilitiesWindow(QWidget):
         box.addWidget(numbers_upgrade)
         box.addWidget(cost)
         box.setAlignment(Qt.AlignTop)
-        box.setContentsMargins(0,10,0,0)
+        box.setContentsMargins(0, 10, 0, 0)
 
         widget = QWidget(self, flags=Qt.Widget)
         widget.setLayout(box)
@@ -240,7 +252,7 @@ class AbilitiesWindow(QWidget):
         self.data.level_variables[name] += 1
         self.data.owned_variables = self.data.get_owned_variables_numbers()
         lev = self.data.level_variables[name]
-        if lev < len(self.data.variables_numbers[name])-1:
+        if lev < len(self.data.variables_numbers[name]) - 1:
             numbers.setText(str(self.data.variables_numbers[name][lev]) + ' &#8594; '
                             + str(self.data.variables_numbers[name][lev + 1]))
         elif lev < len(self.data.variables_numbers[name]):
@@ -275,15 +287,13 @@ class AbilitiesWindow(QWidget):
         if 500 > self.data.money:
             self.watch_homework_coin.setEnabled(False)
 
-
-
     def make_page2(self):
         v_box = QVBoxLayout(self)
         v_box.setSpacing(15)
         v_box.setAlignment(Qt.AlignTop)
         h_box = QHBoxLayout(self)
         h_box.setSpacing(15)
-        h_box.setContentsMargins(0,0,0,0)
+        h_box.setContentsMargins(0, 0, 0, 0)
         h_box.setAlignment(Qt.AlignCenter)
         widgets = []
         n = 0
@@ -300,7 +310,7 @@ class AbilitiesWindow(QWidget):
                 v_box.addWidget(h_widget)
                 h_box = QHBoxLayout(self)
                 h_box.setSpacing(15)
-                h_box.setContentsMargins(0,0,0,0)
+                h_box.setContentsMargins(0, 0, 0, 0)
                 h_box.setAlignment(Qt.AlignCenter)
 
         v_widget = QWidget(self, flags=Qt.Widget)
@@ -309,7 +319,7 @@ class AbilitiesWindow(QWidget):
 
     def make_color_widget(self, color):
         change = QPushButton('Cambia colore', self)
-        change.setFixedSize(120,30)
+        change.setFixedSize(120, 30)
         change.setStyleSheet('background-color: #dddddd')
         change.hide()
 
@@ -320,11 +330,11 @@ class AbilitiesWindow(QWidget):
                             "background-color: " + color + ";}")
 
         price = QPushButton('100 soldi', self)
-        price.setFixedSize(120,30)
+        price.setFixedSize(120, 30)
         price.setStyleSheet('background-color: #dddddd')
 
-        price.clicked.connect(partial(self.buy_color_on_click,label,price,color))
-        change.clicked.connect(partial(self.change_color_on_click,label))
+        price.clicked.connect(partial(self.buy_color_on_click, label, price, color))
+        change.clicked.connect(partial(self.change_color_on_click, label))
 
         if self.data.owned_colors.__contains__(color):
             price.hide()
@@ -347,7 +357,7 @@ class AbilitiesWindow(QWidget):
 
         box = QVBoxLayout(self)
         box.setSpacing(0)
-        box.setContentsMargins(0,0,0,0)
+        box.setContentsMargins(0, 0, 0, 0)
         box.addWidget(label)
         box.addWidget(price)
         box.addWidget(change)
@@ -398,7 +408,7 @@ class AbilitiesWindow(QWidget):
         v_box.setAlignment(Qt.AlignTop)
         h_box = QHBoxLayout(self)
         h_box.setSpacing(5)
-        h_box.setContentsMargins(0,0,0,0)
+        h_box.setContentsMargins(0, 0, 0, 0)
         h_box.setAlignment(Qt.AlignCenter)
         widgets = []
         n = 0
@@ -415,7 +425,7 @@ class AbilitiesWindow(QWidget):
                 v_box.addWidget(h_widget)
                 h_box = QHBoxLayout(self)
                 h_box.setSpacing(5)
-                h_box.setContentsMargins(0,0,0,0)
+                h_box.setContentsMargins(0, 0, 0, 0)
                 h_box.setAlignment(Qt.AlignCenter)
 
         v_widget = QWidget(self, flags=Qt.Widget)
@@ -425,14 +435,14 @@ class AbilitiesWindow(QWidget):
     def make_image_widget(self, key):
         label = QLabel(self)
         pixmap = QPixmap(key)
-        pixmap = pixmap.scaled(120,120)
+        pixmap = pixmap.scaled(120, 120)
         label.setPixmap(pixmap)
         label.setObjectName(key)
 
         price = QPushButton(str(self.data.all_images[key]) + ' soldi', self)
-        price.setFixedSize(120,30)
+        price.setFixedSize(120, 30)
         price.setStyleSheet('background-color: #dddddd')
-        price.clicked.connect(partial(self.buy_image_on_click,price,key))
+        price.clicked.connect(partial(self.buy_image_on_click, price, key))
         self.images_buttons[price] = self.data.all_images[key]
 
         if self.data.owned_images.__contains__(key):
@@ -442,13 +452,13 @@ class AbilitiesWindow(QWidget):
             price.setEnabled(False)
 
         box = QVBoxLayout(self)
-        box.setContentsMargins(5,5,5,5)
+        box.setContentsMargins(5, 5, 5, 5)
         box.setSpacing(0)
         box.addWidget(label)
         box.addWidget(price)
         widget = QWidget(self, flags=Qt.Widget)
         widget.setLayout(box)
-        widget.setFixedSize(130,130)
+        widget.setFixedSize(130, 130)
 
         if self.data.current_image == key:
             widget.setStyleSheet('background-color: #8888dd')
@@ -480,7 +490,7 @@ class AbilitiesWindow(QWidget):
         label1.setFont(font)
 
         self.make_homework_coin = QPushButton('200 soldi', self)
-        self.make_homework_coin.setFixedSize(150,40)
+        self.make_homework_coin.setFixedSize(150, 40)
         self.make_homework_coin.setFont(font)
         self.make_homework_coin.clicked.connect(self.buy_make_homework_coin)
 
@@ -488,7 +498,7 @@ class AbilitiesWindow(QWidget):
         label2.setFont(font)
 
         self.watch_homework_coin = QPushButton('500 soldi', self)
-        self.watch_homework_coin.setFixedSize(150,40)
+        self.watch_homework_coin.setFixedSize(150, 40)
         self.watch_homework_coin.setFont(font)
         self.watch_homework_coin.clicked.connect(self.buy_watch_homework_coin)
 
@@ -519,7 +529,7 @@ class AbilitiesWindow(QWidget):
         widget2.setLayout(box)
 
         box = QVBoxLayout(self)
-        box.setContentsMargins(0,50,0,0)
+        box.setContentsMargins(0, 50, 0, 0)
         box.setAlignment(Qt.AlignTop)
         box.addWidget(widget1)
         box.addWidget(widget2)
@@ -545,7 +555,7 @@ class AbilitiesWindow(QWidget):
 
 
 class ColorWindow(QDialog):
-    def __init__(self,color, parent=None):
+    def __init__(self, color, parent=None):
         QDialog.__init__(self, parent)
         self.setWindowTitle('Gamification - Cambia colore')
         self.setFixedSize(QSize(600, 300))
@@ -570,25 +580,25 @@ class ColorWindow(QDialog):
         red_form.setPlaceholderText("(0 - 255)")
         red_form.setFixedWidth(100)
         red_form.setFont(font)
-        red_form.setTextMargins(10,5,10,5)
+        red_form.setTextMargins(10, 5, 10, 5)
         red_form.setText(str(int(color[1:3], 16)))
 
         green_form = QLineEdit(self)
         green_form.setPlaceholderText("(0 - 255)")
         green_form.setFixedWidth(100)
         green_form.setFont(font)
-        green_form.setTextMargins(10,5,10,5)
+        green_form.setTextMargins(10, 5, 10, 5)
         green_form.setText(str(int(color[3:5], 16)))
 
         blu_form = QLineEdit(self)
         blu_form.setPlaceholderText("(0 - 255)")
         blu_form.setFixedWidth(100)
         blu_form.setFont(font)
-        blu_form.setTextMargins(10,5,10,5)
+        blu_form.setTextMargins(10, 5, 10, 5)
         blu_form.setText(str(int(color[5:7], 16)))
 
         label = QLabel(self)
-        label.setFixedSize(200,200)
+        label.setFixedSize(200, 200)
         label.setObjectName("color_change")
         label.setStyleSheet("QWidget#color_change {border: 1px solid grey; background-color: " + color + ";}")
 
@@ -596,26 +606,26 @@ class ColorWindow(QDialog):
         ok.clicked.connect(self.accept)
         ok.setEnabled(False)
         ok.setFont(font)
-        ok.setFixedSize(120,60)
+        ok.setFixedSize(120, 60)
 
         annulla = QPushButton('Annulla', self)
         annulla.clicked.connect(self.reject)
         annulla.setFont(font)
-        annulla.setFixedSize(120,30)
+        annulla.setFixedSize(120, 30)
 
-        red_form.textChanged.connect(partial(self.changed_color, label, red_form, green_form, blu_form,ok))
-        green_form.textChanged.connect(partial(self.changed_color, label, red_form, green_form, blu_form,ok))
-        blu_form.textChanged.connect(partial(self.changed_color, label, red_form, green_form, blu_form,ok))
+        red_form.textChanged.connect(partial(self.changed_color, label, red_form, green_form, blu_form, ok))
+        green_form.textChanged.connect(partial(self.changed_color, label, red_form, green_form, blu_form, ok))
+        blu_form.textChanged.connect(partial(self.changed_color, label, red_form, green_form, blu_form, ok))
 
         check_box = QVBoxLayout(self)
-        check_box.setContentsMargins(40,0,0,0)
+        check_box.setContentsMargins(40, 0, 0, 0)
         check_box.addWidget(ok)
         check_box.addWidget(annulla)
         check_widget = QWidget(self, Qt.Widget)
         check_widget.setLayout(check_box)
 
         rgb_box = QVBoxLayout(self)
-        rgb_box.setContentsMargins(0,0,0,0)
+        rgb_box.setContentsMargins(0, 0, 0, 0)
         rgb_box.addWidget(red_form)
         rgb_box.addWidget(green_form)
         rgb_box.addWidget(blu_form)
@@ -623,7 +633,7 @@ class ColorWindow(QDialog):
         rgb_widget.setLayout(rgb_box)
 
         rgb_box = QVBoxLayout(self)
-        rgb_box.setContentsMargins(0,0,0,0)
+        rgb_box.setContentsMargins(0, 0, 0, 0)
         rgb_box.addWidget(red_label)
         rgb_box.addWidget(green_label)
         rgb_box.addWidget(blu_label)

@@ -14,6 +14,7 @@ class SettingsWindow(QDialog):
         self.setWindowTitle(title)
         self.setFixedSize(QSize(450, 600))
         self.exercise_window = exercise_window
+        self.parent = parent
         self.data = data
         self.current_button = None
         self.current_key = None
@@ -198,6 +199,10 @@ class SettingsWindow(QDialog):
         button3 = QPushButton('Salva come impostazioni preferite', self)
         button3.clicked.connect(self.set_preferences)
 
+        if self.exercise_window is None:
+            button3.hide()
+            button1.hide()
+
         box = QVBoxLayout(self)
         box.addWidget(widget)
         box.addWidget(button1)
@@ -355,22 +360,34 @@ class SettingsWindow(QDialog):
 
         self.current_button.setStyleSheet('background-color: ' + color)
 
-        self.exercise_window.set_color_styles(self.color_styles)
+        if self.exercise_window is None:
+            self.data.color_styles = self.color_styles.__copy__()
+        else:
+            self.exercise_window.set_color_styles(self.color_styles)
 
     def set_bold(self, word, check):
         for i in self.color_styles.keyWords:
             if i.word == word:
                 i.bold = check.isChecked()
 
-        self.exercise_window.set_color_styles(self.color_styles)
+        if self.exercise_window is None:
+            self.data.color_styles = self.color_styles.__copy__()
+        else:
+            self.exercise_window.set_color_styles(self.color_styles)
 
     def set_text_dimesion(self, btn):
         self.data.code_font_size = int(btn.text()[0:-2])
-        self.exercise_window.set_text_font_size(int(btn.text()[0:-2]))
+        if self.exercise_window is None:
+            self.data.color_styles = self.color_styles.__copy__()
+        else:
+            self.exercise_window.set_text_font_size(int(btn.text()[0:-2]))
 
     def set_code_result_orientation(self, btn):
         self.data.code_result_horizontal_orientation = True if btn.text() == 'Orizzontale' else False
-        self.exercise_window.update_text_result_orientation()
+        if self.exercise_window is None:
+            self.data.color_styles = self.color_styles.__copy__()
+        else:
+            self.exercise_window.update_text_result_orientation()
 
     def selection_image_on_click(self, event):
         if self.selection_image_widget.isVisible():
@@ -383,6 +400,8 @@ class SettingsWindow(QDialog):
         pixmap = pixmap.scaled(100,100)
         self.current_img.setPixmap(pixmap)
         self.data.current_image = name
+        if self.exercise_window is None:
+            self.parent.set_image(name)
 
     def set_preferences(self):
         self.data.color_styles = self.color_styles.__copy__()
@@ -418,5 +437,9 @@ class SettingsWindow(QDialog):
         for i in self.color_styles.keyWords:
             self.color_keys[i.word].setStyleSheet('background-color: ' + i.color)
             self.check_keys[i.word].setChecked(i.bold)
-        self.exercise_window.set_color_styles(cs)
+
+        if self.exercise_window is None:
+            self.data.color_styles = self.color_styles.__copy__()
+        else:
+            self.exercise_window.set_color_styles(cs)
 

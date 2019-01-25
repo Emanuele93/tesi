@@ -1,6 +1,7 @@
 from functools import partial
 
-from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QPushButton, QHBoxLayout, QVBoxLayout, QScrollArea
+from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QPushButton, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel
 from PyQt5.QtCore import *
 
 from windows.CreateHomeworkWindow import CreateHomeworkWindow
@@ -16,84 +17,118 @@ class HomeworkCollectionWindow(QWidget):
         self.exercise_windows = []
         self.new_exercise = None
 
-        self.bottom_box = QVBoxLayout(self)
-        self.bottom_widget = QScrollArea(self)
-        self.top_box = QHBoxLayout(self)
-        self.top_widget = QWidget(self, flags=Qt.Widget)
-        self.home_button = QPushButton('HOME', self)
-
-        self.make_top_widget()
-        self.make_bottom_widget()
+        top_widget = self.make_top_widget()
+        bottom_widget = self.make_bottom_widget()
 
         window_layaut = QVBoxLayout(self)
-        window_layaut.addWidget(self.top_widget)
-        window_layaut.addWidget(self.bottom_widget)
+        window_layaut.addWidget(top_widget, alignment=Qt.AlignTop)
+        window_layaut.addWidget(bottom_widget)
         window_layaut.setContentsMargins(0, 0, 0, 0)
         window_layaut.setSpacing(0)
 
     def make_top_widget(self):
-        self.home_button.setFixedSize(50, 50)
-        self.home_button.clicked.connect(self.controller.open_MainWindow)
+        font = QFont()
+        font.setPixelSize(15)
 
-        title = QPlainTextEdit(self)
-        title.setPlainText("COMPITI")
-        title.setFixedSize(150, 50)
-        title.setReadOnly(True)
-        # TODO rendere bello il titolo
+        home_button = QPushButton('HOME', self)
+        home_button.setFixedSize(100, 50)
+        home_button.clicked.connect(self.controller.open_MainWindow)
+        home_button.setFont(font)
 
         button = QPushButton('AGGIUNGI COMPITO', self)
         button.clicked.connect(self.open_CreateHomeworkWindow)
-        button.setFixedWidth(200)
+        button.setFixedSize(250, 50)
+        button.setFont(font)
         if not self.data.make_homework_coin:
             button.setEnabled(False)
 
-        self.top_box.addWidget(self.home_button)
-        self.top_box.addWidget(title)
-        self.top_box.addWidget(button, alignment=Qt.AlignRight)
-        self.top_box.setAlignment(Qt.AlignLeft)
-        self.top_box.setSpacing(50)
-        self.top_widget.setLayout(self.top_box)
-        self.top_widget.setObjectName("topStyle")
-        self.top_widget.setStyleSheet("QWidget#topStyle {border: 0px solid grey; border-bottom: 1px solid grey}")
-        self.top_widget.setFixedHeight(70)
+        top_box = QHBoxLayout(self)
+        top_box.setContentsMargins(20, 10, 20, 10)
+        top_box.addWidget(home_button, alignment=Qt.AlignLeft)
+        top_box.addWidget(button, alignment=Qt.AlignRight)
+        top_box.setSpacing(50)
+        top_widget = QWidget(self, flags=Qt.Widget)
+        top_widget.setLayout(top_box)
+        top_widget.setObjectName("topStyle")
+        top_widget.setStyleSheet("QWidget#topStyle {border: 0px solid grey; border-bottom: 1px solid grey}")
+        top_widget.setFixedHeight(90)
+        return top_widget
 
     def make_bottom_widget(self):
+        font = QFont()
+        font.setPixelSize(15)
+        f = QFont()
+        f.setPixelSize(10)
+
+        bottom_box = QVBoxLayout(self)
         exercises = []
         for i in self.data.exercises:
             exercises.append(i)
         while len(exercises) > 0:
-            date_exercises = QPlainTextEdit(self)
-            date_exercises.setFixedSize(100, 50)
             date = exercises[0].date
-            date_exercises.setPlainText(date)
-            date_exercises.setReadOnly(True)
+            date_exercises = QLabel(date, self)
+            date_exercises.setFixedSize(100, 50)
+            date_exercises.setFont(font)
 
             other_exercises_box = QHBoxLayout(self)
-            other_exercises_box.setContentsMargins(0,0,0,0)
-            other_exercises_box.setAlignment(Qt.AlignLeft)
+            other_exercises_box.setContentsMargins(0, 0, 0, 0)
             proff_exercises_box = QHBoxLayout(self)
-            proff_exercises_box.setContentsMargins(0,0,0,0)
             proff_exercises_box.setAlignment(Qt.AlignLeft)
+            proff_exercises_box.setContentsMargins(0, 0, 0, 0)
 
             proff_counter = other_counter = 0
             temp_exercises = []
             for i in exercises:
                 if i.date == date:
                     temp_exercises.append(i)
-                    button = QPushButton(i.title + "\nby " + i.creator)
-                    button.setFixedSize(100, 50)
+                    title = QLabel(i.title, self)
+                    title.setFont(font)
+                    title.setContentsMargins(20, 10, 5, 0)
+
+                    s = '&#x25EF;' if i.level == 'Facile' \
+                        else ('&#x25EF;<br>&#x25EF;' if i.level == 'Medio' else '&#x25EF;<br>&#x25EF;<br>&#x25EF;')
+                    difficulty = QLabel(s, self)
+                    difficulty.setContentsMargins(10, 2, 10, 2)
+                    difficulty.setTextFormat(Qt.RichText)
+                    difficulty.setFont(f)
+
+                    by = QLabel("<i>by " + i.creator + "</i>", self)
+                    by.setContentsMargins(20, 0, 5, 10)
+                    by.mousePressEvent = partial(self.open_ExerciseWindow, i)
+                    by.setTextFormat(Qt.RichText)
+
+                    box = QVBoxLayout(self)
+                    box.setAlignment(Qt.AlignTop)
+                    box.setContentsMargins(0, 0, 0, 0)
+                    box.setSpacing(0)
+                    box.addWidget(title, alignment=Qt.AlignTop)
+                    box.addWidget(by, alignment=Qt.AlignTop)
+                    exercise = QWidget(self, flags=Qt.Widget)
+                    exercise.setLayout(box)
+                    exercise.mousePressEvent = partial(self.open_ExerciseWindow, i)
+
+                    box = QHBoxLayout(self)
+                    box.setAlignment(Qt.AlignTop)
+                    box.setContentsMargins(0, 0, 0, 0)
+                    box.setSpacing(0)
+                    box.addWidget(exercise, alignment=Qt.AlignVCenter)
+                    box.addWidget(difficulty, alignment=Qt.AlignLeft)
+                    exercise = QWidget(self, flags=Qt.Widget)
+                    exercise.setLayout(box)
+                    exercise.setObjectName("exercise")
+
                     if (i.solution is None or i.solution == i.start_code) and i.delivery_date is None:
-                        button.setStyleSheet('background-color:red')
+                        exercise.setStyleSheet('QWidget#exercise {background-color:red; border: 1px solid grey;}')
                     elif i.solution is not None and i.delivery_date is None:
-                        button.setStyleSheet('background-color:yellow')
+                        exercise.setStyleSheet('QWidget#exercise {background-color:yellow; border: 1px solid grey};')
                     else:
-                        button.setStyleSheet('background-color:green')
-                    button.clicked.connect(partial(self.open_ExerciseWindow, i))
+                        exercise.setStyleSheet('QWidget#exercise {background-color:green; border: 1px solid grey;}')
+
                     if i.creator == self.data.my_proff:
-                        proff_exercises_box.addWidget(button, alignment=Qt.AlignTop)
+                        proff_exercises_box.addWidget(exercise, alignment=Qt.AlignLeft)
                         proff_counter += 1
                     else:
-                        other_exercises_box.addWidget(button, alignment=Qt.AlignTop)
+                        other_exercises_box.addWidget(exercise, alignment=Qt.AlignLeft)
                         other_counter += 1
             for i in temp_exercises:
                 exercises.remove(i)
@@ -103,7 +138,7 @@ class HomeworkCollectionWindow(QWidget):
             other_exercises_widget = QWidget(self, flags=Qt.Widget)
             other_exercises_widget.setLayout(other_exercises_box)
             both_exercises_box = QVBoxLayout(self)
-            both_exercises_box.setContentsMargins(0,0,0,0)
+            both_exercises_box.setContentsMargins(0, 0, 0, 0)
             both_exercises_box.addWidget(proff_exercises_widget, alignment=Qt.AlignTop)
             both_exercises_box.addWidget(other_exercises_widget, alignment=Qt.AlignTop)
             both_exercises_widget = QWidget(self, flags=Qt.Widget)
@@ -115,19 +150,29 @@ class HomeworkCollectionWindow(QWidget):
                 other_exercises_widget.hide()
 
             exercises_box = QHBoxLayout(self)
-            exercises_box.setAlignment(Qt.AlignLeft)
-            exercises_box.setSpacing(30)
+            exercises_box.setContentsMargins(20, 20, 20, 20)
             exercises_box.addWidget(date_exercises, alignment=Qt.AlignTop)
-            exercises_box.addWidget(both_exercises_widget, alignment=Qt.AlignTop)
+            exercises_box.addWidget(both_exercises_widget, alignment=Qt.AlignLeft)
             exercises_widget = QWidget(self, flags=Qt.Widget)
             exercises_widget.setLayout(exercises_box)
-            self.bottom_box.addWidget(exercises_widget)
+            exercises_widget.setObjectName("exercises_widget")
+            exercises_widget.setStyleSheet("QWidget#exercises_widget {border: 0px solid grey; "
+                                           "border-bottom: 1px solid grey;}")
+            bottom_box.addWidget(exercises_widget, alignment=Qt.AlignTop)
+        bottom_box.setAlignment(Qt.AlignTop)
+        bottom_box.setContentsMargins(20,20,20,20)
+        bottom_box.setSpacing(20)
         bottom_widget = QWidget(self, flags=Qt.Widget)
-        bottom_widget.setLayout(self.bottom_box)
-        self.bottom_widget.setWidget(bottom_widget)
-        self.bottom_widget.setWidgetResizable(True)
+        bottom_widget.setLayout(bottom_box)
 
-    def open_ExerciseWindow(self, exercise):
+        scroll = QScrollArea(self)
+        scroll.setWidget(bottom_widget)
+        scroll.setWidgetResizable(True)
+        scroll.setObjectName("scroll")
+        scroll.setStyleSheet("QWidget#scroll {border: 0px solid grey;}")
+        return scroll
+
+    def open_ExerciseWindow(self, exercise, event):
         for i in self.exercise_windows:
             if i[0] == exercise.id:
                 i[1].hide()

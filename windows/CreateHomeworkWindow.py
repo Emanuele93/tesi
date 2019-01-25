@@ -100,7 +100,7 @@ class CreateHomeworkWindow(QWidget):
         font = QFont()
         font.setPixelSize(20)
         self.title_widget = QLineEdit(self)
-        self.title_widget.setPlaceholderText("  Inserire Titolo")
+        self.title_widget.setPlaceholderText(" Inserire Titolo (20 caratteri max)")
         self.title_widget.setContentsMargins(20, 20, 20, 10)
         self.title_widget.textChanged.connect(self.title_form_changed)
         self.title_widget.setStyleSheet("QWidget {color: red}")
@@ -461,7 +461,7 @@ class CreateHomeworkWindow(QWidget):
         return errors
 
     def text_exercise_changed(self):
-        if self.text_exercise.toPlainText() == '':
+        if self.text_exercise.toPlainText().strip() == '':
             self.text_exercise.setStyleSheet("QWidget {color: red}")
             self.text_exercise_ready = False
         else:
@@ -477,7 +477,7 @@ class CreateHomeworkWindow(QWidget):
         return s_day
 
     def title_form_changed(self):
-        if self.title_widget.text() == '':
+        if self.title_widget.text().strip() == '' or len(self.title_widget.text()) > 20:
             self.title_widget.setStyleSheet("QWidget {color: red}")
             self.title_ready = False
         else:
@@ -538,9 +538,9 @@ class CreateHomeworkWindow(QWidget):
         if confirm.exec_() == QDialog.Accepted:
             date = self.get_selected_day()
             creator = self.data.my_name
-            title = self.title_widget.text()
+            title = self.title_widget.text().strip()
             id = date + "-" + creator + "-" + title
-            text = self.text_exercise.toPlainText()
+            text = self.text_exercise.toPlainText().strip()
             level = self.difficulty
             white_paper_mode = self.white_paper_mode
             start_code = self.code_editor.toPlainText()

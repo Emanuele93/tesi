@@ -4,7 +4,7 @@ import contextlib
 import io
 from functools import partial
 
-from PyQt5.QtGui import QTextCursor, QFont
+from PyQt5.QtGui import QTextCursor, QFont, QPixmap
 from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QPushButton, QSplitter, QHBoxLayout, QVBoxLayout, \
     QLabel, QDialog
 from PyQt5.QtCore import *
@@ -119,38 +119,52 @@ class ExerciseWindow(QWidget):
         self.coding_widget.setOrientation(Qt.Horizontal if self.data.code_result_horizontal_orientation else Qt.Vertical)
 
     def get_play_option_widget(self):
-        play_button = QPushButton('PLAY', self)
-        play_button.setFixedSize(50, 50)
-        play_button.clicked.connect(self.play_button_on_click)
+        pixmap = QPixmap('img/play.png')
+        pixmap = pixmap.scaled(50, 50)
+        play_button = QLabel(self)
+        play_button.setPixmap(pixmap)
+        play_button.setObjectName('img/play.png')
+        play_button.mousePressEvent = self.play_button_on_click
         if not self.exercise.executable:
             play_button.setEnabled(False)
-        else:
-            play_button.setStyleSheet('background-color:green')
 
-        self.save_button = QPushButton('Save', self)
-        self.save_button.setFixedSize(50, 50)
-        self.save_button.clicked.connect(self.save_button_on_click)
-        self.save_button.setStyleSheet('background-color:green')
+        pixmap = QPixmap('img/saved.png')
+        pixmap = pixmap.scaled(50, 50)
+        self.save_button = QLabel(self)
+        self.save_button.setPixmap(pixmap)
+        self.save_button.setObjectName('img/save.png')
+        self.save_button.mousePressEvent = self.save_button_on_click
 
-        more_button = QPushButton(' ... ', self)
-        more_button.setFixedSize(50, 50)
-        more_button.clicked.connect(self.more_button_on_click)
-
+        pixmap = QPixmap('img/more.png')
+        pixmap = pixmap.scaled(50, 50)
+        more_button = QLabel(self)
+        more_button.setPixmap(pixmap)
+        more_button.setObjectName('img/more.png')
+        more_button.mousePressEvent = self.more_button_on_click
         if self.exercise.delivery_date is not None:
             self.save_button.hide()
             more_button.hide()
 
-        swap_button = QPushButton('Impo', self)
-        swap_button.setFixedSize(50, 50)
-        swap_button.clicked.connect(self.swap_button_on_click)
+        pixmap = QPixmap('img/settings.png')
+        pixmap = pixmap.scaled(50, 50)
+        settings_button = QLabel(self)
+        settings_button.setPixmap(pixmap)
+        settings_button.setObjectName('img/settings.png')
+        settings_button.mousePressEvent = self.swap_button_on_click
 
-        send_button = QPushButton('Send', self)
-        send_button.setFixedSize(50, 50)
-        send_button.clicked.connect(self.send_button_on_click)
+        pixmap = QPixmap('img/upload.png')
+        pixmap = pixmap.scaled(50, 50)
+        send_button = QLabel(self)
+        send_button.setPixmap(pixmap)
+        send_button.setObjectName('img/upload.png')
+        send_button.mousePressEvent = self.send_button_on_click
 
-        restart_button = QPushButton('Restart', self)
-        restart_button.setFixedSize(50, 50)
-        restart_button.clicked.connect(self.restart_button_on_click)
+        pixmap = QPixmap('img/reset.png')
+        pixmap = pixmap.scaled(50, 50)
+        restart_button = QLabel(self)
+        restart_button.setPixmap(pixmap)
+        restart_button.setObjectName('img/reset.png')
+        restart_button.mousePressEvent = self.restart_button_on_click
 
         watch_button = QPushButton('Watch', self)
         watch_button.setFixedSize(50, 50)
@@ -169,7 +183,7 @@ class ExerciseWindow(QWidget):
         box2.setAlignment(Qt.AlignHCenter)
         box2.setSpacing(20)
         box2.setContentsMargins(0, 0, 0, 0)
-        box2.addWidget(swap_button)
+        box2.addWidget(settings_button)
         box2.addWidget(send_button)
         box2.addWidget(restart_button)
         box2.addWidget(watch_button)
@@ -187,7 +201,7 @@ class ExerciseWindow(QWidget):
         box.addWidget(self.more_options)
         return box
 
-    def play_button_on_click(self):
+    def play_button_on_click(self, event):
         temp_vars = {}
         try:
             stream = io.StringIO()
@@ -239,13 +253,15 @@ class ExerciseWindow(QWidget):
         self.set_border_number(self.variables_owned_number, color=color)
         self.set_border_limit(self.variables_limit_number, color=color)
 
-    def save_button_on_click(self):
+    def save_button_on_click(self, event):
+        pixmap = QPixmap('img/saved.png')
+        pixmap = pixmap.scaled(50, 50)
+        self.save_button.setPixmap(pixmap)
         self.exercise.solution = self.code_editor.toPlainText()
         self.data.save_exercise(self.exercise)
-        self.save_button.setStyleSheet('background-color:green')
         self.closer_controller.update()
 
-    def more_button_on_click(self):
+    def more_button_on_click(self, event):
         if self.more_options_is_visible:
             self.more_options.hide()
         else:
@@ -253,17 +269,17 @@ class ExerciseWindow(QWidget):
         self.more_options_is_visible = not self.more_options_is_visible
         return
 
-    def swap_button_on_click(self):
+    def swap_button_on_click(self, event):
         confirm = SettingsWindow('Gamification - settings - "' + self.exercise.title + '" by ' + self.exercise.creator,
                                 self.data, self, parent=self)
         if confirm.exec_() == QDialog.Accepted:
             print('ok')
         confirm.deleteLater()
-        return
 
-    def send_button_on_click(self):
-        self.play_button_on_click()
+    def send_button_on_click(self, event):
+        self.play_button_on_click(None)
         warning = False
+        money = 100
         confermation_text = "Sei sicuro di voler inviare l'esercizio?<br>" \
                             "La tua soluzione non potrà più essere modificata!"
 
@@ -285,8 +301,9 @@ class ExerciseWindow(QWidget):
                 and self.resources_used['def'] > self.data.owned_variables['functions']:
             confermation_text += "<br><br><span style=\" color: #ff5500;\">" \
                                  "Attenzione, hai usato più risorse di quelle che possiedi!<br>" \
-                                 "In questo modo non guadagnerai soldini magici!</span>"
+                                 "In questo modo non guadagnerai neanche un soldo!</span>"
             warning = True
+            money = 0
 
         if self.exercise.limits['lines'] is not None and self.resources_used['lines'] > self.exercise.limits['lines'] \
                 or self.exercise.limits['variables'] is not None \
@@ -311,12 +328,20 @@ class ExerciseWindow(QWidget):
                                  "Attenzione, hai usato più risorse rispetto al limite assegnato!<br>" \
                                  "In questo modo l'esercizio potrebbe esser valutato sbagliato!</span>"
             warning = True
+            if money == 100:
+                money -= 50
 
         if not self.code_compile:
             confermation_text += "<br><br><span style=\" color: red;\">" \
                                  "Attenzione, il tuo codice ha degli errori e non viene eseguito interamente!<br>" \
                                  "In questo modo l'esercizio potrebbe esser valutato sbagliato!</span>"
             warning = True
+            if money == 100:
+                money -= 50
+
+        if money == 50:
+            confermation_text += "<br><br><span style=\" color: #ff5500;\">" \
+                                 "Consegnando così guadagnerai meno soldi!</span>"
 
         ok_text = 'Invia comunque' if warning else 'Invia'
         confirm = ConfirmWindow('Gamification - "' + self.exercise.title + '" by ' + self.exercise.creator,
@@ -327,10 +352,11 @@ class ExerciseWindow(QWidget):
             self.exercise.delivery_date = datetime.datetime.now()
             self.exercise.resources_used = self.resources_used
             self.data.send_exercise(self.exercise)
+            self.data.money += money
             self.closer_controller.close_ExerciseWindow(self.exercise)
         confirm.deleteLater()
 
-    def restart_button_on_click(self):
+    def restart_button_on_click(self, event):
         self.code_editor.setText(self.exercise.start_code)
         self.results.setPlainText('')
 
@@ -830,9 +856,13 @@ class ExerciseWindow(QWidget):
             self.resources_used['def'] = 0
 
             if text != self.exercise.solution:
-                self.save_button.setStyleSheet('background-color:yellow')
+                pixmap = QPixmap('img/unsaved.png')
+                pixmap = pixmap.scaled(50, 50)
+                self.save_button.setPixmap(pixmap)
             else:
-                self.save_button.setStyleSheet('background-color:green')
+                pixmap = QPixmap('img/saved.png')
+                pixmap = pixmap.scaled(50, 50)
+                self.save_button.setPixmap(pixmap)
             if text is '':
                 self.update_rows_number()
                 self.text_changed = True
