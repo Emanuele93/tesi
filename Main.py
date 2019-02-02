@@ -1,4 +1,5 @@
 import sys
+import threading
 
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QApplication, QDialog
 from PyQt5.QtCore import *
@@ -30,10 +31,19 @@ class WindowsController(QWidget):
         self.mainWin.show()
 
     def open_MainWindow(self):
+        self.data.get_user_data()
         self.open_window(HomeWindow(self, self.data))
 
-    def open_HomeworkCollectionWindow(self):
-        self.open_window(HomeworkCollectionWindow(self, self.data))
+    def open_HomeworkCollectionWindow(self, load):
+        self.open_window(HomeworkCollectionWindow(self, self.data, load))
+        if load:
+            self.t = threading.Thread(target=self.update_HomeworkCollectionWindow)
+            self.t.start()
+
+    def update_HomeworkCollectionWindow(self):
+        self.data.get_user_data()
+        self.data.get_homework()
+        self.mainWin.change_button.click()
 
     def open_Abilities_Window(self, page, event):
         self.open_window(AbilitiesWindow(self, self.data, page))

@@ -3,6 +3,7 @@ import contextlib
 import io
 from functools import partial
 
+import requests
 from PyQt5.QtGui import QTextCursor, QFont
 from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QPushButton, QSplitter, QHBoxLayout, QVBoxLayout, \
     QLineEdit, QCheckBox, QCalendarWidget, QLabel, QScrollArea, QDialog
@@ -536,13 +537,12 @@ class CreateHomeworkWindow(QWidget):
                                 ok=ok_text, cancel='Annulla')
 
         if confirm.exec_() == QDialog.Accepted:
-            date = self.get_selected_day()
-            creator = self.data.my_name
+            date = self.get_selected_day().split('/')[2] + "-" + self.get_selected_day().split('/')[1] + "-" \
+                   + self.get_selected_day().split('/')[0]
             title = self.title_widget.text().strip()
-            id = date + "-" + creator + "-" + title
             text = self.text_exercise.toPlainText().strip()
-            level = self.difficulty
-            white_paper_mode = self.white_paper_mode
+            level = '1' if self.difficulty == 'Facile' else ('2' if self.difficulty == 'Medio' else '3')
+            white_paper_mode = '1' if self.white_paper_mode else '0'
             start_code = self.code_editor.toPlainText()
             try:
                 line_limit = int(self.line_limit_form.text())
@@ -584,24 +584,27 @@ class CreateHomeworkWindow(QWidget):
                 functions_limit = int(self.functions_limit_form.text())
             except ValueError:
                 functions_limit = None
-            limits = {
-                'lines': line_limit,
-                'variables': variables_limit,
-                'if': if_limit,
-                'elif': elif_limit,
-                'else': else_limit,
-                'conditions': conditions_limit,
-                'for': for_limit,
-                'while': while_limit,
-                'cycles': cycles_limit,
-                'def': functions_limit
-            }
-            executable = self.executable_check.isChecked()
-            color_styles = None
-            self.data.addExercise(Exercise(id, creator, date, title, text, level, white_paper_mode, start_code, limits,
-                                           executable, color_styles))
-            self.data.make_homework_coin = False
-            self.closer_controller.close_CreateHomeworkWindow()
+            limits = str(line_limit) + ',' + str(variables_limit) + ',' + str(if_limit) + ',' + str(elif_limit) + ',' \
+                     + str(else_limit) + ',' + str(conditions_limit) + ',' + str(for_limit) + ',' + str(while_limit) \
+                     + ',' + str(cycles_limit) + ',' + str(functions_limit)
+            executable = '1' if self.executable_check.isChecked() else '0'
+
+            try:
+                r = requests.post("http://programmingisagame.netsons.org/add_exercise.php",
+                                  data={'username': self.data.my_name, 'password': self.data.my_psw,
+                                        'class': self.data.my_class, 'date': date, 'title': title, 'text': text,
+                                        'level': level, 'white_paper_mode': white_paper_mode, 'start_code': start_code,
+                                        'limits': limits, 'executable': executable})
+                if r.text != "":
+                    self.closer_controller.close_CreateHomeworkWindow()
+            except requests.exceptions.RequestException as e:
+                confirm2 = ConfirmWindow('Gamification - Errore di connessione',
+                                        "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
+                                        "connessione<br>Controllare la propria connessione internet e riprovare</span>",
+                                        ok="Ok", cancel=None)
+                if confirm2.exec_() == QDialog.Accepted:
+                    print('ok')
+                confirm2.deleteLater()
         confirm.deleteLater()
 
     def set_text_font_size(self, num):
@@ -634,8 +637,10 @@ class CreateHomeworkWindow(QWidget):
                 if i != start:
                     texts.append(text[start:i])
                     start = i
-                text = text[0:i] + self.data.color_styles.comment_tag_start + text[i:len(text)]
-                i += len(self.data.color_styles.comment_tag_start)
+
+                text = text[0:i] + '<span style=\" color:' + self.data.color_styles.comment_color \
+                       + ';\">' + text[i:len(text)]
+                i += len('<span style=\" color:' + self.data.color_styles.comment_color + ';\">')
                 comment = True
             elif (text[i] == '"' or text[i] == "'") and comment is False:
                 if string_start is None:
@@ -643,43 +648,43 @@ class CreateHomeworkWindow(QWidget):
                         if i != start:
                             texts.append(text[start:i])
                             start = i
-                        text = text[0:i] + self.data.color_styles.multi_line_comment_tag_start + text[
-                                                                                                 i:len(text)]
-                        i += len(self.data.color_styles.multi_line_comment_tag_start) + 2
+                        text = text[0:i] + '<span style=\" color:' + self.data.color_styles.multi_line_comment_color \
+                               + ';\">' + text[i:len(text)]
+                        i += len('<span style=\" color:' + self.data.color_styles.multi_line_comment_color + ';\">') + 2
                         multi_line_comment = True
                         string_start = text[i]
                     elif not multi_line_comment:
                         if i != start:
                             texts.append(text[start:i])
                             start = i
-                        text = text[0:i] + self.data.color_styles.string_tag_start + text[i:len(text)]
-                        i += len(self.data.color_styles.string_tag_start)
+                        text = text[0:i] + '<span style=\" color:' + self.data.color_styles.string_color \
+                               + ';\">' + text[i:len(text)]
+                        i += len('<span style=\" color:' + self.data.color_styles.string_color + ';\">')
                         string_start = text[i]
                 elif text[i] == string_start:
                     if multi_line_comment and i + 2 < len(text) and text[i + 1] == text[i] and text[i + 2] == text[i]:
-                        text = text[0:i + 3] + self.data.color_styles.multi_line_comment_tag_end \
-                               + text[i + 3:len(text)]
-                        i += len(self.data.color_styles.multi_line_comment_tag_end) + 2
+                        text = text[0:i + 3] + '</span>' + text[i + 3:len(text)]
+                        i += len('</span>') + 2
                         texts.append(text[start:i + 1])
                         start = i + 1
                         multi_line_comment = False
                         string_start = None
                     elif not multi_line_comment:
-                        text = text[0:i + 1] + self.data.color_styles.string_tag_end + text[i + 1:len(text)]
-                        i += len(self.data.color_styles.string_tag_end)
+                        text = text[0:i + 1] + '</span>' + text[i + 1:len(text)]
+                        i += len('</span>')
                         texts.append(text[start:i + 1])
                         start = i + 1
                         string_start = None
             elif text[i] == '\n' and not multi_line_comment:
                 if comment:
-                    text = text[0:i] + self.data.color_styles.comment_tag_end + text[i:len(text)]
-                    i += len(self.data.color_styles.comment_tag_end)
+                    text = text[0:i] + '</span>' + text[i:len(text)]
+                    i += len('</span>')
                     texts.append(text[start:i + 1])
                     start = i + 1
                     comment = False
                 elif string_start is not None:
-                    text = text[0:i] + self.data.color_styles.string_tag_end + text[i:len(text)]
-                    i += len(self.data.color_styles.string_tag_end)
+                    text = text[0:i] + '</span>' + text[i:len(text)]
+                    i += len('</span>')
                     texts.append(text[start:i + 1])
                     start = i + 1
                     string_start = None
@@ -698,6 +703,9 @@ class CreateHomeworkWindow(QWidget):
         text = self.line_limit_form.text()
         if text != '':
             try:
+                if int(text) > 500:
+                    self.line_limit_form.setText('500')
+                    text = '500'
                 if int(text) < len(self.numbers.toPlainText().split('\n')):
                     self.line_limit_form.setStyleSheet("QWidget {color: red}")
                     self.resources_correct = False
@@ -712,6 +720,9 @@ class CreateHomeworkWindow(QWidget):
         text = self.variables_limit_form.text()
         if text != '':
             try:
+                if int(text) > 100:
+                    self.variables_limit_form.setText('100')
+                    text = '100'
                 if int(text) < len(self.temp_vars):
                     self.variables_limit_form.setStyleSheet("QWidget {color: red}")
                     self.resources_correct = False
@@ -735,6 +746,9 @@ class CreateHomeworkWindow(QWidget):
             text = self.conditions_limit_form.text()
             if text != '':
                 try:
+                    if int(text) > 300:
+                        self.conditions_limit_form.setText('300')
+                        text = '300'
                     conditions_limit = int(text)
                     if int(text) < self.functions['if'] + self.functions['elif'] + self.functions['else']:
                         self.conditions_limit_form.setStyleSheet("QWidget {color: red}")
@@ -751,6 +765,9 @@ class CreateHomeworkWindow(QWidget):
         text = self.if_limit_form.text()
         if text != '':
             try:
+                if int(text) > 100:
+                    self.if_limit_form.setText('100')
+                    text = '100'
                 if_limit = int(text)
                 if int(text) < self.functions['if']:
                     self.if_limit_form.setStyleSheet("QWidget {color: red}")
@@ -767,6 +784,9 @@ class CreateHomeworkWindow(QWidget):
         text = self.elif_limit_form.text()
         if text != '':
             try:
+                if int(text) > 100:
+                    self.elif_limit_form.setText('100')
+                    text = '100'
                 elif_limit = int(text)
                 if int(text) < self.functions['elif']:
                     self.elif_limit_form.setStyleSheet("QWidget {color: red}")
@@ -783,6 +803,9 @@ class CreateHomeworkWindow(QWidget):
         text = self.else_limit_form.text()
         if text != '':
             try:
+                if int(text) > 100:
+                    self.else_limit_form.setText('100')
+                    text = '100'
                 else_limit = int(text)
                 if int(text) < self.functions['else']:
                     self.else_limit_form.setStyleSheet("QWidget {color: red}")
@@ -824,6 +847,9 @@ class CreateHomeworkWindow(QWidget):
             text = self.cycles_limit_form.text()
             if text != '':
                 try:
+                    if int(text) > 200:
+                        self.cycles_limit_form.setText('200')
+                        text = '200'
                     cycles_limit = int(text)
                     if int(text) < self.functions['for'] + self.functions['while']:
                         self.cycles_limit_form.setStyleSheet("QWidget {color: red}")
@@ -840,6 +866,9 @@ class CreateHomeworkWindow(QWidget):
         text = self.for_limit_form.text()
         if text != '':
             try:
+                if int(text) > 100:
+                    self.for_limit_form.setText('100')
+                    text = '100'
                 for_limit = int(text)
                 if int(text) < self.functions['for']:
                     self.for_limit_form.setStyleSheet("QWidget {color: red}")
@@ -856,6 +885,9 @@ class CreateHomeworkWindow(QWidget):
         text = self.while_limit_form.text()
         if text != '':
             try:
+                if int(text) > 100:
+                    self.while_limit_form.setText('100')
+                    text = '100'
                 while_limit = int(text)
                 if int(text) < self.functions['while']:
                     self.while_limit_form.setStyleSheet("QWidget {color: red}")
@@ -884,6 +916,9 @@ class CreateHomeworkWindow(QWidget):
         text = self.functions_limit_form.text()
         if text != '':
             try:
+                if int(text) > 100:
+                    self.functions_limit_form.setText('100')
+                    text = '100'
                 if int(text) < self.functions['def']:
                     self.functions_limit_form.setStyleSheet("QWidget {color: red}")
                     self.resources_correct = False

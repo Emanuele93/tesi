@@ -4,6 +4,7 @@ import contextlib
 import io
 from functools import partial
 
+import requests
 from PyQt5.QtGui import QTextCursor, QFont, QPixmap
 from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QPushButton, QSplitter, QHBoxLayout, QVBoxLayout, \
     QLabel, QDialog
@@ -70,7 +71,7 @@ class ExerciseWindow(QWidget):
         self.results.setLineWrapMode(self.results.NoWrap)
         self.results.setObjectName("results")
         self.results.setStyleSheet("QWidget#results {background-color: " + self.color_styles.results_background_color
-                                       + "; color: " + self.color_styles.results_text_color + ";}")
+                                   + "; color: " + self.color_styles.results_text_color + ";}")
         if not self.exercise.executable:
             self.results.hide()
 
@@ -116,7 +117,8 @@ class ExerciseWindow(QWidget):
         box.setContentsMargins(0, 0, 0, 0)
 
     def update_text_result_orientation(self):
-        self.coding_widget.setOrientation(Qt.Horizontal if self.data.code_result_horizontal_orientation else Qt.Vertical)
+        self.coding_widget.setOrientation(
+            Qt.Horizontal if self.data.code_result_horizontal_orientation else Qt.Vertical)
 
     def get_play_option_widget(self):
         pixmap = QPixmap('img/play.png')
@@ -166,10 +168,20 @@ class ExerciseWindow(QWidget):
         restart_button.setObjectName('img/reset.png')
         restart_button.mousePressEvent = self.restart_button_on_click
 
-        watch_button = QPushButton('Watch', self)
-        watch_button.setFixedSize(50, 50)
-        watch_button.clicked.connect(partial(self.watch_button_on_click, watch_button))
-        watch_button.setVisible(self.data.watch_homework_coin)
+        pixmap = QPixmap('img/watch.png')
+        pixmap = pixmap.scaled(50, 50)
+        watch_button = QLabel(self)
+        watch_button.setPixmap(pixmap)
+        watch_button.setObjectName('img/watch.png')
+        watch_button.mousePressEvent = partial(self.watch_button_on_click, watch_button)
+
+        try:
+            r = requests.post("http://programmingisagame.netsons.org/check_watch_homework_coin.php",
+                              data={'username': self.data.my_name, 'password': self.data.my_psw, 'id': self.exercise.id})
+            if r.text == "":
+                watch_button.hide()
+        except requests.exceptions.RequestException as e:
+            print('problemi di connessione')
 
         box1 = QHBoxLayout(self)
         box1.setAlignment(Qt.AlignHCenter)
@@ -233,8 +245,9 @@ class ExerciseWindow(QWidget):
 
         self.results.setPlainText(result)
         if self.code_compile:
-            self.results.setStyleSheet("QWidget#results {background-color: " + self.color_styles.results_background_color
-                                       + "; color: " + self.color_styles.results_text_color + ";}")
+            self.results.setStyleSheet(
+                "QWidget#results {background-color: " + self.color_styles.results_background_color
+                + "; color: " + self.color_styles.results_text_color + ";}")
         else:
             self.results.setStyleSheet("QWidget#results {background-color: "
                                        + self.color_styles.error_results_background_color + "; color: "
@@ -271,7 +284,7 @@ class ExerciseWindow(QWidget):
 
     def swap_button_on_click(self, event):
         confirm = SettingsWindow('Gamification - settings - "' + self.exercise.title + '" by ' + self.exercise.creator,
-                                self.data, self, parent=self)
+                                 self.data, self, parent=self)
         if confirm.exec_() == QDialog.Accepted:
             print('ok')
         confirm.deleteLater()
@@ -348,28 +361,69 @@ class ExerciseWindow(QWidget):
                                 confermation_text, parent=self, ok=ok_text, cancel='Annulla')
 
         if confirm.exec_() == QDialog.Accepted:
-            self.exercise.solution = self.code_editor.toPlainText()
-            self.exercise.delivery_date = datetime.datetime.now()
-            self.exercise.resources_used = self.resources_used
-            self.data.send_exercise(self.exercise)
-            self.data.money += money
-            self.closer_controller.close_ExerciseWindow(self.exercise)
+            data = datetime.datetime.now()
+            data = str(data.year) + "-" + str(data.month) + "-" + str(data.day) + " " + \
+                   str(data.hour) + ":" + str(data.minute) + ":" + str(data.second)
+            resources = str(self.resources_used['lines']) + "," + str(self.resources_used['variables']) + "," + \
+                        str(self.resources_used['if']) + "," + str(self.resources_used['elif']) + "," + \
+                        str(self.resources_used['else']) + "," + str(self.resources_used['conditions']) + "," + \
+                        str(self.resources_used['for']) + "," + str(self.resources_used['while']) + "," + \
+                        str(self.resources_used['cycles']) + "," + str(self.resources_used['def'])
+            self.exercise.color_styles = self.color_styles.__copy__()
+            cs = self.exercise.color_styles.code_background_color + "," + self.exercise.color_styles.code_text_color + \
+                 "," + self.exercise.color_styles.results_background_color + "," + \
+                 self.exercise.color_styles.results_text_color + "," + \
+                 self.exercise.color_styles.error_results_background_color + "," + \
+                 self.exercise.color_styles.error_results_text_color + "," + self.exercise.color_styles.string_color + \
+                 "," + self.exercise.color_styles.comment_color + "," + \
+                 self.exercise.color_styles.multi_line_comment_color
+            for i in self.exercise.color_styles.keyWords:
+                cs += "," + i.color + "," + ('T' if i.bold else 'F')
+            try:
+                r = requests.post("http://programmingisagame.netsons.org/add_solution.php",
+                                  data={'username': self.data.my_name, 'password': self.data.my_psw,
+                                        'class': self.data.my_class, 'id': self.exercise.id, 'color_style': cs,
+                                        'delivery_date': data, 'solution': self.code_editor.toPlainText(),
+                                        'resources_used': resources, 'money': str(money)})
+                if r.text != "":
+                    self.exercise.solution = self.code_editor.toPlainText()
+                    self.exercise.delivery_date = datetime.datetime.now()
+                    self.exercise.resources_used = self.resources_used
+                    self.data.send_exercise(self.exercise)
+                    self.data.money += money
+                    self.closer_controller.close_ExerciseWindow(self.exercise)
+            except requests.exceptions.RequestException as e:
+                confirm2 = ConfirmWindow('Gamification - Errore di connessione',
+                                        "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
+                                        "connessione<br>Controllare la propria connessione internet e riprovare</span>",
+                                        ok="Ok", cancel=None)
+                if confirm2.exec_() == QDialog.Accepted:
+                    print('ok')
+                confirm2.deleteLater()
         confirm.deleteLater()
 
     def restart_button_on_click(self, event):
         self.code_editor.setText(self.exercise.start_code)
         self.results.setPlainText('')
 
-    def watch_button_on_click(self, button):
-        if self.data.watch_homework_coin:
-            self.data.watch_homework_coin = False
-            self.watch_homework_coin = True
-        if self.watch_homework_coin:
-            # todo guardo il lavoro degli altri
-            print('todo')
-        else:
-            button.hide()
-
+    def watch_button_on_click(self, button, event):
+        try:
+            r = requests.post("http://programmingisagame.netsons.org/click_watch_homework_coin.php",
+                              data={'username': self.data.my_name, 'password': self.data.my_psw,
+                                    'class': self.data.my_class, 'id': self.exercise.id})
+            if r.text == "":
+                button.hide()
+            else:
+                print('todo')
+                self.data.watch_homework_coin = (r.text != "removed")
+        except requests.exceptions.RequestException as e:
+            confirm = ConfirmWindow('Gamification - Errore di connessione',
+                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
+                                    "connessione<br>Controllare la propria connessione internet e riprovare</span>",
+                                    ok="Ok", cancel=None)
+            if confirm.exec_() == QDialog.Accepted:
+                print('ok')
+            confirm.deleteLater()
 
     def create_label(self, text):
         font = QFont()
@@ -402,7 +456,7 @@ class ExerciseWindow(QWidget):
         label.setObjectName("label_number")
         label.setStyleSheet("QWidget#label_number "
                             "{border: 1px solid grey; border-right: 0px solid grey; border-left: 0px solid grey;"
-                            + "color: " + color +"}")
+                            + "color: " + color + "}")
         return label
 
     @staticmethod
@@ -461,7 +515,7 @@ class ExerciseWindow(QWidget):
         separator.setFixedHeight(5)
         separator.setObjectName("separator")
         separator.setStyleSheet("QWidget#separator {border: 0px solid grey; border-bottom: 1px solid grey; "
-                                 "border-top: 1px solid grey}")
+                                "border-top: 1px solid grey}")
         return separator
 
     def get_counter_functions_layout(self):
@@ -547,20 +601,26 @@ class ExerciseWindow(QWidget):
         intro_cond = self.set_border_intro(self.make_group_widget([intro_if, intro_elif, intro_else], intro_conditions))
         intro_cycles = self.set_border_intro(self.make_group_widget([intro_for, intro_while], intro_cycles))
         used_conditions = self.set_border_number(self.make_group_number_widget([self.if_used_number,
-                                                                         self.elif_used_number, self.else_used_number],
-                                                                        self.conditions_used_number))
-        used_cycles = self.set_border_number(self.make_group_number_widget([self.for_used_number, self.while_used_number],
-                                                                    self.cycles_used_number))
-        owned_conditions = self.set_border_number(self.make_group_number_widget([self.if_owned_number, self.elif_owned_number,
-                                                                          self.else_owned_number],
-                                                                         self.conditions_owned_number))
-        owned_cycles = self.set_border_number(self.make_group_number_widget([self.for_owned_number, self.while_owned_number],
-                                                                     self.cycles_owned_number))
-        limit_conditions = self.set_border_limit(self.make_group_number_widget([self.if_limit_number, self.elif_limit_number,
-                                                                         self.else_limit_number],
-                                                                        self.conditions_limit_number))
-        limit_cycles = self.set_border_limit(self.make_group_number_widget([self.for_limit_number, self.while_limit_number],
-                                                                    self.cycles_limit_number))
+                                                                                self.elif_used_number,
+                                                                                self.else_used_number],
+                                                                               self.conditions_used_number))
+        used_cycles = self.set_border_number(
+            self.make_group_number_widget([self.for_used_number, self.while_used_number],
+                                          self.cycles_used_number))
+        owned_conditions = self.set_border_number(
+            self.make_group_number_widget([self.if_owned_number, self.elif_owned_number,
+                                           self.else_owned_number],
+                                          self.conditions_owned_number))
+        owned_cycles = self.set_border_number(
+            self.make_group_number_widget([self.for_owned_number, self.while_owned_number],
+                                          self.cycles_owned_number))
+        limit_conditions = self.set_border_limit(
+            self.make_group_number_widget([self.if_limit_number, self.elif_limit_number,
+                                           self.else_limit_number],
+                                          self.conditions_limit_number))
+        limit_cycles = self.set_border_limit(
+            self.make_group_number_widget([self.for_limit_number, self.while_limit_number],
+                                          self.cycles_limit_number))
 
         separator1 = self.make_separator()
         separator2 = self.make_separator()
@@ -690,7 +750,7 @@ class ExerciseWindow(QWidget):
                         if i != start:
                             texts.append(text[start:i])
                             start = i
-                        text = text[0:i] + '<span style=\" color:' + self.color_styles.multi_line_comment_color\
+                        text = text[0:i] + '<span style=\" color:' + self.color_styles.multi_line_comment_color \
                                + ';\">' + text[i:len(text)]
                         i += len('<span style=\" color:' + self.color_styles.multi_line_comment_color + ';\">') + 2
                         multi_line_comment = True
@@ -896,6 +956,7 @@ class ExerciseWindow(QWidget):
             if text[-1] == '\n':
                 text = text + ' '
             text = '<pre>' + text + '</pre>'
+
             self.code_editor.setText(text)
 
             code_editor_cursor.movePosition(QTextCursor.Start)
@@ -974,5 +1035,5 @@ class ExerciseWindow(QWidget):
                                        + self.color_styles.code_background_color + "; color: "
                                        + self.color_styles.code_text_color + ";}")
         self.results.setStyleSheet("QWidget#results {background-color: " + self.color_styles.results_background_color
-                                       + "; color: " + self.color_styles.results_text_color + ";}")
+                                   + "; color: " + self.color_styles.results_text_color + ";}")
         self.format_text()

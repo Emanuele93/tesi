@@ -16,7 +16,7 @@ class HomeWindow(QWidget):
         self.data = data
 
         self.image = QLabel(self)
-        pixmap = QPixmap(data.current_image)
+        pixmap = QPixmap('img/'+data.current_image)
         pixmap = pixmap.scaled(130, 130)
         self.image.setPixmap(pixmap)
         self.image.setObjectName(data.current_image)
@@ -80,7 +80,7 @@ class HomeWindow(QWidget):
         internal_layout.setSpacing(10)
         button = QPushButton('COMPITI', self)
         button.setFont(font)
-        button.clicked.connect(controller.open_HomeworkCollectionWindow)
+        button.clicked.connect(partial(controller.open_HomeworkCollectionWindow, True))
         internal_layout.addWidget(button, alignment=Qt.AlignVCenter)
         box2.setLayout(internal_layout)
 
@@ -121,6 +121,6 @@ class HomeWindow(QWidget):
         confirm.deleteLater()
 
     def set_image(self, name):
-        pixmap = QPixmap(name)
+        pixmap = QPixmap('img/' + name)
         pixmap = pixmap.scaled(130,130)
         self.image.setPixmap(pixmap)

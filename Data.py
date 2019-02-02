@@ -1,4 +1,8 @@
-import datetime
+import json
+import requests
+from PyQt5.QtWidgets import QDialog
+
+from windows.ConfirmWindow import ConfirmWindow
 
 
 class KeyWord:
@@ -16,7 +20,7 @@ class KeyWord:
 
 class Exercise:
     def __init__(self, ex_id, creator, date, title, text, level, white_paper_mode, start_code, limits, executable,
-                 color_styles, delivery_date=None, solution=None,  resources_used=None):
+                 color_styles=None, delivery_date=None, solution=None, resources_used=None):
         self.id = ex_id
         self.creator = creator
         self.date = date
@@ -25,8 +29,9 @@ class Exercise:
         self.level = level
         self.white_paper_mode = white_paper_mode
         self.start_code = start_code
-        self.limits = limits
+        self.limits = limits  # 10
         self.executable = executable
+
         self.color_styles = color_styles
         self.delivery_date = delivery_date
         self.solution = solution
@@ -38,107 +43,121 @@ class Exercise:
 
 class Data:
     variables_numbers = {
-            'lines': [0,5,10,12,14,16,18,20,30,40,50,100],
-            'variables': [0,2,4,5,6,7,8,10,15,20],
-            'if': [0,1,2,3,5,7,10],
-            'elif': [0,1,2,3,5,7,10,15],
-            'else': [0,1,2,3,5,7,10],
-            'for': [0,1,2,3,5,7],
-            'while': [0,1,2,3,5,7],
-            'functions': [0,1,2,3,5,7]
-        }
-    
+        'lines': [0, 5, 10, 12, 14, 16, 18, 20, 30, 40, 50, 100],
+        'variables': [0, 2, 4, 5, 6, 7, 8, 10, 15, 20],
+        'if': [0, 1, 2, 3, 5, 7, 10],
+        'elif': [0, 1, 2, 3, 5, 7, 10, 15],
+        'else': [0, 1, 2, 3, 5, 7, 10],
+        'for': [0, 1, 2, 3, 5, 7],
+        'while': [0, 1, 2, 3, 5, 7],
+        'functions': [0, 1, 2, 3, 5, 7]
+    }
+
     variables_cost = {
-            'lines': [2,4,8,20,40,80,80,80,100,100,100,200],
-            'variables': [2,20,20,20,20,20,20,40,50,100],
-            'if': [2,20,20,20,50,50,100],
-            'elif': [2,10,10,20,20,40,50,100],
-            'else': [2,20,20,20,50,50,100],
-            'for': [20,20,20,50,50,100],
-            'while': [20,20,20,50,50,100],
-            'functions': [40,40,40,50,50,100]
-        }
+        'lines': [2, 4, 8, 20, 40, 80, 80, 80, 100, 100, 100, 200],
+        'variables': [2, 20, 20, 20, 20, 20, 20, 40, 50, 100],
+        'if': [2, 20, 20, 20, 50, 50, 100],
+        'elif': [2, 10, 10, 20, 20, 40, 50, 100],
+        'else': [2, 20, 20, 20, 50, 50, 100],
+        'for': [20, 20, 20, 50, 50, 100],
+        'while': [20, 20, 20, 50, 50, 100],
+        'functions': [40, 40, 40, 50, 50, 100]
+    }
 
     def __init__(self):
         self.my_name = "Emanuele"
-        self.my_proff = "Proff"
-
-        self.money = 1500
+        self.my_psw = "1234"
+        self.my_class = "Merlino class"
+        self.my_proff = None
+        self.mates = []
+        self.get_class_components()
 
         self.code_result_horizontal_orientation = True
-
         self.code_font_size = 20
-
         self.code_font_family = 'Courier New'
 
+        self.money = None
+        self.current_image = None
+        self.level_variables = None
+        self.owned_colors = []
+        self.owned_images = []
+        self.make_homework_coin = False
+        self.watch_homework_coin = False
+        self.exercises = []
+        self.get_user_data()
+
         self.color_styles = self.get_my_color_styles()
-
-        self.exercises = self.get_homework()
-
-        self.level_variables = self.get_level_variables()
 
         self.owned_variables = self.get_owned_variables_numbers()
 
         self.all_colors = self.get_colors()
 
-        self.owned_colors = self.get_owned_colors()
-
-        self.current_image = self.get_current_image()
-
-        self.owned_images = self.get_owned_images()
-
         self.all_images = self.get_images()
 
-        self.make_homework_coin = True
-
+    def get_user_data(self):
+        self.money = 0
+        self.current_image = '0.png'
+        self.level_variables = {'lines': 0, 'variables': 0, 'if': 0, 'elif': 0,
+                                'else': 0, 'for': 0, 'while': 0, 'functions': 0}
+        self.owned_colors = []
+        self.owned_images = []
+        self.make_homework_coin = False
         self.watch_homework_coin = False
-
-    def get_current_image(self):
-        return 'img/1.png'
+        try:
+            r = requests.post("http://programmingisagame.netsons.org/get_user.php",
+                              data={'username': self.my_name, 'password': self.my_psw})
+            j = json.loads(r.text)
+            if len(j) > 0:
+                self.money = int(j[0]['money'])
+                lev = (j[0]['level_variables']).split(',')
+                self.level_variables = {'lines': int(lev[0]), 'variables': int(lev[1]), 'if': int(lev[2]), 'elif': int(lev[3]),
+                                        'else': int(lev[4]), 'for': int(lev[5]), 'while': int(lev[6]), 'functions': int(lev[7])}
+                self.owned_colors = (j[0]['owned_colors']).split(',')
+                self.current_image = j[0]['current_image']
+                self.owned_images = j[0]['owned_images'].split(',')
+                self.make_homework_coin = False if int(j[0]['make_homework_coin']) == 0 else True
+                self.watch_homework_coin = False if int(j[0]['watch_homework_coin']) == 0 else True
+        except requests.exceptions.RequestException as e:
+            confirm = ConfirmWindow('Gamification - Errore di connessione',
+                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
+                                    "connessione<br>Controllare la propria connessione internet</span>",
+                                    ok="Chiudi il programma", cancel=None)
+            if confirm.exec_() == QDialog.Accepted:
+                print('ok')
+            confirm.deleteLater()
+            exit()
 
     def get_colors(self):
-        return ['#ffffff', '#ff0000', '#00ff00', '#0000ff', '#990099'
+        col = ['#ffffff', '#ff0000', '#00ff00', '#0000ff', '#990099'
             , '#000000', '#964218', '#85ff74', '#126597', '#337744'
             , '#974631', '#712893', '#256947', '#256914', '#367469']
-
-    def get_owned_colors(self):
-        return ['#ffffff', '#ff0000', '#00ff00', '#0000ff', '#990099'
-            , '#000000', '#964218', '#85ff74', '#126597', '#337744'
-            , '#974631', '#712893', '#256947', '#256914']
+        if len(self.owned_colors) == len(col):
+            return self.owned_colors.copy()
+        return col
 
     def get_images(self):
-        return {'img/1.png':100,'img/2.png':100,'img/3.png':100,'img/4.png':100,'img/5.png':100,
-                'img/6.png':500,'img/7.png':500,'img/8.png':500,'img/9.png':500,'img/10.png':500,
-                'img/11.png':1000,'img/12.png':1000,'img/13.png':1000,'img/14.png':1000,'img/15.png':1000}
-
-    def get_owned_images(self):
-        return ['img/1.png','img/2.png']
-
-    def get_level_variables(self):
-        # ToDo da prendere da file
-
-        liv = {
-            'lines': 0,
-            'variables': 0,
-            'if': 0,
-            'elif': 0,
-            'else': 0,
-            'for': 0,
-            'while': 0,
-            'functions': 0
-        }
-        return liv
+        return {'1.png': 100, '2.png': 100, '3.png': 100, '4.png': 100, '5.png': 100,
+                '6.png': 500, '7.png': 500, '8.png': 500, '9.png': 500, '10.png': 500,
+                '11.png': 1000, '12.png': 1000, '13.png': 1000, '14.png': 1000, '15.png': 1000}
 
     def get_owned_variables_numbers(self):
         lib = {
-            'lines': None if self.level_variables['lines'] == len(self.variables_numbers['lines']) else self.variables_numbers['lines'][self.level_variables['lines']],
-            'variables': None if self.level_variables['variables'] == len(self.variables_numbers['variables']) else self.variables_numbers['variables'][self.level_variables['variables']],
-            'if': None if self.level_variables['if'] == len(self.variables_numbers['if']) else self.variables_numbers['if'][self.level_variables['if']],
-            'elif': None if self.level_variables['elif'] == len(self.variables_numbers['elif']) else self.variables_numbers['elif'][self.level_variables['elif']],
-            'else': None if self.level_variables['else'] == len(self.variables_numbers['else']) else self.variables_numbers['else'][self.level_variables['else']],
-            'for': None if self.level_variables['for'] == len(self.variables_numbers['for']) else self.variables_numbers['for'][self.level_variables['for']],
-            'while': None if self.level_variables['while'] == len(self.variables_numbers['while']) else self.variables_numbers['while'][self.level_variables['while']],
-            'functions': None if self.level_variables['functions'] == len(self.variables_numbers['functions']) else self.variables_numbers['functions'][self.level_variables['functions']]
+            'lines': None if self.level_variables['lines'] == len(self.variables_numbers['lines']) else
+            self.variables_numbers['lines'][self.level_variables['lines']],
+            'variables': None if self.level_variables['variables'] == len(self.variables_numbers['variables']) else
+            self.variables_numbers['variables'][self.level_variables['variables']],
+            'if': None if self.level_variables['if'] == len(self.variables_numbers['if']) else
+            self.variables_numbers['if'][self.level_variables['if']],
+            'elif': None if self.level_variables['elif'] == len(self.variables_numbers['elif']) else
+            self.variables_numbers['elif'][self.level_variables['elif']],
+            'else': None if self.level_variables['else'] == len(self.variables_numbers['else']) else
+            self.variables_numbers['else'][self.level_variables['else']],
+            'for': None if self.level_variables['for'] == len(self.variables_numbers['for']) else
+            self.variables_numbers['for'][self.level_variables['for']],
+            'while': None if self.level_variables['while'] == len(self.variables_numbers['while']) else
+            self.variables_numbers['while'][self.level_variables['while']],
+            'functions': None if self.level_variables['functions'] == len(self.variables_numbers['functions']) else
+            self.variables_numbers['functions'][self.level_variables['functions']]
         }
         return lib
 
@@ -146,37 +165,121 @@ class Data:
         # ToDo guardare da file le mie preferenze
         return DefaultColorStyles()
 
+    def get_class_components(self):
+        self.my_proff = ''
+        self.mates = []
+        try:
+            r = requests.post("http://programmingisagame.netsons.org/get_class_components.php",
+                              data={'username': self.my_name, 'password': self.my_psw, 'class': self.my_class})
+            j = json.loads(r.text)
+            for i in j:
+                if int(i['student_type']) > 0:
+                    self.mates.append(i['username'])
+                else:
+                    self.my_proff = i['username']
+        except requests.exceptions.RequestException as e:
+            confirm = ConfirmWindow('Gamification - Errore di connessione',
+                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
+                                    "connessione<br>Controllare la propria connessione internet</span>",
+                                    ok="Chiudi il programma", cancel=None)
+            if confirm.exec_() == QDialog.Accepted:
+                print('ok')
+            confirm.deleteLater()
+            exit()
+
     def get_homework(self):
-        # ToDo da prendere online
-        functions_limit0 = {'lines': 10, 'variables': 4, 'if': 1, 'elif': 3, 'else': 1, 'conditions': 5, 'for': 2, 'while': 1, 'cycles': 3, 'def': 0}
-        functions_limit1 = {'lines': 10, 'variables': 4, 'if': 1, 'elif': 3, 'else': 1, 'conditions': 5, 'for': 2, 'while': 1, 'cycles': 3, 'def': 0}
-        functions_limit2 = {'lines': 10, 'variables': 4, 'if': 1, 'elif': 3, 'else': 1, 'conditions': 5, 'for': 2, 'while': 1, 'cycles': 3, 'def': 0}
-        functions_limit3 = {'lines': 10, 'variables': 4, 'if': 1, 'elif': 3, 'else': 1, 'conditions': 5, 'for': 2, 'while': 1, 'cycles': 3, 'def': 0}
+        self.exercises = []
+        try:
+            r = requests.post("http://programmingisagame.netsons.org/get_homeworks.php",
+                              data={'username': self.my_name, 'password': self.my_psw, 'class': self.my_class})
+            j = json.loads(r.text)
+            for i in j:
+                date = i['date'].split('-')[2] + "/" + i['date'].split('-')[1] + "/" + i['date'].split('-')[0]
+                level = 'Facile' if int(i['level']) == 1 else ('Medio' if int(i['level']) == 2 else 'Difficile')
+                white_paper_mode = False if int(i['white_paper_mode']) == 0 else True
+                lev = i['limits'].split(',')
+                limits = {'lines': None if lev[0] == 'None' else int(lev[0]),
+                          'variables': None if lev[1] == 'None' else int(lev[1]),
+                          'if': None if lev[2] == 'None' else int(lev[2]),
+                          'elif': None if lev[3] == 'None' else int(lev[3]),
+                          'else': None if lev[4] == 'None' else int(lev[4]),
+                          'conditions': None if lev[5] == 'None' else int(lev[5]),
+                          'for': None if lev[6] == 'None' else int(lev[6]),
+                          'while': None if lev[7] == 'None' else int(lev[7]),
+                          'cycles': None if lev[8] == 'None' else int(lev[8]),
+                          'def': None if lev[9] == 'None' else int(lev[9])}
+                executable = False if int(i['executable']) == 0 else True
 
-        exercises = [
-            Exercise(0, self.my_proff, "08/01/2019", 'Esercizio 1', 'Fai i compiti', 'Difficile', False, 'print("ciao")', functions_limit0, True, None),
-            Exercise(1, self.my_proff, "08/01/2019", 'Esercizio 2', 'Fai tutti i compiti', 'Difficile', True, '', functions_limit1, True, None),
-            Exercise(2, self.my_proff, "20/01/2019", 'Esercizio 1', 'Fai qualche compito', 'Medio', False, 'print("ciao a tutti")', functions_limit2, False, None, ),
-            Exercise(3, self.my_proff, "20/01/2019", 'Esercizio 2', 'Non fare i compiti', 'Facile', True, 'print("ciao a lele")', functions_limit3, False, None),
-            Exercise(4, self.my_proff, "20/01/2019", 'Esercizio 3', 'Non fare i compiti', 'Facile', True, 'print("ciao a lele")', functions_limit3, False, None),
-            Exercise(5, self.my_proff, "20/01/2019", 'Esercizio 4', 'Non fare i compiti', 'Facile', True, 'print("ciao a lele")', functions_limit3, False, None),
-            Exercise(6, self.my_proff, "20/01/2019", 'Esercizio 5', 'Non fare i compiti', 'Facile', True, 'print("ciao a lele")', functions_limit3, False, None),
-            Exercise(7, self.my_proff, "20/01/2019", 'Esercizio 6', 'Non fare i compiti', 'Facile', True, 'print("ciao a lele")', functions_limit3, False, None),
-            Exercise(8, self.my_name, "08/01/2019", 'Esercizio 3', 'Fai tutti i compiti', 'Difficile', True, '', functions_limit1, True, None),
-            Exercise(9, self.my_name, "08/01/2019", 'Esercizio 4', 'Fai tutti i compiti', 'Difficile', True, '', functions_limit1, True, None),
-            Exercise(10, self.my_name, "08/01/2019", 'Esercizio 5', 'Fai tutti i compiti', 'Difficile', True, '', functions_limit1, True, None),
-            Exercise(11, self.my_name, "08/01/2019", 'Esercizio 6', 'Fai tutti i compiti', 'Difficile', True, '', functions_limit1, True, None),
-            Exercise(12, self.my_name, "08/01/2019", 'Esercizio 7', 'Fai tutti i compiti', 'Difficile', True, '', functions_limit1, True, None),
-            Exercise(13, self.my_name, "08/01/2019", 'Esercizio 8', 'Fai tutti i compiti', 'Difficile', True, '', functions_limit1, True, None)
-        ]
+                ex = Exercise(i['exercise_id'], i['creator'], date, i['title'], i['text'], level, white_paper_mode,
+                              i['start_code'], limits, executable)
 
-        # Todo predere da file lo stile e la soluzione
-        # for i in exercises:
-        #    i.color_styles = self.color_styles
-        exercises[0].solution = "print('nooo')"
-        exercises[2].solution='print("ciao a tutti")'
-
-        return exercises
+                r = requests.post("http://programmingisagame.netsons.org/get_exercise_solution.php",
+                                  data={'username': self.my_name, 'password': self.my_psw, 'exercise': i['exercise_id'],
+                                        'class':self.my_class})
+                j = json.loads(r.text)
+                if len(j)>0:
+                    cs_used = j[0]['color_styles'].split(',')
+                    cs = DefaultColorStyles()
+                    cs.code_background_color = cs_used[0]
+                    cs.code_text_color = cs_used[1]
+                    cs.results_background_color = cs_used[2]
+                    cs.results_text_color = cs_used[3]
+                    cs.error_results_background_color = cs_used[4]
+                    cs.error_results_text_color = cs_used[5]
+                    cs.string_color = cs_used[6]
+                    cs.comment_color = cs_used[7]
+                    cs.multi_line_comment_color = cs_used[8]
+                    cs.keyWords[0].color = cs_used[9]
+                    cs.keyWords[0].bold = True if cs_used[10] == 'T' else False
+                    cs.keyWords[1].bold = cs_used[11]
+                    cs.keyWords[1].bold = True if cs_used[12] == 'T' else False
+                    cs.keyWords[2].bold = cs_used[13]
+                    cs.keyWords[2].bold = True if cs_used[14] == 'T' else False
+                    cs.keyWords[3].bold = cs_used[15]
+                    cs.keyWords[3].bold = True if cs_used[16] == 'T' else False
+                    cs.keyWords[4].bold = cs_used[17]
+                    cs.keyWords[4].bold = True if cs_used[18] == 'T' else False
+                    cs.keyWords[5].bold = cs_used[19]
+                    cs.keyWords[5].bold = True if cs_used[20] == 'T' else False
+                    cs.keyWords[6].bold = cs_used[21]
+                    cs.keyWords[6].bold = True if cs_used[22] == 'T' else False
+                    cs.keyWords[7].bold = cs_used[23]
+                    cs.keyWords[7].bold = True if cs_used[24] == 'T' else False
+                    cs.keyWords[8].bold = cs_used[25]
+                    cs.keyWords[8].bold = True if cs_used[26] == 'T' else False
+                    cs.keyWords[9].bold = cs_used[27]
+                    cs.keyWords[9].bold = True if cs_used[28] == 'T' else False
+                    cs.keyWords[10].bold = cs_used[29]
+                    cs.keyWords[10].bold = True if cs_used[30] == 'T' else False
+                    cs.keyWords[11].bold = cs_used[31]
+                    cs.keyWords[11].bold = True if cs_used[32] == 'T' else False
+                    cs.keyWords[12].bold = cs_used[33]
+                    cs.keyWords[12].bold = True if cs_used[34] == 'T' else False
+                    cs.keyWords[13].bold = cs_used[35]
+                    cs.keyWords[13].bold = True if cs_used[36] == 'T' else False
+                    cs.keyWords[14].bold = cs_used[37]
+                    cs.keyWords[14].bold = True if cs_used[38] == 'T' else False
+                    ex.color_styles = cs
+                    ex.delivery_date = j[0]['delivery_date'].split('-')[2] + "/" + j[0]['delivery_date'].split('-')[1] \
+                                       + "/" + j[0]['delivery_date'].split('-')[0]
+                    ex.solution = j[0]['solution']
+                    lev = j[0]['resources_used'].split(',')
+                    ex.resources_used = {'lines': int(lev[0]), 'variables': int(lev[1]), 'if': int(lev[2]),
+                                         'elif': int(lev[3]), 'else': int(lev[4]), 'conditions': int(lev[5]),
+                                         'for': int(lev[6]), 'while': int(lev[7]), 'cycles': int(lev[8]),
+                                         'def': int(lev[9])}
+                self.exercises.append(ex)
+        except requests.exceptions.RequestException as e:
+            confirm = ConfirmWindow('Gamification - Errore di connessione',
+                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
+                                    "connessione<br>Controllare la propria connessione internet</span>",
+                                    ok="Riprova", cancel="Chiudi il programma")
+            if confirm.exec_() == QDialog.Accepted:
+                self.get_homework()
+                confirm.deleteLater()
+            else:
+                confirm.deleteLater()
+                exit()
 
     def save_exercise(self, exercise):
         # Todo salva su file exercise.slution

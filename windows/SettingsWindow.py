@@ -1,11 +1,13 @@
 from functools import partial
 
+import requests
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtWidgets import QDialog, QPushButton, QWidget, QVBoxLayout, QLabel, QHBoxLayout, QScrollArea, QCheckBox, \
     QButtonGroup, QAbstractButton
 
 from Data import DefaultColorStyles
+from windows.ConfirmWindow import ConfirmWindow
 
 
 class SettingsWindow(QDialog):
@@ -111,7 +113,7 @@ class SettingsWindow(QDialog):
         label.setFont(font)
 
         self.current_img = QLabel(self)
-        pixmap = QPixmap(self.data.current_image)
+        pixmap = QPixmap('img/' + self.data.current_image)
         pixmap = pixmap.scaled(100, 100)
         self.current_img.setPixmap(pixmap)
         self.current_img.setObjectName(self.data.current_image)
@@ -313,7 +315,7 @@ class SettingsWindow(QDialog):
 
         for i in self.data.owned_images:
             label = QLabel(self)
-            pixmap = QPixmap(i)
+            pixmap = QPixmap('img/' + i)
             pixmap = pixmap.scaled(100,100)
             label.setPixmap(pixmap)
             label.setObjectName(i)
@@ -396,12 +398,24 @@ class SettingsWindow(QDialog):
             self.selection_image_widget.show()
 
     def image_on_click(self, name, event):
-        pixmap = QPixmap(name)
-        pixmap = pixmap.scaled(100,100)
-        self.current_img.setPixmap(pixmap)
-        self.data.current_image = name
-        if self.exercise_window is None:
-            self.parent.set_image(name)
+        try:
+            r = requests.post("http://programmingisagame.netsons.org/select_user_image.php",
+                              data={'username': self.data.my_name, 'password': self.data.my_psw, 'img': name})
+            if r.text != "":
+                pixmap = QPixmap('img/' + name)
+                pixmap = pixmap.scaled(100,100)
+                self.current_img.setPixmap(pixmap)
+                self.data.current_image = name
+                if self.exercise_window is None:
+                    self.parent.set_image(name)
+        except requests.exceptions.RequestException as e:
+            confirm = ConfirmWindow('Gamification - Errore di connessione',
+                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
+                                    "connessione<br>Controllare la propria connessione internet e riprovare</span>",
+                                    ok="Ok", cancel=None)
+            if confirm.exec_() == QDialog.Accepted:
+                print('ok')
+            confirm.deleteLater()
 
     def set_preferences(self):
         self.data.color_styles = self.color_styles.__copy__()

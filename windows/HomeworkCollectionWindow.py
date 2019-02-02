@@ -1,6 +1,7 @@
+import threading
 from functools import partial
 
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QPixmap, QMovie
 from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QPushButton, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel
 from PyQt5.QtCore import *
 
@@ -9,7 +10,7 @@ from windows.ExerciseWindow import ExerciseWindow
 
 
 class HomeworkCollectionWindow(QWidget):
-    def __init__(self, controller, data):
+    def __init__(self, controller, data, loading):
         super(HomeworkCollectionWindow, self).__init__(controller, flags=Qt.Widget)
         controller.setWindowTitle("Gamification - Compiti")
         self.data = data
@@ -18,10 +19,27 @@ class HomeworkCollectionWindow(QWidget):
         self.new_exercise = None
 
         top_widget = self.make_top_widget()
-        bottom_widget = self.make_bottom_widget()
+
+        if loading:
+            bottom_widget = QLabel()
+            movie = QMovie("img/waiting.gif")
+            bottom_widget.setMovie(movie)
+            movie.start()
+            self.change_button = QPushButton('PROVA', self)
+            self.change_button.clicked.connect(partial(self.controller.open_HomeworkCollectionWindow, False))
+            self.change_button.hide()
+            box = QHBoxLayout(self)
+            box.addWidget(bottom_widget)
+            box.addWidget(self.change_button)
+            box.setAlignment(Qt.AlignCenter)
+            bottom_widget = QWidget(self, flags=Qt.Widget)
+            bottom_widget.setLayout(box)
+            self.add_homework_button.setEnabled(False)
+        else:
+            bottom_widget = self.make_bottom_widget()
 
         window_layaut = QVBoxLayout(self)
-        window_layaut.addWidget(top_widget, alignment=Qt.AlignTop)
+        window_layaut.addWidget(top_widget)
         window_layaut.addWidget(bottom_widget)
         window_layaut.setContentsMargins(0, 0, 0, 0)
         window_layaut.setSpacing(0)
@@ -35,17 +53,17 @@ class HomeworkCollectionWindow(QWidget):
         home_button.clicked.connect(self.controller.open_MainWindow)
         home_button.setFont(font)
 
-        button = QPushButton('AGGIUNGI COMPITO', self)
-        button.clicked.connect(self.open_CreateHomeworkWindow)
-        button.setFixedSize(250, 50)
-        button.setFont(font)
+        self.add_homework_button = QPushButton('AGGIUNGI COMPITO', self)
+        self.add_homework_button.clicked.connect(self.open_CreateHomeworkWindow)
+        self.add_homework_button.setFixedSize(250, 50)
+        self.add_homework_button.setFont(font)
         if not self.data.make_homework_coin:
-            button.setEnabled(False)
+            self.add_homework_button.setEnabled(False)
 
         top_box = QHBoxLayout(self)
         top_box.setContentsMargins(20, 10, 20, 10)
         top_box.addWidget(home_button, alignment=Qt.AlignLeft)
-        top_box.addWidget(button, alignment=Qt.AlignRight)
+        top_box.addWidget(self.add_homework_button, alignment=Qt.AlignRight)
         top_box.setSpacing(50)
         top_widget = QWidget(self, flags=Qt.Widget)
         top_widget.setLayout(top_box)
@@ -191,7 +209,7 @@ class HomeworkCollectionWindow(QWidget):
                 return
 
     def update(self):
-        self.controller.open_HomeworkCollectionWindow()
+        self.controller.open_HomeworkCollectionWindow(False)
 
     def open_CreateHomeworkWindow(self):
         if self.new_exercise is None:
@@ -204,4 +222,4 @@ class HomeworkCollectionWindow(QWidget):
     def close_CreateHomeworkWindow(self):
         self.new_exercise.close()
         self.new_exercise = None
-        self.controller.open_HomeworkCollectionWindow()
+        self.controller.open_HomeworkCollectionWindow(True)

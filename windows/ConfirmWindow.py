@@ -20,8 +20,11 @@ class ConfirmWindow(QDialog):
         buttonOk.setFont(font)
         buttonCancel = QPushButton(cancel, self)
         buttonCancel.clicked.connect(self.reject)
-        buttonCancel.setFixedWidth(len(cancel)*10 + 20)
         buttonCancel.setFont(font)
+        if cancel==None:
+            buttonCancel.hide()
+        else:
+            buttonCancel.setFixedWidth(len(cancel)*10 + 20)
 
         box = QHBoxLayout(self)
         box.setContentsMargins(0, 0, 0, 0)

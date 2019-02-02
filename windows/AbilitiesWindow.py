@@ -4,6 +4,10 @@ from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QLabel, QDialog, QLineEdit
 from PyQt5.QtCore import *
 
+import requests
+
+from windows.ConfirmWindow import ConfirmWindow
+
 
 class AbilitiesWindow(QWidget):
     def __init__(self, home, data, page=1):
@@ -53,7 +57,6 @@ class AbilitiesWindow(QWidget):
         button4.clicked.connect(
             partial(self.open_subpage, button4, page4, button2, page2, button3, page3, button1, page1))
 
-        print(page)
         if page == 1:
             self.open_subpage(button1, page1, button2, page2, button3, page3, button4, page4)
         elif page == 2:
@@ -246,28 +249,34 @@ class AbilitiesWindow(QWidget):
         return widget
 
     def upgrade_counter(self, name, button, numbers):
-        lev = self.data.level_variables[name]
-        self.data.money -= self.data.variables_cost[name][lev]
-        self.soldi.setText(str(self.data.money) + ' soldi')
-        self.data.level_variables[name] += 1
-        self.data.owned_variables = self.data.get_owned_variables_numbers()
-        lev = self.data.level_variables[name]
-        if lev < len(self.data.variables_numbers[name]) - 1:
-            numbers.setText(str(self.data.variables_numbers[name][lev]) + ' &#8594; '
-                            + str(self.data.variables_numbers[name][lev + 1]))
-        elif lev < len(self.data.variables_numbers[name]):
-            numbers.setText(str(self.data.variables_numbers[name][lev]) + ' &#8594; No Limit ')
-        else:
-            numbers.setText(' ')
+        try:
+            r = requests.post("http://programmingisagame.netsons.org/add_level.php?name="+name,
+                              data={'username': self.data.my_name, 'password': self.data.my_psw})
+            if r.text != "":
+                lev = self.data.level_variables[name]
+                self.data.money -= self.data.variables_cost[name][lev]
+                self.soldi.setText(str(self.data.money) + ' soldi')
+                self.data.level_variables[name] += 1
+                self.data.owned_variables = self.data.get_owned_variables_numbers()
+                lev = self.data.level_variables[name]
+                if lev < len(self.data.variables_numbers[name]) - 1:
+                    numbers.setText(str(self.data.variables_numbers[name][lev]) + ' &#8594; '
+                                    + str(self.data.variables_numbers[name][lev + 1]))
+                elif lev < len(self.data.variables_numbers[name]):
+                    numbers.setText(str(self.data.variables_numbers[name][lev]) + ' &#8594; No Limit ')
+                else:
+                    numbers.setText(' ')
 
-        if lev < len(self.data.variables_numbers[name]):
-            button.setText(str(self.data.variables_cost[name][lev]) + ' soldi')
-        else:
-            button.setText(' No limit ')
-            button.setEnabled(False)
-            self.buttons.pop(name)
+                if lev < len(self.data.variables_numbers[name]):
+                    button.setText(str(self.data.variables_cost[name][lev]) + ' soldi')
+                else:
+                    button.setText(' No limit ')
+                    button.setEnabled(False)
+                    self.buttons.pop(name)
 
-        self.update_buttons_price()
+                self.update_buttons_price()
+        except requests.exceptions.RequestException as e:
+            self.connection_error_message()
 
     def update_buttons_price(self):
         for i in self.buttons.keys():
@@ -366,40 +375,52 @@ class AbilitiesWindow(QWidget):
         widget.setLayout(box)
         return widget
 
-    def buy_color_on_click(self, label, button, color):
-        self.data.owned_colors.append(color)
-        button.setVisible(False)
-        label.setStyleSheet("QWidget#color {border: 1px solid grey; background-color: " + color + ";}")
-        label.setFixedSize(120, 120)
+    def buy_color_on_click (self, label, button, color):
+        try:
+            r = requests.post("http://programmingisagame.netsons.org/add_color.php",
+                              data={'username': self.data.my_name, 'password': self.data.my_psw, 'color': color})
+            if r.text != "":
+                self.data.owned_colors.append(color)
+                button.setVisible(False)
+                label.setStyleSheet("QWidget#color {border: 1px solid grey; background-color: " + color + ";}")
+                label.setFixedSize(120, 120)
 
-        self.data.money -= 100
-        self.soldi.setText(str(self.data.money) + ' soldi')
-        self.update_buttons_price()
+                self.data.money -= 100
+                self.soldi.setText(str(self.data.money) + ' soldi')
+                self.update_buttons_price()
 
-        if len(self.data.owned_colors) == len(self.data.all_colors):
-            for i in self.color_change_buttons:
-                i.show()
-            for i in self.color_label.keys():
-                i.setFixedSize(120, 90)
-                i.setStyleSheet("QWidget#color {border: 1px solid grey; "
-                                "border-bottom: 0px solid grey; background-color: " + self.color_label[i] + ";}")
+                if len(self.data.owned_colors) == len(self.data.all_colors):
+                    for i in self.color_change_buttons:
+                        i.show()
+                    for i in self.color_label.keys():
+                        i.setFixedSize(120, 90)
+                        i.setStyleSheet("QWidget#color {border: 1px solid grey; border-bottom: 0px solid grey; "
+                                        "background-color: " + self.color_label[i] + ";}")
+        except requests.exceptions.RequestException as e:
+            self.connection_error_message()
 
     def change_color_on_click(self, label):
         color = self.color_label[label]
-        confirm = ColorWindow(color, parent=self)
+        confirm = ColorWindow(color, self.data, parent=self)
 
         if confirm.exec_() == QDialog.Accepted:
-            self.data.money -= 200
-            self.soldi.setText(str(self.data.money) + ' soldi')
-            self.update_buttons_price()
+            try:
+                r = requests.post("http://programmingisagame.netsons.org/change_color.php",
+                                  data={'username': self.data.my_name, 'password': self.data.my_psw,
+                                        'color1': color, 'color2': confirm.color})
+                if r.text != "":
+                    self.data.money -= 200
+                    self.soldi.setText(str(self.data.money) + ' soldi')
+                    self.update_buttons_price()
 
-            self.color_label[label] = confirm.color
-            self.data.owned_colors.remove(color)
-            self.data.all_colors.remove(color)
-            self.data.owned_colors.append(confirm.color)
-            self.data.all_colors.append(confirm.color)
-            label.setStyleSheet("QWidget#color {border: 1px solid grey; border-bottom: 0px solid grey; "
-                                "background-color: " + confirm.color + ";}")
+                    self.color_label[label] = confirm.color
+                    for i in range(0,len(self.data.owned_colors)):
+                        if self.data.owned_colors[i] == color: self.data.owned_colors[i] = confirm.color
+                    self.data.all_colors = self.data.owned_colors.copy()
+                    label.setStyleSheet("QWidget#color {border: 1px solid grey; border-bottom: 0px solid grey; "
+                                        "background-color: " + confirm.color + ";}")
+            except requests.exceptions.RequestException as e:
+                self.connection_error_message()
         confirm.deleteLater()
 
     def make_page3(self):
@@ -434,7 +455,7 @@ class AbilitiesWindow(QWidget):
 
     def make_image_widget(self, key):
         label = QLabel(self)
-        pixmap = QPixmap(key)
+        pixmap = QPixmap('img/' + key)
         pixmap = pixmap.scaled(120, 120)
         label.setPixmap(pixmap)
         label.setObjectName(key)
@@ -468,19 +489,30 @@ class AbilitiesWindow(QWidget):
         return widget
 
     def image_on_click(self, key, widget, event):
-        if self.data.owned_images.__contains__(key):
-            widget.setStyleSheet('background-color: #8888dd')
-            self.current_image.setStyleSheet(' ')
-            self.current_image = widget
-            self.data.current_image = key
+        try:
+            r = requests.post("http://programmingisagame.netsons.org/select_user_image.php",
+                              data={'username': self.data.my_name, 'password': self.data.my_psw, 'img': key})
+            if r.text != "":
+                widget.setStyleSheet('background-color: #8888dd')
+                self.current_image.setStyleSheet(' ')
+                self.current_image = widget
+                self.data.current_image = key
+        except requests.exceptions.RequestException as e:
+            self.connection_error_message()
 
     def buy_image_on_click(self, button, key):
-        self.data.owned_images.append(key)
-        button.hide()
+        try:
+            r = requests.post("http://programmingisagame.netsons.org/add_user_image.php",
+                              data={'username': self.data.my_name, 'password': self.data.my_psw, 'img': key})
+            if r.text != "":
+                self.data.owned_images.append(key)
+                button.hide()
 
-        self.data.money -= self.data.all_images[key]
-        self.soldi.setText(str(self.data.money) + ' soldi')
-        self.update_buttons_price()
+                self.data.money -= self.data.all_images[key]
+                self.soldi.setText(str(self.data.money) + ' soldi')
+                self.update_buttons_price()
+        except requests.exceptions.RequestException as e:
+            self.connection_error_message()
 
     def make_page4(self):
         font = QFont()
@@ -538,28 +570,50 @@ class AbilitiesWindow(QWidget):
         return widget
 
     def buy_make_homework_coin(self):
-        self.make_homework_coin.setEnabled(False)
-        self.make_homework_coin.setText('Acquistato')
-        self.data.make_homework_coin = True
-        self.data.money -= 200
-        self.soldi.setText(str(self.data.money) + ' soldi')
-        self.update_buttons_price()
+        try:
+            r = requests.post("http://programmingisagame.netsons.org/add_make_homework_coin.php",
+                              data={'username': self.data.my_name, 'password': self.data.my_psw})
+            if r.text != "":
+                self.make_homework_coin.setEnabled(False)
+                self.make_homework_coin.setText('Acquistato')
+                self.data.make_homework_coin = True
+                self.data.money -= 200
+                self.soldi.setText(str(self.data.money) + ' soldi')
+                self.update_buttons_price()
+        except requests.exceptions.RequestException as e:
+            self.connection_error_message()
 
     def buy_watch_homework_coin(self):
-        self.watch_homework_coin.setEnabled(False)
-        self.watch_homework_coin.setText('Acquistato')
-        self.data.watch_homework_coin = True
-        self.data.money -= 500
-        self.soldi.setText(str(self.data.money) + ' soldi')
-        self.update_buttons_price()
+        try:
+            r = requests.post("http://programmingisagame.netsons.org/add_watch_homework_coin.php",
+                              data={'username': self.data.my_name, 'password': self.data.my_psw})
+            if r.text != "":
+                self.watch_homework_coin.setEnabled(False)
+                self.watch_homework_coin.setText('Acquistato')
+                self.data.watch_homework_coin = True
+                self.data.money -= 500
+                self.soldi.setText(str(self.data.money) + ' soldi')
+                self.update_buttons_price()
+        except requests.exceptions.RequestException as e:
+            self.connection_error_message()
 
+    @staticmethod
+    def connection_error_message():
+        c = ConfirmWindow('Gamification - Errore di connessione',
+                                "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
+                                "connessione<br>Controllare la connessione internet e riprovare</span>",
+                                ok="Ok", cancel=None)
+        if c.exec_() == QDialog.Accepted:
+            print('ok')
+        c.deleteLater()
 
 class ColorWindow(QDialog):
-    def __init__(self, color, parent=None):
+    def __init__(self, color, data, parent=None):
         QDialog.__init__(self, parent)
         self.setWindowTitle('Gamification - Cambia colore')
         self.setFixedSize(QSize(600, 300))
 
+        self.data = data
         self.original = color
         self.color = color
 
@@ -681,10 +735,10 @@ class ColorWindow(QDialog):
         if r and g and b:
             c = '#%02x%02x%02x' % (int(red_form.text()), int(green_form.text()), int(blu_form.text()))
             label.setStyleSheet("QWidget#color_change {border: 1px solid grey; background-color: " + c + ";}")
-            if c != self.original:
+            if self.data.owned_colors.__contains__(c):
+                ok.setEnabled(False)
+            else:
                 self.color = c
                 ok.setEnabled(True)
-            else:
-                ok.setEnabled(False)
         else:
             ok.setEnabled(False)
