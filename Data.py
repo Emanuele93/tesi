@@ -65,7 +65,7 @@ class Data:
     }
 
     def __init__(self):
-        self.my_name = "Emanuele"
+        self.my_name = "prof"
         self.my_psw = "1234"
         self.my_class = "Merlino class"
         self.my_proff = None

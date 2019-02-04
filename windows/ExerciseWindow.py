@@ -1,4 +1,5 @@
 import datetime
+import json
 import re
 import contextlib
 import io
@@ -10,6 +11,7 @@ from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QPushButton, QSp
     QLabel, QDialog
 from PyQt5.QtCore import *
 
+from windows.ClassExerciseComparisonWindow import ClassExerciseComparisonWindow
 from windows.ConfirmWindow import ConfirmWindow
 from windows.SettingsWindow import SettingsWindow
 
@@ -175,13 +177,14 @@ class ExerciseWindow(QWidget):
         watch_button.setObjectName('img/watch.png')
         watch_button.mousePressEvent = partial(self.watch_button_on_click, watch_button)
 
-        try:
-            r = requests.post("http://programmingisagame.netsons.org/check_watch_homework_coin.php",
-                              data={'username': self.data.my_name, 'password': self.data.my_psw, 'id': self.exercise.id})
-            if r.text == "":
-                watch_button.hide()
-        except requests.exceptions.RequestException as e:
-            print('problemi di connessione')
+        if self.exercise.delivery_date is None:
+            try:
+                r = requests.post("http://programmingisagame.netsons.org/check_watch_homework_coin.php",
+                                  data={'username': self.data.my_name, 'password': self.data.my_psw, 'id': self.exercise.id})
+                if r.text == "":
+                    watch_button.hide()
+            except requests.exceptions.RequestException as e:
+                print('problemi di connessione')
 
         box1 = QHBoxLayout(self)
         box1.setAlignment(Qt.AlignHCenter)
@@ -190,6 +193,10 @@ class ExerciseWindow(QWidget):
         box1.addWidget(play_button)
         box1.addWidget(self.save_button)
         box1.addWidget(more_button)
+        if self.exercise.delivery_date is not None:
+            box1.addWidget(watch_button)
+            box1.setSpacing(50)
+
 
         box2 = QHBoxLayout(self)
         box2.setAlignment(Qt.AlignHCenter)
@@ -198,7 +205,8 @@ class ExerciseWindow(QWidget):
         box2.addWidget(settings_button)
         box2.addWidget(send_button)
         box2.addWidget(restart_button)
-        box2.addWidget(watch_button)
+        if self.exercise.delivery_date is None:
+            box2.addWidget(watch_button)
 
         widget1 = QWidget(self, flags=Qt.Widget)
         widget1.setLayout(box1)
@@ -290,7 +298,8 @@ class ExerciseWindow(QWidget):
         confirm.deleteLater()
 
     def send_button_on_click(self, event):
-        self.play_button_on_click(None)
+        if self.exercise.executable:
+            self.play_button_on_click(None)
         warning = False
         money = 100
         confermation_text = "Sei sicuro di voler inviare l'esercizio?<br>" \
@@ -414,8 +423,26 @@ class ExerciseWindow(QWidget):
             if r.text == "":
                 button.hide()
             else:
-                print('todo')
                 self.data.watch_homework_coin = (r.text != "removed")
+                try:
+                    r = requests.post("http://programmingisagame.netsons.org/get_class_exercise_solutions.php",
+                              data={'username': self.data.my_name, 'password': self.data.my_psw,
+                                    'exercise': self.exercise.id, 'class': self.data.my_class})
+                    if r.text != "":
+                        class_solutions = json.loads(r.text)
+                        confirm = ClassExerciseComparisonWindow(
+                            'Gamification - "' + self.exercise.title + '" soluzioni dei compagni',
+                            class_solutions, self.exercise.limits, self, parent=self)
+                        confirm.exec_()
+                        confirm.deleteLater()
+                except requests.exceptions.RequestException as e:
+                    confirm = ConfirmWindow('Gamification - Errore di connessione',
+                                            "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
+                                            "connessione<br>Controllare la connessione internet e riprovare</span>",
+                                            ok="Ok", cancel=None)
+                    if confirm.exec_() == QDialog.Accepted:
+                        print('ok')
+                    confirm.deleteLater()
         except requests.exceptions.RequestException as e:
             confirm = ConfirmWindow('Gamification - Errore di connessione',
                                     "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
