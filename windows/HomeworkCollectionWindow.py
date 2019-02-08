@@ -10,13 +10,14 @@ from windows.ExerciseWindow import ExerciseWindow
 
 
 class HomeworkCollectionWindow(QWidget):
-    def __init__(self, controller, data, loading):
+    def __init__(self, controller, data, loading, pos):
         super(HomeworkCollectionWindow, self).__init__(controller, flags=Qt.Widget)
         controller.setWindowTitle("Gamification - Compiti")
         self.data = data
         self.controller = controller
         self.exercise_windows = []
         self.new_exercise = None
+        self.pos = pos
 
         top_widget = self.make_top_widget()
 
@@ -26,7 +27,7 @@ class HomeworkCollectionWindow(QWidget):
             bottom_widget.setMovie(movie)
             movie.start()
             self.change_button = QPushButton('PROVA', self)
-            self.change_button.clicked.connect(partial(self.controller.open_HomeworkCollectionWindow, False))
+            self.change_button.clicked.connect(partial(self.controller.open_HomeworkCollectionWindow, False, 0))
             self.change_button.hide()
             box = QHBoxLayout(self)
             box.addWidget(bottom_widget)
@@ -53,6 +54,26 @@ class HomeworkCollectionWindow(QWidget):
         home_button.clicked.connect(self.controller.open_MainWindow)
         home_button.setFont(font)
 
+        level = QLabel('Liv. ' +str(self.data.level), self)
+        level.setFont(font)
+        level.setStyleSheet('background-color: #9999FF; border: 1px solid grey')
+        level.setFixedHeight(45)
+        level.setContentsMargins(20, 5, 20, 5)
+
+        soldi = QLabel(str(self.data.money) + ' soldi', self)
+        soldi.setFont(font)
+        soldi.setStyleSheet('background-color: yellow; border: 1px solid grey')
+        soldi.setFixedHeight(45)
+        soldi.setContentsMargins(20, 5, 20, 5)
+
+        box = QHBoxLayout(self)
+        box.setAlignment(Qt.AlignLeft)
+        box.addWidget(level)
+        box.addWidget(soldi)
+        box.setContentsMargins(50, 0, 0, 0)
+        soldi_widget = QWidget(self, flags=Qt.Widget)
+        soldi_widget.setLayout(box)
+
         self.add_homework_button = QPushButton('AGGIUNGI COMPITO', self)
         self.add_homework_button.clicked.connect(self.open_CreateHomeworkWindow)
         self.add_homework_button.setFixedSize(250, 50)
@@ -62,7 +83,8 @@ class HomeworkCollectionWindow(QWidget):
 
         top_box = QHBoxLayout(self)
         top_box.setContentsMargins(20, 10, 20, 10)
-        top_box.addWidget(home_button, alignment=Qt.AlignLeft)
+        top_box.addWidget(home_button)
+        top_box.addWidget(soldi_widget, alignment=Qt.AlignTop)
         top_box.addWidget(self.add_homework_button, alignment=Qt.AlignRight)
         top_box.setSpacing(50)
         top_widget = QWidget(self, flags=Qt.Widget)
@@ -183,12 +205,13 @@ class HomeworkCollectionWindow(QWidget):
         bottom_widget = QWidget(self, flags=Qt.Widget)
         bottom_widget.setLayout(bottom_box)
 
-        scroll = QScrollArea(self)
-        scroll.setWidget(bottom_widget)
-        scroll.setWidgetResizable(True)
-        scroll.setObjectName("scroll")
-        scroll.setStyleSheet("QWidget#scroll {border: 0px solid grey;}")
-        return scroll
+        self.scroll = QScrollArea(self)
+        self.scroll.setWidget(bottom_widget)
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setObjectName("scroll")
+        self.scroll.setStyleSheet("QWidget#scroll {border: 0px solid grey;}")
+        self.scroll.verticalScrollBar().setValue(self.pos)
+        return self.scroll
 
     def open_ExerciseWindow(self, exercise, event):
         for i in self.exercise_windows:
@@ -209,7 +232,7 @@ class HomeworkCollectionWindow(QWidget):
                 return
 
     def update(self):
-        self.controller.open_HomeworkCollectionWindow(False)
+        self.controller.open_HomeworkCollectionWindow(False, self.scroll.verticalScrollBar().value())
 
     def open_CreateHomeworkWindow(self):
         if self.new_exercise is None:
@@ -222,4 +245,4 @@ class HomeworkCollectionWindow(QWidget):
     def close_CreateHomeworkWindow(self):
         self.new_exercise.close()
         self.new_exercise = None
-        self.controller.open_HomeworkCollectionWindow(True)
+        self.controller.open_HomeworkCollectionWindow(True, 0)

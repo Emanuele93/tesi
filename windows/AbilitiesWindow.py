@@ -494,7 +494,8 @@ class AbilitiesWindow(QWidget):
                               data={'username': self.data.my_name, 'password': self.data.my_psw, 'img': key})
             if r.text != "":
                 widget.setStyleSheet('background-color: #8888dd')
-                self.current_image.setStyleSheet(' ')
+                if self.current_image is not None:
+                    self.current_image.setStyleSheet(' ')
                 self.current_image = widget
                 self.data.current_image = key
         except requests.exceptions.RequestException as e:

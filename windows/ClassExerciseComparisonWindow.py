@@ -3,7 +3,7 @@ import io
 import re
 from functools import partial
 
-from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtWidgets import QDialog, QWidget, QVBoxLayout, QLabel, QHBoxLayout, QScrollArea, QTextEdit, \
     QPlainTextEdit, QSplitter
@@ -31,6 +31,14 @@ class ClassExerciseComparisonWindow(QDialog):
         box.setAlignment(Qt.AlignLeft)
         for i in students_widgets:
             box.addWidget(i, alignment=Qt.AlignLeft)
+
+        if len(class_solutions)==0:
+            font = QFont()
+            font.setPixelSize(20)
+            title = QLabel("Nessuno ha ancora consegnato questo compito", self)
+            title.setFont(font)
+            box.addWidget(title, alignment=Qt.AlignCenter)
+
         widget = QWidget(self, flags=Qt.Widget)
         widget.setLayout(box)
         scroll = QScrollArea(self)

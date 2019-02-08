@@ -38,6 +38,12 @@ class HomeWindow(QWidget):
         settings_button.setObjectName('img/settings.png')
         settings_button.mousePressEvent = self.settings_button_on_click
 
+        level = QLabel('Liv. ' +str(self.data.level), self)
+        level.setFont(font)
+        level.setStyleSheet('background-color: #9999FF; border-top: 1px solid grey;')
+        level.setFixedHeight(50)
+        level.setContentsMargins(20, 10, 20, 10)
+
         soldi = QLabel(str(self.data.money) + ' soldi', self)
         soldi.setFont(font)
         soldi.setStyleSheet('background-color: yellow; border-top: 1px solid grey;')
@@ -46,6 +52,7 @@ class HomeWindow(QWidget):
 
         box = QHBoxLayout(self)
         box.setAlignment(Qt.AlignTop)
+        box.addWidget(level)
         box.addWidget(soldi)
         box.setContentsMargins(0, 0, 0, 0)
         soldi_widget = QWidget(self, flags=Qt.Widget)
@@ -80,12 +87,21 @@ class HomeWindow(QWidget):
         internal_layout.setSpacing(10)
         button = QPushButton('COMPITI', self)
         button.setFont(font)
-        button.clicked.connect(partial(controller.open_HomeworkCollectionWindow, True))
+        button.clicked.connect(partial(controller.open_HomeworkCollectionWindow, True, 0))
         internal_layout.addWidget(button, alignment=Qt.AlignVCenter)
         box2.setLayout(internal_layout)
 
-        frame3 = QFrame(flags=Qt.Widget)
-        frame3.setFrameShape(QFrame.StyledPanel)
+        box3 = QWidget(self, flags=Qt.Widget)
+        box3.setObjectName("box3")
+        box3.setStyleSheet("QWidget#box3 {border: 1px solid grey}")
+        internal_layout = QVBoxLayout(self)
+        internal_layout.setContentsMargins(10, 10, 10, 10)
+        internal_layout.setSpacing(10)
+        button = QPushButton('OBIETTIVI', self)
+        button.setFont(font)
+        button.clicked.connect(partial(controller.open_AchievementsWindow,0))
+        internal_layout.addWidget(button, alignment=Qt.AlignVCenter)
+        box3.setLayout(internal_layout)
 
         box4 = QWidget(self, flags=Qt.Widget)
         box4.setObjectName("box4")
@@ -105,7 +121,7 @@ class HomeWindow(QWidget):
         internal_layout.setSpacing(10)
         internal_layout.addWidget(frame1)
         internal_layout.addWidget(box2)
-        internal_layout.addWidget(frame3)
+        internal_layout.addWidget(box3)
         internal_layout.addWidget(box4)
         box.setLayout(internal_layout)
 

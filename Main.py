@@ -6,6 +6,7 @@ from PyQt5.QtCore import *
 
 from Data import Data
 from windows.AbilitiesWindow import AbilitiesWindow
+from windows.AchievementsWindow import AchievementsWindow
 from windows.HomeWindow import HomeWindow
 from windows.HomeworkCollectionWindow import HomeworkCollectionWindow
 
@@ -34,8 +35,8 @@ class WindowsController(QWidget):
         self.data.get_user_data()
         self.open_window(HomeWindow(self, self.data))
 
-    def open_HomeworkCollectionWindow(self, load):
-        self.open_window(HomeworkCollectionWindow(self, self.data, load))
+    def open_HomeworkCollectionWindow(self, load, pos):
+        self.open_window(HomeworkCollectionWindow(self, self.data, load, pos))
         if load:
             self.t = threading.Thread(target=self.update_HomeworkCollectionWindow)
             self.t.start()
@@ -47,6 +48,9 @@ class WindowsController(QWidget):
 
     def open_Abilities_Window(self, page, event):
         self.open_window(AbilitiesWindow(self, self.data, page))
+
+    def open_AchievementsWindow(self, pos):
+        self.open_window(AchievementsWindow(self, self.data, pos))
 
 
 if __name__ == "__main__":

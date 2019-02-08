@@ -65,7 +65,7 @@ class Data:
     }
 
     def __init__(self):
-        self.my_name = "prof"
+        self.my_name = "Emanuele"
         self.my_psw = "1234"
         self.my_class = "Merlino class"
         self.my_proff = None
@@ -77,6 +77,7 @@ class Data:
         self.code_font_family = 'Courier New'
 
         self.money = None
+        self.level = None
         self.current_image = None
         self.level_variables = None
         self.owned_colors = []
@@ -96,6 +97,7 @@ class Data:
 
     def get_user_data(self):
         self.money = 0
+        self.level = 0
         self.current_image = '0.png'
         self.level_variables = {'lines': 0, 'variables': 0, 'if': 0, 'elif': 0,
                                 'else': 0, 'for': 0, 'while': 0, 'functions': 0}
@@ -109,6 +111,7 @@ class Data:
             j = json.loads(r.text)
             if len(j) > 0:
                 self.money = int(j[0]['money'])
+                self.level = int(j[0]['exp'])
                 lev = (j[0]['level_variables']).split(',')
                 self.level_variables = {'lines': int(lev[0]), 'variables': int(lev[1]), 'if': int(lev[2]), 'elif': int(lev[3]),
                                         'else': int(lev[4]), 'for': int(lev[5]), 'while': int(lev[6]), 'functions': int(lev[7])}
@@ -117,6 +120,9 @@ class Data:
                 self.owned_images = j[0]['owned_images'].split(',')
                 self.make_homework_coin = False if int(j[0]['make_homework_coin']) == 0 else True
                 self.watch_homework_coin = False if int(j[0]['watch_homework_coin']) == 0 else True
+
+            r = requests.post("http://programmingisagame.netsons.org/update_achievements.php",
+                              data={'username': self.my_name, 'password': self.my_psw})
         except requests.exceptions.RequestException as e:
             confirm = ConfirmWindow('Gamification - Errore di connessione',
                                     "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
