@@ -1,5 +1,4 @@
 import json
-from builtins import print
 from functools import partial
 
 import requests
@@ -72,11 +71,32 @@ class AchievementsWindow(QWidget):
         open_leaderboard_button.setFixedSize(250, 50)
         open_leaderboard_button.setFont(font)
 
-        self.level = QLabel('Liv. ' + str(self.data.level), self)
-        self.level.setFont(font)
-        self.level.setStyleSheet('background-color: #9999FF; border: 1px solid grey')
-        self.level.setFixedHeight(45)
-        self.level.setContentsMargins(20, 5, 20, 5)
+        l = 1
+        old = 0
+        for i in self.data.level_progression:
+            if self.data.level >= i:
+                l += 1
+                old = i
+
+        self.level_number = QLabel('Liv. ' + str(l), self)
+        self.level_number.setFont(font)
+        self.level_number.setStyleSheet('background-color: #9999FF; border: 1px solid grey')
+        self.level_number.setFixedSize(85, 40)
+        self.level_number.setContentsMargins(20, 10, 20, 10)
+
+        self.level_bar = QLabel(self)
+        self.level_bar.setStyleSheet('background-color: #4040FF')
+        self.level_bar.setFixedSize(int(85*(self.data.level-old)/(self.data.level_progression[l-1]-old)), 5)
+
+        box = QVBoxLayout(self)
+        box.setSpacing(0)
+        box.setContentsMargins(0, 0, 0, 0)
+        box.addWidget(self.level_number)
+        box.addWidget(self.level_bar)
+        level = QWidget(self, flags=Qt.Widget)
+        level.setLayout(box)
+        level.setObjectName("level")
+        level.setStyleSheet("QWidget#level {border: 1px solid grey; background-color: #BBBBFF}")
 
         self.soldi = QLabel(str(self.data.money) + ' soldi', self)
         self.soldi.setFont(font)
@@ -86,7 +106,7 @@ class AchievementsWindow(QWidget):
 
         box = QHBoxLayout(self)
         box.setAlignment(Qt.AlignLeft)
-        box.addWidget(self.level)
+        box.addWidget(level)
         box.addWidget(self.soldi)
         box.setContentsMargins(50, 0, 0, 0)
         soldi_widget = QWidget(self, flags=Qt.Widget)
@@ -211,11 +231,19 @@ class AchievementsWindow(QWidget):
         try:
             r = requests.post("http://programmingisagame.netsons.org/get_aword_achievement.php",
                       data={'username': self.data.my_name, 'password': self.data.my_psw, 'index': index})
-            print(r.text)
             if r.text != "":
                 self.data.get_user_data()
-                self.level.setText("Liv. " + str(self.data.level))
                 self.soldi.setText(str(self.data.money) + " Soldi")
+
+                l = 1
+                old = 0
+                for i in self.data.level_progression:
+                    if self.data.level >= i:
+                        l += 1
+                        old = i
+
+                self.level_number.setText('Liv. ' + str(l))
+                self.level_bar.setFixedSize(int(85*(self.data.level-old)/(self.data.level_progression[l-1]-old)), 5)
                 self.controller.open_AchievementsWindow(self.scroll.verticalScrollBar().value())
         except requests.exceptions.RequestException as e:
             confirm = ConfirmWindow('Gamification - Errore di connessione',

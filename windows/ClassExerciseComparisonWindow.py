@@ -12,7 +12,7 @@ from Data import DefaultColorStyles
 
 
 class ClassExerciseComparisonWindow(QDialog):
-    def __init__(self, title, class_solutions, exercise_limit, exercise_window, parent=None):
+    def __init__(self, title, class_solutions, order_by, exercise_limit, exercise_window, parent=None):
         QDialog.__init__(self, parent, flags=Qt.Dialog)
         self.setWindowTitle(title)
         self.setMinimumWidth(900)
@@ -23,16 +23,53 @@ class ClassExerciseComparisonWindow(QDialog):
         self.color_styles = None
         self.code_widgets = []
 
+        order_by = int(order_by)
+        print(order_by)
+        if order_by == 1 or order_by == 2:
+            order_by -= 1
+            for i in range(0, len(class_solutions) - 1):
+                for j in range(i + 1, len(class_solutions)):
+                    if int(class_solutions[j]['resources_used'].split(',')[order_by]) < \
+                            int(class_solutions[i]['resources_used'].split(',')[order_by]):
+                        t = class_solutions[i].copy()
+                        class_solutions[i] = class_solutions[j].copy()
+                        class_solutions[j] = t.copy()
+            order_by += 1
+        elif order_by == 3:
+            for i in range(0, len(class_solutions) - 1):
+                for j in range(i + 1, len(class_solutions)):
+                    if int(class_solutions[j]['resources_used'].split(',')[2]) + \
+                            int(class_solutions[j]['resources_used'].split(',')[3]) + \
+                            int(class_solutions[j]['resources_used'].split(',')[4]) < \
+                            int(class_solutions[i]['resources_used'].split(',')[2]) + \
+                            int(class_solutions[i]['resources_used'].split(',')[3]) + \
+                            int(class_solutions[i]['resources_used'].split(',')[4]):
+                        t = class_solutions[i].copy()
+                        class_solutions[i] = class_solutions[j].copy()
+                        class_solutions[j] = t.copy()
+        elif order_by == 4:
+            for i in range(0, len(class_solutions) - 1):
+                for j in range(i + 1, len(class_solutions)):
+                    if int(class_solutions[j]['resources_used'].split(',')[5]) + \
+                            int(class_solutions[j]['resources_used'].split(',')[6]) < \
+                            int(class_solutions[i]['resources_used'].split(',')[5]) + \
+                            int(class_solutions[i]['resources_used'].split(',')[6]):
+                        t = class_solutions[i].copy()
+                        class_solutions[i] = class_solutions[j].copy()
+                        class_solutions[j] = t.copy()
+
         students_widgets = []
+        pos = 1
         for i in class_solutions:
-            students_widgets.append(self.make_student_widget(i))
+            students_widgets.append(self.make_student_widget(i, pos, order_by==0))
+            pos += 1
 
         box = QHBoxLayout(self)
         box.setAlignment(Qt.AlignLeft)
         for i in students_widgets:
             box.addWidget(i, alignment=Qt.AlignLeft)
 
-        if len(class_solutions)==0:
+        if len(class_solutions) == 0:
             font = QFont()
             font.setPixelSize(20)
             title = QLabel("Nessuno ha ancora consegnato questo compito", self)
@@ -46,19 +83,28 @@ class ClassExerciseComparisonWindow(QDialog):
         scroll.setObjectName("scroll")
         scroll.setStyleSheet("QWidget#scroll {border: 0px solid grey}")
         box = QHBoxLayout(self)
-        box.setContentsMargins(0,0,0,0)
+        box.setContentsMargins(0, 0, 0, 0)
         box.addWidget(scroll)
 
         for i in self.code_widgets:
             i.hide()
 
-    def make_student_widget(self, solution):
+    def make_student_widget(self, solution, pos, order):
         font = QFont()
         font.setPixelSize(20)
 
+        pos = QLabel(str(pos) + "°", self)
+        pos.setFont(font)
+        pos.setContentsMargins(0, 10, 0, 0)
+        pos.setFixedWidth(20)
+
+        if order:
+            pos.hide()
+
         title = QLabel(solution['username'], self)
         title.setFont(font)
-        title.setFixedWidth(100)
+        title.setContentsMargins(0, 10, 10, 0)
+        title.setFixedWidth(110)
 
         font.setPixelSize(15)
 
@@ -69,9 +115,10 @@ class ClassExerciseComparisonWindow(QDialog):
         img.setObjectName('img/' + solution['current_image'])
 
         box = QHBoxLayout(self)
-        box.setSpacing(20)
+        box.setSpacing(0)
         box.setContentsMargins(10, 1, 10, 1)
-        box.setAlignment(Qt.AlignVCenter)
+        box.setAlignment(Qt.AlignLeft)
+        box.addWidget(pos, alignment=Qt.AlignTop)
         box.addWidget(title, alignment=Qt.AlignLeft)
         box.addWidget(img, alignment=Qt.AlignRight)
         who = QWidget(self, flags=Qt.Widget)
@@ -95,15 +142,17 @@ class ClassExerciseComparisonWindow(QDialog):
 
         resources = {
             'lines': int(solution['resources_used'].split(',')[0]),
-            'if': int(solution['resources_used'].split(',')[1]),
-            'elif': int(solution['resources_used'].split(',')[2]),
-            'else': int(solution['resources_used'].split(',')[3]),
-            'conditions': int(solution['resources_used'].split(',')[4]),
+            'if': int(solution['resources_used'].split(',')[2]),
+            'elif': int(solution['resources_used'].split(',')[3]),
+            'else': int(solution['resources_used'].split(',')[4]),
+            'conditions': int(solution['resources_used'].split(',')[2]) +
+                          int(solution['resources_used'].split(',')[3]) +
+                          int(solution['resources_used'].split(',')[4]),
             'for': int(solution['resources_used'].split(',')[5]),
             'while': int(solution['resources_used'].split(',')[6]),
-            'cycles': int(solution['resources_used'].split(',')[7]),
-            'def': int(solution['resources_used'].split(',')[8]),
-            'variables': int(solution['resources_used'].split(',')[9])
+            'cycles': int(solution['resources_used'].split(',')[5]) + int(solution['resources_used'].split(',')[6]),
+            'def': int(solution['resources_used'].split(',')[7]),
+            'variables': int(solution['resources_used'].split(',')[1])
         }
 
         code_solution = solution['solution']
@@ -393,7 +442,7 @@ class ClassExerciseComparisonWindow(QDialog):
         if text[-1] == '\n':
             text = text + ' '
         text = '<pre>' + text + '</pre>'
-    
+
         code_editor.setText(text)
 
     @staticmethod
@@ -402,4 +451,3 @@ class ClassExerciseComparisonWindow(QDialog):
             code_widget.hide()
         else:
             code_widget.show()
-

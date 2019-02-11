@@ -469,7 +469,7 @@ class AbilitiesWindow(QWidget):
         if self.data.owned_images.__contains__(key):
             price.hide()
 
-        if 100 > self.data.money:
+        if self.data.all_images[key] > self.data.money:
             price.setEnabled(False)
 
         box = QVBoxLayout(self)

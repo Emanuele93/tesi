@@ -54,11 +54,32 @@ class HomeworkCollectionWindow(QWidget):
         home_button.clicked.connect(self.controller.open_MainWindow)
         home_button.setFont(font)
 
-        level = QLabel('Liv. ' +str(self.data.level), self)
-        level.setFont(font)
-        level.setStyleSheet('background-color: #9999FF; border: 1px solid grey')
-        level.setFixedHeight(45)
-        level.setContentsMargins(20, 5, 20, 5)
+        l = 1
+        old = 0
+        for i in self.data.level_progression:
+            if self.data.level >= i:
+                l += 1
+                old = i
+
+        level_number = QLabel('Liv. ' + str(l), self)
+        level_number.setFont(font)
+        level_number.setStyleSheet('background-color: #9999FF; border: 1px solid grey; border-top: 0px solid grey')
+        level_number.setFixedSize(85, 40)
+        level_number.setContentsMargins(20, 10, 20, 10)
+
+        level_bar = QLabel(self)
+        level_bar.setStyleSheet('background-color: #4040FF')
+        level_bar.setFixedSize(int(85*(self.data.level-old)/(self.data.level_progression[l-1]-old)), 5)
+
+        box = QVBoxLayout(self)
+        box.setSpacing(0)
+        box.setContentsMargins(0, 0, 0, 0)
+        box.addWidget(level_number)
+        box.addWidget(level_bar)
+        level = QWidget(self, flags=Qt.Widget)
+        level.setLayout(box)
+        level.setObjectName("level")
+        level.setStyleSheet("QWidget#level {border: 1px solid grey; background-color: #BBBBFF}")
 
         soldi = QLabel(str(self.data.money) + ' soldi', self)
         soldi.setFont(font)
@@ -111,6 +132,7 @@ class HomeworkCollectionWindow(QWidget):
             date_exercises.setFont(font)
 
             other_exercises_box = QHBoxLayout(self)
+            other_exercises_box.setAlignment(Qt.AlignLeft)
             other_exercises_box.setContentsMargins(0, 0, 0, 0)
             proff_exercises_box = QHBoxLayout(self)
             proff_exercises_box.setAlignment(Qt.AlignLeft)
@@ -134,7 +156,6 @@ class HomeworkCollectionWindow(QWidget):
 
                     by = QLabel("<i>by " + i.creator + "</i>", self)
                     by.setContentsMargins(20, 0, 5, 10)
-                    by.mousePressEvent = partial(self.open_ExerciseWindow, i)
                     by.setTextFormat(Qt.RichText)
 
                     box = QVBoxLayout(self)
@@ -145,7 +166,6 @@ class HomeworkCollectionWindow(QWidget):
                     box.addWidget(by, alignment=Qt.AlignTop)
                     exercise = QWidget(self, flags=Qt.Widget)
                     exercise.setLayout(box)
-                    exercise.mousePressEvent = partial(self.open_ExerciseWindow, i)
 
                     box = QHBoxLayout(self)
                     box.setAlignment(Qt.AlignTop)
@@ -156,6 +176,7 @@ class HomeworkCollectionWindow(QWidget):
                     exercise = QWidget(self, flags=Qt.Widget)
                     exercise.setLayout(box)
                     exercise.setObjectName("exercise")
+                    exercise.mousePressEvent = partial(self.open_ExerciseWindow, i)
 
                     if (i.solution is None or i.solution == i.start_code) and i.delivery_date is None:
                         exercise.setStyleSheet('QWidget#exercise {background-color:red; border: 1px solid grey;}')

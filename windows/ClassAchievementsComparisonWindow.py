@@ -13,6 +13,7 @@ class ClassAchievementsComparisonWindow(QDialog):
         self.setMinimumWidth(600)
         self.setMinimumHeight(500)
         self.achievements_titles = achievements_titles
+        self.data = data
 
         try:
             r = requests.post("http://programmingisagame.netsons.org/get_class_achievement_progress.php",
@@ -74,12 +75,34 @@ class ClassAchievementsComparisonWindow(QDialog):
         img.setPixmap(pixmap)
         img.setObjectName('img/' + user['current_image'])
 
-        lev = QLabel("Liv: " + user['exp'], self)
-        lev.setFont(font)
-        lev.setFixedSize(100, 40)
-        lev.setAlignment(Qt.AlignRight)
-        lev.setContentsMargins(0, 10, 10, 0)
-        lev.setStyleSheet("background-color: #9999FF; border: 1px solid grey")
+        l = 1
+        old = 0
+        for i in self.data.level_progression:
+            if int(user['exp']) >= i:
+                l += 1
+                old = i
+
+        level_number = QLabel('Liv. ' + str(l), self)
+        level_number.setFont(font)
+        level_number.setAlignment(Qt.AlignRight)
+        level_number.setStyleSheet('background-color: #9999FF; border: 1px solid grey')
+        level_number.setFixedSize(100, 35)
+        level_number.setContentsMargins(0, 10, 10, 0)
+
+        level_bar = QLabel(self)
+        level_bar.setStyleSheet('background-color: #4040FF')
+        level_bar.setFixedSize(int(100*(int(user['exp'])-old)/(self.data.level_progression[l-1]-old)), 5)
+
+        box = QVBoxLayout(self)
+        box.setSpacing(0)
+        box.setContentsMargins(0, 0, 0, 0)
+        box.addWidget(level_number)
+        box.addWidget(level_bar)
+        lev = QWidget(self, flags=Qt.Widget)
+        lev.setLayout(box)
+        lev.setObjectName("level")
+        lev.setStyleSheet("QWidget#level {border: 1px solid grey; background-color: #BBBBFF}")
+        lev.setFixedHeight(40)
 
         money = QLabel(user['money'] + " Soldi", self)
         money.setFont(font)

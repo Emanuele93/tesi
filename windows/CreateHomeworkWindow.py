@@ -6,7 +6,7 @@ from functools import partial
 import requests
 from PyQt5.QtGui import QTextCursor, QFont
 from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QPushButton, QSplitter, QHBoxLayout, QVBoxLayout, \
-    QLineEdit, QCheckBox, QCalendarWidget, QLabel, QScrollArea, QDialog
+    QLineEdit, QCheckBox, QCalendarWidget, QLabel, QScrollArea, QDialog, QComboBox
 from PyQt5.QtCore import *
 
 from Data import Exercise
@@ -240,6 +240,13 @@ class CreateHomeworkWindow(QWidget):
         hard_button.clicked.connect(partial(self.set_difficulty_on_click, hard_button, easy_button, medium_button,
                                             "Difficile"))
 
+        self.order_by = QComboBox(self)
+        self.order_by.addItem("Ordina per data di consegna")
+        self.order_by.addItem("Classifica per linee di codice")
+        self.order_by.addItem("Classifica per numero di variabili")
+        self.order_by.addItem("Classifica per numero di condizioni")
+        self.order_by.addItem("Classifica per numero di cicli")
+
         self.send_button = QPushButton('Fine', self)
         self.send_button.setFixedSize(100, 50)
         self.send_button.setEnabled(False)
@@ -383,6 +390,12 @@ class CreateHomeworkWindow(QWidget):
         functions_limit_widget = QWidget(self, flags=Qt.Widget)
         functions_limit_widget.setLayout(box)
 
+        box = QHBoxLayout(self)
+        box.addWidget(self.order_by)
+        box.setContentsMargins(10, 10, 100, 10)
+        order_by_widget = QWidget(self, flags=Qt.Widget)
+        order_by_widget.setLayout(box)
+
         settings_box = QVBoxLayout(self)
         settings_box.setAlignment(Qt.AlignTop)
         settings_box.addWidget(self.title_widget)
@@ -395,6 +408,7 @@ class CreateHomeworkWindow(QWidget):
         settings_box.addWidget(for_while_widget)
         settings_box.addWidget(functions_limit_widget)
         settings_box.addWidget(widget4)
+        settings_box.addWidget(order_by_widget)
         settings = QWidget(self)
         settings.setLayout(settings_box)
 
@@ -541,6 +555,14 @@ class CreateHomeworkWindow(QWidget):
                    + self.get_selected_day().split('/')[0]
             title = self.title_widget.text().strip()
             text = self.text_exercise.toPlainText().strip()
+            if self.order_by.currentIndex() == 1:
+                text += "\n\n\n(Classifica per numero di righe utilizzate)"
+            elif self.order_by.currentIndex() == 2:
+                text += "\n\n\n(Classifica per numero di variabili utilizzate)"
+            elif self.order_by.currentIndex() == 3:
+                text += "\n\n\n(Classifica per numero di condizioni utilizzate)"
+            elif self.order_by.currentIndex() == 4:
+                text += "\n\n\n(Classifica per numero di cicli utilizzati)"
             level = '1' if self.difficulty == 'Facile' else ('2' if self.difficulty == 'Medio' else '3')
             white_paper_mode = '1' if self.white_paper_mode else '0'
             start_code = self.code_editor.toPlainText()
@@ -594,7 +616,8 @@ class CreateHomeworkWindow(QWidget):
                                   data={'username': self.data.my_name, 'password': self.data.my_psw,
                                         'class': self.data.my_class, 'date': date, 'title': title, 'text': text,
                                         'level': level, 'white_paper_mode': white_paper_mode, 'start_code': start_code,
-                                        'limits': limits, 'executable': executable})
+                                        'limits': limits, 'executable': executable,
+                                        'order': self.order_by.currentIndex()})
                 if r.text != "":
                     self.closer_controller.close_CreateHomeworkWindow()
             except requests.exceptions.RequestException as e:

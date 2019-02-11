@@ -1,4 +1,6 @@
 import json
+from os import path
+
 import requests
 from PyQt5.QtWidgets import QDialog
 
@@ -64,17 +66,21 @@ class Data:
         'functions': [40, 40, 40, 50, 50, 100]
     }
 
+    level_progression = [10, 20, 40, 60, 90, 120, 160, 200, 250, 300, 360, 420, 490, 560, 640, 720, 810, 900]
+
     def __init__(self):
-        self.my_name = "Emanuele"
-        self.my_psw = "1234"
-        self.my_class = "Merlino class"
+        f = open("user_info.txt", "r")
+        self.my_name = f.readline()[0:-1]
+        self.my_psw = f.readline()[0:-1]
+        self.my_class = f.readline()[0:-1]
         self.my_proff = None
         self.mates = []
         self.get_class_components()
 
-        self.code_result_horizontal_orientation = True
-        self.code_font_size = 20
+        self.code_result_horizontal_orientation = True if f.readline()[0:-1] == "True" else False
+        self.code_font_size = int(f.readline())
         self.code_font_family = 'Courier New'
+        f.close()
 
         self.money = None
         self.level = None
@@ -168,8 +174,7 @@ class Data:
         return lib
 
     def get_my_color_styles(self):
-        # ToDo guardare da file le mie preferenze
-        return DefaultColorStyles()
+        return self.get_file_color_styles("favorite_style.txt")
 
     def get_class_components(self):
         self.my_proff = ''
@@ -199,6 +204,9 @@ class Data:
             r = requests.post("http://programmingisagame.netsons.org/get_homeworks.php",
                               data={'username': self.my_name, 'password': self.my_psw, 'class': self.my_class})
             j = json.loads(r.text)
+            r2 = requests.post("http://programmingisagame.netsons.org/get_user_solutions.php",
+                                  data={'username': self.my_name, 'password': self.my_psw})
+            k = json.loads(r2.text)
             for i in j:
                 date = i['date'].split('-')[2] + "/" + i['date'].split('-')[1] + "/" + i['date'].split('-')[0]
                 level = 'Facile' if int(i['level']) == 1 else ('Medio' if int(i['level']) == 2 else 'Difficile')
@@ -219,61 +227,90 @@ class Data:
                 ex = Exercise(i['exercise_id'], i['creator'], date, i['title'], i['text'], level, white_paper_mode,
                               i['start_code'], limits, executable)
 
-                r = requests.post("http://programmingisagame.netsons.org/get_exercise_solution.php",
-                                  data={'username': self.my_name, 'password': self.my_psw, 'exercise': i['exercise_id'],
-                                        'class':self.my_class})
-                j = json.loads(r.text)
-                if len(j)>0:
-                    cs_used = j[0]['color_styles'].split(',')
-                    cs = DefaultColorStyles()
-                    cs.code_background_color = cs_used[0]
-                    cs.code_text_color = cs_used[1]
-                    cs.results_background_color = cs_used[2]
-                    cs.results_text_color = cs_used[3]
-                    cs.error_results_background_color = cs_used[4]
-                    cs.error_results_text_color = cs_used[5]
-                    cs.string_color = cs_used[6]
-                    cs.comment_color = cs_used[7]
-                    cs.multi_line_comment_color = cs_used[8]
-                    cs.keyWords[0].color = cs_used[9]
-                    cs.keyWords[0].bold = True if cs_used[10] == 'T' else False
-                    cs.keyWords[1].bold = cs_used[11]
-                    cs.keyWords[1].bold = True if cs_used[12] == 'T' else False
-                    cs.keyWords[2].bold = cs_used[13]
-                    cs.keyWords[2].bold = True if cs_used[14] == 'T' else False
-                    cs.keyWords[3].bold = cs_used[15]
-                    cs.keyWords[3].bold = True if cs_used[16] == 'T' else False
-                    cs.keyWords[4].bold = cs_used[17]
-                    cs.keyWords[4].bold = True if cs_used[18] == 'T' else False
-                    cs.keyWords[5].bold = cs_used[19]
-                    cs.keyWords[5].bold = True if cs_used[20] == 'T' else False
-                    cs.keyWords[6].bold = cs_used[21]
-                    cs.keyWords[6].bold = True if cs_used[22] == 'T' else False
-                    cs.keyWords[7].bold = cs_used[23]
-                    cs.keyWords[7].bold = True if cs_used[24] == 'T' else False
-                    cs.keyWords[8].bold = cs_used[25]
-                    cs.keyWords[8].bold = True if cs_used[26] == 'T' else False
-                    cs.keyWords[9].bold = cs_used[27]
-                    cs.keyWords[9].bold = True if cs_used[28] == 'T' else False
-                    cs.keyWords[10].bold = cs_used[29]
-                    cs.keyWords[10].bold = True if cs_used[30] == 'T' else False
-                    cs.keyWords[11].bold = cs_used[31]
-                    cs.keyWords[11].bold = True if cs_used[32] == 'T' else False
-                    cs.keyWords[12].bold = cs_used[33]
-                    cs.keyWords[12].bold = True if cs_used[34] == 'T' else False
-                    cs.keyWords[13].bold = cs_used[35]
-                    cs.keyWords[13].bold = True if cs_used[36] == 'T' else False
-                    cs.keyWords[14].bold = cs_used[37]
-                    cs.keyWords[14].bold = True if cs_used[38] == 'T' else False
-                    ex.color_styles = cs
-                    ex.delivery_date = j[0]['delivery_date'].split('-')[2] + "/" + j[0]['delivery_date'].split('-')[1] \
-                                       + "/" + j[0]['delivery_date'].split('-')[0]
-                    ex.solution = j[0]['solution']
-                    lev = j[0]['resources_used'].split(',')
-                    ex.resources_used = {'lines': int(lev[0]), 'variables': int(lev[1]), 'if': int(lev[2]),
-                                         'elif': int(lev[3]), 'else': int(lev[4]), 'conditions': int(lev[5]),
-                                         'for': int(lev[6]), 'while': int(lev[7]), 'cycles': int(lev[8]),
-                                         'def': int(lev[9])}
+                find = False
+                for solution_k in k:
+                    if solution_k['id'] == i['exercise_id']:
+                        find = True
+                        cs_used = solution_k['color_styles'].split(',')
+                        cs = DefaultColorStyles()
+                        cs.code_background_color = cs_used[0]
+                        cs.code_text_color = cs_used[1]
+                        cs.results_background_color = cs_used[2]
+                        cs.results_text_color = cs_used[3]
+                        cs.error_results_background_color = cs_used[4]
+                        cs.error_results_text_color = cs_used[5]
+                        cs.string_color = cs_used[6]
+                        cs.comment_color = cs_used[7]
+                        cs.multi_line_comment_color = cs_used[8]
+                        cs.keyWords[0].color = cs_used[9]
+                        cs.keyWords[0].bold = True if cs_used[10] == 'T' else False
+                        cs.keyWords[1].bold = cs_used[11]
+                        cs.keyWords[1].bold = True if cs_used[12] == 'T' else False
+                        cs.keyWords[2].bold = cs_used[13]
+                        cs.keyWords[2].bold = True if cs_used[14] == 'T' else False
+                        cs.keyWords[3].bold = cs_used[15]
+                        cs.keyWords[3].bold = True if cs_used[16] == 'T' else False
+                        cs.keyWords[4].bold = cs_used[17]
+                        cs.keyWords[4].bold = True if cs_used[18] == 'T' else False
+                        cs.keyWords[5].bold = cs_used[19]
+                        cs.keyWords[5].bold = True if cs_used[20] == 'T' else False
+                        cs.keyWords[6].bold = cs_used[21]
+                        cs.keyWords[6].bold = True if cs_used[22] == 'T' else False
+                        cs.keyWords[7].bold = cs_used[23]
+                        cs.keyWords[7].bold = True if cs_used[24] == 'T' else False
+                        cs.keyWords[8].bold = cs_used[25]
+                        cs.keyWords[8].bold = True if cs_used[26] == 'T' else False
+                        cs.keyWords[9].bold = cs_used[27]
+                        cs.keyWords[9].bold = True if cs_used[28] == 'T' else False
+                        cs.keyWords[10].bold = cs_used[29]
+                        cs.keyWords[10].bold = True if cs_used[30] == 'T' else False
+                        cs.keyWords[11].bold = cs_used[31]
+                        cs.keyWords[11].bold = True if cs_used[32] == 'T' else False
+                        cs.keyWords[12].bold = cs_used[33]
+                        cs.keyWords[12].bold = True if cs_used[34] == 'T' else False
+                        cs.keyWords[13].bold = cs_used[35]
+                        cs.keyWords[13].bold = True if cs_used[36] == 'T' else False
+                        cs.keyWords[14].bold = cs_used[37]
+                        cs.keyWords[14].bold = True if cs_used[38] == 'T' else False
+                        ex.color_styles = cs
+                        ex.delivery_date = solution_k['delivery_date'].split('-')[2] + "/" + solution_k['delivery_date'].split('-')[1] \
+                                           + "/" + solution_k['delivery_date'].split('-')[0]
+                        ex.solution = solution_k['solution']
+                        lev = solution_k['resources_used'].split(',')
+                        ex.resources_used = {'lines': int(lev[0]), 'variables': int(lev[1]), 'if': int(lev[2]),
+                                             'elif': int(lev[3]), 'else': int(lev[4]),
+                                             'conditions': int(lev[2]) + int(lev[3]) + int(lev[4]), 'for': int(lev[5]),
+                                             'while': int(lev[6]), 'cycles': int(lev[5]) + int(lev[6]),
+                                             'def': int(lev[7])}
+
+                if not find:
+                    file = i['exercise_id']
+                    saves_file_name = 'saves/' + i['exercise_id'] + '.txt'
+                    styles_file_name = 'styles/' + i['exercise_id'] + '.txt'
+                    if file.__contains__('"') or file.__contains__("'") or file.__contains__('?') \
+                            or file.__contains__('\\') or file.__contains__('/') or file.__contains__(":") \
+                            or file.__contains__("*") or file.__contains__("<") or file.__contains__(">") \
+                            or file.__contains__("|"):
+                        if path.isfile('styles/_lib.txt'):
+                            f = open('styles/_lib.txt', 'r')
+                            for i in f:
+                                if i[len(i.split(':')[0])+1:-1] == file:
+                                        styles_file_name = 'styles/' + i.split(':')[0]+ '.txt'
+                            f.close()
+
+                        if path.isfile('saves/_lib.txt'):
+                            f = open('saves/_lib.txt', 'r')
+                            for i in f:
+                                if i[len(i.split(':')[0])+1:-1] == file:
+                                        saves_file_name = 'saves/' + i.split(':')[0]+ '.txt'
+                            f.close()
+
+                    if path.isfile(saves_file_name):
+                        f = open(saves_file_name, "r")
+                        ex.solution = f.read()
+                        f.close()
+                    if path.isfile(styles_file_name):
+                        ex.color_styles = self.get_file_color_styles(styles_file_name)
                 self.exercises.append(ex)
         except requests.exceptions.RequestException as e:
             confirm = ConfirmWindow('Gamification - Errore di connessione',
@@ -287,18 +324,82 @@ class Data:
                 confirm.deleteLater()
                 exit()
 
-    def save_exercise(self, exercise):
-        # Todo salva su file exercise.slution
-        return
+    @staticmethod
+    def get_file_color_styles(file):
+        styles = DefaultColorStyles()
+        f = open(file, "r")
+        styles.code_background_color = f.readline()[0:-1]
+        styles.code_text_color = f.readline()[0:-1]
+        styles.results_background_color = f.readline()[0:-1]
+        styles.results_text_color = f.readline()[0:-1]
+        styles.error_results_background_color = f.readline()[0:-1]
+        styles.error_results_text_color = f.readline()[0:-1]
 
-    def send_exercise(self, exercise):
-        self.save_exercise(exercise)
-        # ToDo fare online
+        styles.string_color = f.readline()[0:-1]
+        styles.comment_color = f.readline()[0:-1]
+        styles.multi_line_comment_color = f.readline()[0:-1]
 
-    def addExercise(self, exercise):
-        # ToDo da mandare online
-        exercise.color_styles = self.color_styles
-        self.exercises.append(exercise)
+        styles.keyWords = [
+            KeyWord('if', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
+            KeyWord('elif', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
+            KeyWord('else', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
+            KeyWord('for', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
+            KeyWord('while', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
+            KeyWord('def', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
+            KeyWord('import', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
+            KeyWord('is', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
+            KeyWord('in', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
+            KeyWord('not', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
+            KeyWord('None', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
+            KeyWord('class', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
+            KeyWord('print', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
+            KeyWord('True', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
+            KeyWord('False', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False)
+        ]
+        f.close()
+        return styles
+
+    @staticmethod
+    def write_file_color_styles(file, styles):
+        if file.__contains__('"') or file.__contains__("'") or file.__contains__('?') or file[7:-4].__contains__('\\') \
+                or file[7:-4].__contains__('/') or file.__contains__(":") or file.__contains__("*") \
+                or file.__contains__("<") or file.__contains__(">") or file.__contains__("|"):
+            not_find = True
+            file_name = '0'
+            if path.isfile('styles/_lib.txt'):
+                f = open('styles/_lib.txt', 'r')
+                for i in f:
+                    if not_find:
+                        if i[len(i.split(':')[0])+1:-1] == file[7:-4]:
+                            not_find = False
+                            file_name = i.split(':')[0]
+                        else:
+                            file_name = str(int(i.split(':')[0])+1)
+                f.close()
+            if not_find:
+                f = open('styles/_lib.txt', 'a')
+                f.write(file_name + ':' + file[7:-4] + '\n')
+                f.close()
+            f = open('styles/' + file_name + '.txt', "w")
+        else:
+            f = open(file, "w")
+        text = ""
+        text += styles.code_background_color + '\n'
+        text += styles.code_text_color + '\n'
+        text += styles.results_background_color + '\n'
+        text += styles.results_text_color + '\n'
+        text += styles.error_results_background_color + '\n'
+        text += styles.error_results_text_color + '\n'
+
+        text += styles.string_color + '\n'
+        text += styles.comment_color + '\n'
+        text += styles.multi_line_comment_color + '\n'
+
+        for i in styles.keyWords:
+            text += i.color + '\n' + str(i.bold) + '\n'
+
+        f.write(text)
+        f.close()
 
 
 class DefaultColorStyles:
@@ -351,3 +452,45 @@ class DefaultColorStyles:
         for i in self.keyWords:
             color_styles.keyWords.append(KeyWord(i.word, i.color, i.bold))
         return color_styles
+
+'''
+white
+black
+white
+black
+white
+red
+#ff0000
+#999999
+#990099
+#0000ff
+True
+#0000ff
+True
+#0000ff
+True
+#0000ff
+True
+#0000ff
+True
+#0000ff
+True
+#0000ff
+True
+#0000ff
+True
+#0000ff
+True
+#0000ff
+True
+#0000ff
+True
+#0000ff
+True
+#0000ff
+False
+#00ff00
+False
+#00ff00
+False
+'''

@@ -4,6 +4,7 @@ import re
 import contextlib
 import io
 from functools import partial
+from os import path
 
 import requests
 from PyQt5.QtGui import QTextCursor, QFont, QPixmap
@@ -19,7 +20,7 @@ from windows.SettingsWindow import SettingsWindow
 class ExerciseWindow(QWidget):
     def __init__(self, exercise, data, closer_controller):
         super(ExerciseWindow, self).__init__(flags=Qt.Window)
-        self.setMinimumSize(QSize(800, 650))
+        self.setMinimumSize(QSize(1000, 650))
         self.setWindowTitle('Gamification - "' + exercise.title + '" by ' + exercise.creator)
         self.exercise = exercise
         self.data = data
@@ -279,7 +280,35 @@ class ExerciseWindow(QWidget):
         pixmap = pixmap.scaled(50, 50)
         self.save_button.setPixmap(pixmap)
         self.exercise.solution = self.code_editor.toPlainText()
-        self.data.save_exercise(self.exercise)
+
+        file = self.exercise.id
+        file_name = 'saves/' + self.exercise.id + '.txt'
+
+        if file.__contains__('"') or file.__contains__("'") or file.__contains__('?') or file.__contains__('\\') \
+                or file.__contains__('/') or file.__contains__(":") or file.__contains__("*") \
+                or file.__contains__("<") or file.__contains__(">") or file.__contains__("|"):
+            not_find = True
+            file_name = '0'
+            if path.isfile('saves/_lib.txt'):
+                f = open('saves/_lib.txt', 'r')
+                for i in f:
+                    if not_find:
+                        if i[len(i.split(':')[0])+1:-1] == file:
+                            not_find = False
+                            file_name = i.split(':')[0]
+                        else:
+                            file_name = str(int(i.split(':')[0])+1)
+                f.close()
+            if not_find:
+                f = open('saves/_lib.txt', 'a')
+                f.write(file_name + ':' + file + '\n')
+                f.close()
+            file_name = 'saves/' + file_name + '.txt'
+
+        f = open(file_name, "w")
+        f.write(self.exercise.solution)
+        f.close()
+
         self.closer_controller.update()
 
     def more_button_on_click(self, event):
@@ -302,9 +331,13 @@ class ExerciseWindow(QWidget):
             self.play_button_on_click(None)
         warning = False
         money = 100
+        if self.exercise.creator == self.data.my_proff:
+            money = 150 if self.exercise.level == 'Difficile' else 100
+
         confermation_text = "Sei sicuro di voler inviare l'esercizio?<br>" \
                             "La tua soluzione non potrà più essere modificata!"
 
+        owned = True
         if self.data.owned_variables['lines'] is not None \
                 and self.resources_used['lines'] > self.data.owned_variables['lines'] \
                 or self.data.owned_variables['variables'] is not None \
@@ -325,45 +358,53 @@ class ExerciseWindow(QWidget):
                                  "Attenzione, hai usato più risorse di quelle che possiedi!<br>" \
                                  "In questo modo non guadagnerai neanche un soldo!</span>"
             warning = True
+            owned = False
             money = 0
 
-        if self.exercise.limits['lines'] is not None and self.resources_used['lines'] > self.exercise.limits['lines'] \
-                or self.exercise.limits['variables'] is not None \
-                and self.resources_used['variables'] > self.exercise.limits['variables'] \
-                or self.exercise.limits['if'] is not None \
-                and self.resources_used['if'] > self.exercise.limits['if'] \
-                or self.exercise.limits['elif'] is not None \
-                and self.resources_used['elif'] > self.exercise.limits['elif'] \
-                or self.exercise.limits['else'] is not None \
-                and self.resources_used['else'] > self.exercise.limits['else'] \
-                or self.exercise.limits['conditions'] is not None \
-                and self.resources_used['conditions'] > self.exercise.limits['conditions'] \
-                or self.exercise.limits['for'] is not None \
-                and self.resources_used['for'] > self.exercise.limits['for'] \
-                or self.exercise.limits['while'] is not None \
-                and self.resources_used['while'] > self.exercise.limits['while'] \
-                or self.exercise.limits['cycles'] is not None \
-                and self.resources_used['cycles'] > self.exercise.limits['cycles'] \
-                or self.exercise.limits['def'] is not None \
-                and self.resources_used['def'] > self.exercise.limits['def']:
+        if (self.exercise.limits['lines'] is not None
+            and self.resources_used['lines'] > self.exercise.limits['lines']) \
+                or (self.exercise.limits['variables'] is not None
+                    and self.resources_used['variables'] > self.exercise.limits['variables']) \
+                or (self.exercise.limits['if'] is not None
+                    and self.resources_used['if'] > self.exercise.limits['if']) \
+                or (self.exercise.limits['elif'] is not None
+                    and self.resources_used['elif'] > self.exercise.limits['elif']) \
+                or (self.exercise.limits['else'] is not None
+                    and self.resources_used['else'] > self.exercise.limits['else']) \
+                or (self.exercise.limits['conditions'] is not None
+                    and self.resources_used['if'] + self.resources_used['elif']
+                    + self.resources_used['else'] > self.exercise.limits['conditions']) \
+                or (self.exercise.limits['for'] is not None
+                    and self.resources_used['for'] > self.exercise.limits['for']) \
+                or (self.exercise.limits['while'] is not None
+                    and self.resources_used['while'] > self.exercise.limits['while']) \
+                or (self.exercise.limits['cycles'] is not None
+                    and self.resources_used['for'] + self.resources_used['while'] > self.exercise.limits['cycles']) \
+                or (self.exercise.limits['def'] is not None
+                    and self.resources_used['def'] > self.exercise.limits['def']):
             confermation_text += "<br><br><span style=\" color: red;\">" \
                                  "Attenzione, hai usato più risorse rispetto al limite assegnato!<br>" \
                                  "In questo modo l'esercizio potrebbe esser valutato sbagliato!</span>"
             warning = True
-            if money == 100:
+            if money > 0:
                 money -= 50
 
         if not self.code_compile:
             confermation_text += "<br><br><span style=\" color: red;\">" \
                                  "Attenzione, il tuo codice ha degli errori e non viene eseguito interamente!<br>" \
                                  "In questo modo l'esercizio potrebbe esser valutato sbagliato!</span>"
-            warning = True
-            if money == 100:
+            if money > 0 and (self.exercise.creator != self.data.my_proff
+                              or not (self.exercise.level == 'Medio' and warning)):
                 money -= 50
+            warning = True
 
-        if money == 50:
-            confermation_text += "<br><br><span style=\" color: #ff5500;\">" \
-                                 "Consegnando così guadagnerai meno soldi!</span>"
+        if owned and warning:
+            if money > 0:
+                confermation_text += "<br><br><span style=\" color: #ff5500;\"> " \
+                                     "Consegnando così guadagnerai meno soldi!</span>"
+            else:
+                confermation_text += "<br><br><span style=\" color: #ff5500;\"> " \
+                                     "Consegnando così non guadagnerai neanche un soldo!</span>"
 
         ok_text = 'Invia comunque' if warning else 'Invia'
         confirm = ConfirmWindow('Gamification - "' + self.exercise.title + '" by ' + self.exercise.creator,
@@ -375,9 +416,8 @@ class ExerciseWindow(QWidget):
                    str(data.hour) + ":" + str(data.minute) + ":" + str(data.second)
             resources = str(self.resources_used['lines']) + "," + str(self.resources_used['variables']) + "," + \
                         str(self.resources_used['if']) + "," + str(self.resources_used['elif']) + "," + \
-                        str(self.resources_used['else']) + "," + str(self.resources_used['conditions']) + "," + \
-                        str(self.resources_used['for']) + "," + str(self.resources_used['while']) + "," + \
-                        str(self.resources_used['cycles']) + "," + str(self.resources_used['def'])
+                        str(self.resources_used['else']) + "," + str(self.resources_used['for']) + "," + \
+                        str(self.resources_used['while']) + "," + str(self.resources_used['def'])
             self.exercise.color_styles = self.color_styles.__copy__()
             cs = self.exercise.color_styles.code_background_color + "," + self.exercise.color_styles.code_text_color + \
                  "," + self.exercise.color_styles.results_background_color + "," + \
@@ -398,7 +438,6 @@ class ExerciseWindow(QWidget):
                     self.exercise.solution = self.code_editor.toPlainText()
                     self.exercise.delivery_date = datetime.datetime.now()
                     self.exercise.resources_used = self.resources_used
-                    self.data.send_exercise(self.exercise)
                     self.data.money += money
                     self.closer_controller.close_ExerciseWindow(self.exercise)
             except requests.exceptions.RequestException as e:
@@ -429,10 +468,10 @@ class ExerciseWindow(QWidget):
                               data={'username': self.data.my_name, 'password': self.data.my_psw,
                                     'exercise': self.exercise.id, 'class': self.data.my_class})
                     if r.text != "":
-                        class_solutions = json.loads(r.text)
+                        class_solutions = json.loads(r.text[1: len(r.text)])
                         confirm = ClassExerciseComparisonWindow(
                             'Gamification - "' + self.exercise.title + '" soluzioni dei compagni',
-                            class_solutions, self.exercise.limits, self, parent=self)
+                            class_solutions, r.text[0:1], self.exercise.limits, self, parent=self)
                         confirm.exec_()
                         confirm.deleteLater()
                 except requests.exceptions.RequestException as e:

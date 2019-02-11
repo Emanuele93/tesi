@@ -38,15 +38,36 @@ class HomeWindow(QWidget):
         settings_button.setObjectName('img/settings.png')
         settings_button.mousePressEvent = self.settings_button_on_click
 
-        level = QLabel('Liv. ' +str(self.data.level), self)
-        level.setFont(font)
-        level.setStyleSheet('background-color: #9999FF; border-top: 1px solid grey;')
-        level.setFixedHeight(50)
-        level.setContentsMargins(20, 10, 20, 10)
+        l = 1
+        old = 0
+        for i in self.data.level_progression:
+            if self.data.level >= i:
+                l += 1
+                old = i
+
+        level_number = QLabel('Liv. ' + str(l), self)
+        level_number.setFont(font)
+        level_number.setStyleSheet('background-color: #9999FF; border: 1px solid grey; border-top: 0px solid grey')
+        level_number.setFixedSize(85, 40)
+        level_number.setContentsMargins(20, 10, 20, 10)
+
+        level_bar = QLabel(self)
+        level_bar.setStyleSheet('background-color: #4040FF')
+        level_bar.setFixedSize(int(85*(self.data.level-old)/(self.data.level_progression[l-1]-old)), 5)
+
+        box = QVBoxLayout(self)
+        box.setSpacing(0)
+        box.setContentsMargins(0, 0, 0, 0)
+        box.addWidget(level_number)
+        box.addWidget(level_bar)
+        level = QWidget(self, flags=Qt.Widget)
+        level.setLayout(box)
+        level.setObjectName("level")
+        level.setStyleSheet("QWidget#level {border: 1px solid grey; background-color: #BBBBFF}")
 
         soldi = QLabel(str(self.data.money) + ' soldi', self)
         soldi.setFont(font)
-        soldi.setStyleSheet('background-color: yellow; border-top: 1px solid grey;')
+        soldi.setStyleSheet('background-color: yellow; border: 1px solid grey;')
         soldi.setFixedHeight(50)
         soldi.setContentsMargins(20, 10, 20, 10)
 
