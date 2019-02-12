@@ -1,7 +1,8 @@
 import sys
 import threading
+from os import path
 
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QApplication, QDialog
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QApplication
 from PyQt5.QtCore import *
 
 from Data import Data
@@ -9,6 +10,7 @@ from windows.AbilitiesWindow import AbilitiesWindow
 from windows.AchievementsWindow import AchievementsWindow
 from windows.HomeWindow import HomeWindow
 from windows.HomeworkCollectionWindow import HomeworkCollectionWindow
+from windows.LoginWindow import LoginWindow
 
 
 class WindowsController(QWidget):
@@ -16,11 +18,15 @@ class WindowsController(QWidget):
         super(WindowsController, self).__init__(flags=Qt.Window)
         self.setFixedSize(QSize(800, 600))
         self.setWindowTitle("Gamification")
+        self.data = None
 
-        self.data = Data()
         self.box = QHBoxLayout(self)
         self.box.setContentsMargins(0, 0, 0, 0)
-        self.mainWin = HomeWindow(self, self.data)
+        if path.isfile('user_info.txt'):
+            self.data = Data()
+            self.mainWin = HomeWindow(self, self.data)
+        else:
+            self.mainWin = LoginWindow(self)
         self.box.addWidget(self.mainWin)
 
         self.mainWin.show()
