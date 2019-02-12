@@ -53,6 +53,7 @@ class HomeworkCollectionWindow(QWidget):
         home_button.setFixedSize(100, 50)
         home_button.clicked.connect(self.controller.open_MainWindow)
         home_button.setFont(font)
+        home_button.setStyleSheet('background-color: #ffdd55')
 
         l = 1
         old = 0
@@ -63,7 +64,7 @@ class HomeworkCollectionWindow(QWidget):
 
         level_number = QLabel('Liv. ' + str(l), self)
         level_number.setFont(font)
-        level_number.setStyleSheet('background-color: #9999FF; border: 1px solid grey; border-top: 0px solid grey')
+        level_number.setStyleSheet('background-color: #9999FF; border: 1px solid grey')
         level_number.setFixedSize(85, 40)
         level_number.setContentsMargins(20, 10, 20, 10)
 
@@ -83,15 +84,15 @@ class HomeworkCollectionWindow(QWidget):
 
         soldi = QLabel(str(self.data.money) + ' soldi', self)
         soldi.setFont(font)
-        soldi.setStyleSheet('background-color: yellow; border: 1px solid grey')
+        soldi.setStyleSheet('background-color: #ffea00; border: 1px solid grey')
         soldi.setFixedHeight(45)
         soldi.setContentsMargins(20, 5, 20, 5)
 
         box = QHBoxLayout(self)
-        box.setAlignment(Qt.AlignLeft)
+        box.setAlignment(Qt.AlignCenter)
         box.addWidget(level)
         box.addWidget(soldi)
-        box.setContentsMargins(50, 0, 0, 0)
+        box.setContentsMargins(10, 10, 10, 10)
         soldi_widget = QWidget(self, flags=Qt.Widget)
         soldi_widget.setLayout(box)
 
@@ -99,19 +100,21 @@ class HomeworkCollectionWindow(QWidget):
         self.add_homework_button.clicked.connect(self.open_CreateHomeworkWindow)
         self.add_homework_button.setFixedSize(250, 50)
         self.add_homework_button.setFont(font)
+        self.add_homework_button.setStyleSheet("background-color: #ffdd55")
         if not self.data.make_homework_coin:
             self.add_homework_button.setEnabled(False)
 
         top_box = QHBoxLayout(self)
-        top_box.setContentsMargins(20, 10, 20, 10)
+        top_box.setContentsMargins(20, 0, 20, 0)
         top_box.addWidget(home_button)
         top_box.addWidget(soldi_widget, alignment=Qt.AlignTop)
         top_box.addWidget(self.add_homework_button, alignment=Qt.AlignRight)
-        top_box.setSpacing(50)
+        top_box.setSpacing(80)
         top_widget = QWidget(self, flags=Qt.Widget)
         top_widget.setLayout(top_box)
         top_widget.setObjectName("topStyle")
-        top_widget.setStyleSheet("QWidget#topStyle {border: 0px solid grey; border-bottom: 1px solid grey}")
+        top_widget.setStyleSheet("QWidget#topStyle {border: 0px solid grey; border-bottom: 1px solid grey; "
+                                 "border-top: 1px solid grey; background-color: #ffbd49}")
         top_widget.setFixedHeight(90)
         return top_widget
 
@@ -179,11 +182,11 @@ class HomeworkCollectionWindow(QWidget):
                     exercise.mousePressEvent = partial(self.open_ExerciseWindow, i)
 
                     if (i.solution is None or i.solution == i.start_code) and i.delivery_date is None:
-                        exercise.setStyleSheet('QWidget#exercise {background-color:red; border: 1px solid grey;}')
+                        exercise.setStyleSheet('QWidget#exercise {background-color: #dd6666; border: 1px solid grey;}')
                     elif i.solution is not None and i.delivery_date is None:
-                        exercise.setStyleSheet('QWidget#exercise {background-color:yellow; border: 1px solid grey};')
+                        exercise.setStyleSheet('QWidget#exercise {background-color: #ffff33; border: 1px solid grey};')
                     else:
-                        exercise.setStyleSheet('QWidget#exercise {background-color:green; border: 1px solid grey;}')
+                        exercise.setStyleSheet('QWidget#exercise {background-color: #66ee66; border: 1px solid grey;}')
 
                     if i.creator == self.data.my_proff:
                         proff_exercises_box.addWidget(exercise, alignment=Qt.AlignLeft)

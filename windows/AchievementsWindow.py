@@ -65,11 +65,13 @@ class AchievementsWindow(QWidget):
         home_button.setFixedSize(100, 50)
         home_button.clicked.connect(self.controller.open_MainWindow)
         home_button.setFont(font)
+        home_button.setStyleSheet("background-color: #ffdd55")
 
         open_leaderboard_button = QPushButton('CLASSIFICA', self)
         open_leaderboard_button.clicked.connect(self.open_leaderboard_window)
         open_leaderboard_button.setFixedSize(250, 50)
         open_leaderboard_button.setFont(font)
+        open_leaderboard_button.setStyleSheet("background-color: #ffdd55")
 
         l = 1
         old = 0
@@ -100,28 +102,29 @@ class AchievementsWindow(QWidget):
 
         self.soldi = QLabel(str(self.data.money) + ' soldi', self)
         self.soldi.setFont(font)
-        self.soldi.setStyleSheet('background-color: yellow; border: 1px solid grey')
+        self.soldi.setStyleSheet('background-color: #ffea00; border: 1px solid grey')
         self.soldi.setFixedHeight(45)
         self.soldi.setContentsMargins(20, 5, 20, 5)
 
         box = QHBoxLayout(self)
-        box.setAlignment(Qt.AlignLeft)
+        box.setAlignment(Qt.AlignCenter)
         box.addWidget(level)
         box.addWidget(self.soldi)
-        box.setContentsMargins(50, 0, 0, 0)
+        box.setContentsMargins(10, 10, 10, 10)
         soldi_widget = QWidget(self, flags=Qt.Widget)
         soldi_widget.setLayout(box)
 
         top_box = QHBoxLayout(self)
-        top_box.setContentsMargins(20, 10, 20, 10)
+        top_box.setContentsMargins(20, 0, 20, 0)
         top_box.addWidget(home_button)
         top_box.addWidget(soldi_widget, alignment=Qt.AlignTop)
         top_box.addWidget(open_leaderboard_button, alignment=Qt.AlignRight)
-        top_box.setSpacing(50)
+        top_box.setSpacing(80)
         top_widget = QWidget(self, flags=Qt.Widget)
         top_widget.setLayout(top_box)
         top_widget.setObjectName("topStyle")
-        top_widget.setStyleSheet("QWidget#topStyle {border: 0px solid grey; border-bottom: 1px solid grey}")
+        top_widget.setStyleSheet("QWidget#topStyle {border: 0px solid grey; border-bottom: 1px solid grey; "
+                                 "border-top: 1px solid grey; background-color: #88aaff}")
         top_widget.setFixedHeight(90)
         return top_widget
 
@@ -158,7 +161,7 @@ class AchievementsWindow(QWidget):
             money = QLabel(str(self.achievements[i]['value'] * 10) + " soldi", self)
             money.setAlignment(Qt.AlignCenter)
             money.setObjectName("money")
-            money.setStyleSheet("QWidget#money {border: 1px solid grey; background-color: yellow}")
+            money.setStyleSheet("QWidget#money {border: 1px solid grey; background-color: #ffea00}")
             money.setContentsMargins(0,5,0,5)
             box.addWidget(money)
             exp = QLabel(str(self.achievements[i]['value']) + " exp", self)

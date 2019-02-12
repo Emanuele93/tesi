@@ -29,6 +29,7 @@ class AbilitiesWindow(QWidget):
         home_button.setFixedSize(100, 50)
         home_button.clicked.connect(self.home.open_MainWindow)
         home_button.setFont(font)
+        home_button.setStyleSheet("background-color: #ffdd55")
 
         button1 = QPushButton('CONTATORI', self)
         button1.setFixedHeight(50)
@@ -91,7 +92,8 @@ class AbilitiesWindow(QWidget):
         top_widget.setLayout(top_box)
         top_widget.setFixedHeight(90)
         top_widget.setObjectName("topStyle")
-        top_widget.setStyleSheet("QWidget#topStyle {border: 0px solid grey; border-bottom: 1px solid grey}")
+        top_widget.setStyleSheet("QWidget#topStyle {border: 0px solid grey; border-bottom: 1px solid grey; "
+                                 "background-color: #47d271}")
 
         box = QHBoxLayout(self)
         box.addWidget(self.soldi)
@@ -101,7 +103,7 @@ class AbilitiesWindow(QWidget):
         bottom_widget.setLayout(box)
         bottom_widget.setObjectName("soldi")
         bottom_widget.setStyleSheet("QWidget#soldi {border: 1px solid grey; border-top: 0px solid grey; "
-                                    "background-color:yellow;}")
+                                    "background-color: #ffea00}")
         bottom_widget.setFixedHeight(50)
 
         window_layaut = QVBoxLayout(self)
@@ -119,10 +121,10 @@ class AbilitiesWindow(QWidget):
         p2.setVisible(False)
         p3.setVisible(False)
         p4.setVisible(False)
-        b1.setStyleSheet('background-color: grey')
-        b2.setStyleSheet('background-color: #c9c9c9')
-        b3.setStyleSheet('background-color: #c9c9c9')
-        b4.setStyleSheet('background-color: #c9c9c9')
+        b1.setStyleSheet('background-color: #dd9933')
+        b2.setStyleSheet('background-color: #ffdd55')
+        b3.setStyleSheet('background-color: #ffdd55')
+        b4.setStyleSheet('background-color: #ffdd55')
 
     def make_page1(self):
         box = QHBoxLayout(self)

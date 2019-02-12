@@ -14,6 +14,7 @@ class HomeWindow(QWidget):
         font = QFont()
         font.setPixelSize(15)
         self.data = data
+        self.controller = controller
 
         self.image = QLabel(self)
         pixmap = QPixmap('img/'+data.current_image)
@@ -21,15 +22,7 @@ class HomeWindow(QWidget):
         self.image.setPixmap(pixmap)
         self.image.setObjectName(data.current_image)
         self.image.mousePressEvent = partial(controller.open_Abilities_Window, 3)
-
-        box = QHBoxLayout(self)
-        box.addWidget(self.image, alignment=Qt.AlignCenter)
-        box.setContentsMargins(0, 0, 0, 0)
-        label = QWidget(self, flags=Qt.Widget)
-        label.setFixedSize(150, 150)
-        label.setLayout(box)
-        label.setObjectName("frame")
-        label.setStyleSheet("QWidget#frame {border: 1px solid grey; background-color: #8888dd}")
+        self.image.setStyleSheet('border: 1px solid grey')
 
         pixmap = QPixmap('img/settings.png')
         pixmap = pixmap.scaled(50, 50)
@@ -47,13 +40,13 @@ class HomeWindow(QWidget):
 
         level_number = QLabel('Liv. ' + str(l), self)
         level_number.setFont(font)
-        level_number.setStyleSheet('background-color: #9999FF; border: 1px solid grey; border-top: 0px solid grey')
-        level_number.setFixedSize(85, 40)
+        level_number.setStyleSheet('background-color: #9999FF; border: 1px solid grey')
+        level_number.setFixedSize(85, 42)
         level_number.setContentsMargins(20, 10, 20, 10)
 
         level_bar = QLabel(self)
         level_bar.setStyleSheet('background-color: #4040FF')
-        level_bar.setFixedSize(int(85*(self.data.level-old)/(self.data.level_progression[l-1]-old)), 5)
+        level_bar.setFixedSize(int(85*(self.data.level-old)/(self.data.level_progression[l-1]-old)), 8)
 
         box = QVBoxLayout(self)
         box.setSpacing(0)
@@ -62,12 +55,13 @@ class HomeWindow(QWidget):
         box.addWidget(level_bar)
         level = QWidget(self, flags=Qt.Widget)
         level.setLayout(box)
+        level.setFixedHeight(50)
         level.setObjectName("level")
         level.setStyleSheet("QWidget#level {border: 1px solid grey; background-color: #BBBBFF}")
 
         soldi = QLabel(str(self.data.money) + ' soldi', self)
         soldi.setFont(font)
-        soldi.setStyleSheet('background-color: yellow; border: 1px solid grey;')
+        soldi.setStyleSheet('background-color: #ffea00; border: 1px solid grey;')
         soldi.setFixedHeight(50)
         soldi.setContentsMargins(20, 10, 20, 10)
 
@@ -87,60 +81,50 @@ class HomeWindow(QWidget):
         settings_widget.setLayout(box)
 
         box = QHBoxLayout(self)
-        box.addWidget(label, alignment=Qt.AlignLeft)
+        box.setAlignment(Qt.AlignVCenter)
+        box.addWidget(self.image, alignment=Qt.AlignLeft)
         box.addWidget(soldi_widget, alignment=Qt.AlignLeft)
         box.addWidget(settings_widget, alignment=Qt.AlignRight)
-        box.setContentsMargins(0, 0, 0, 0)
         frame = QWidget(self, flags=Qt.Widget)
         frame.setFixedHeight(150)
         frame.setLayout(box)
         frame.setObjectName("frame")
-        frame.setStyleSheet("QWidget#frame {border: 1px solid grey}")
+        frame.setStyleSheet("QWidget#frame {border: 0px solid grey; border-top: 1px solid grey; "
+                            "border-bottom: 1px solid grey; background-color: #ffdd55}")
 
-        frame1 = QFrame(flags=Qt.Widget)
-        frame1.setFrameShape(QFrame.StyledPanel)
+        pixmap = QPixmap('img/esercizi.png')
+        box1 = QLabel(self)
+        box1.setPixmap(pixmap)
+        box1.setObjectName('img/esercizi.png')
+        #box1.mousePressEvent = self.my_open_HomeworkCollectionWindow
+        box1.setStyleSheet("border: 1px solid grey")
 
-        box2 = QWidget(self, flags=Qt.Widget)
-        box2.setObjectName("box2")
-        box2.setStyleSheet("QWidget#box2 {border: 1px solid grey}")
-        internal_layout = QVBoxLayout(self)
-        internal_layout.setContentsMargins(10, 10, 10, 10)
-        internal_layout.setSpacing(10)
-        button = QPushButton('COMPITI', self)
-        button.setFont(font)
-        button.clicked.connect(partial(controller.open_HomeworkCollectionWindow, True, 0))
-        internal_layout.addWidget(button, alignment=Qt.AlignVCenter)
-        box2.setLayout(internal_layout)
+        pixmap = QPixmap('img/compiti.png')
+        box2 = QLabel(self)
+        box2.setPixmap(pixmap)
+        box2.setObjectName('img/compiti.png')
+        box2.mousePressEvent = self.my_open_HomeworkCollectionWindow
+        box2.setStyleSheet("border: 1px solid grey")
 
-        box3 = QWidget(self, flags=Qt.Widget)
-        box3.setObjectName("box3")
-        box3.setStyleSheet("QWidget#box3 {border: 1px solid grey}")
-        internal_layout = QVBoxLayout(self)
-        internal_layout.setContentsMargins(10, 10, 10, 10)
-        internal_layout.setSpacing(10)
-        button = QPushButton('OBIETTIVI', self)
-        button.setFont(font)
-        button.clicked.connect(partial(controller.open_AchievementsWindow,0))
-        internal_layout.addWidget(button, alignment=Qt.AlignVCenter)
-        box3.setLayout(internal_layout)
+        pixmap = QPixmap('img/obiettivi.png')
+        box3 = QLabel(self)
+        box3.setPixmap(pixmap)
+        box3.setObjectName('img/obiettivi.png')
+        box3.mousePressEvent = self.my_open_AchievementsWindow
+        box3.setStyleSheet("border: 1px solid grey")
 
-        box4 = QWidget(self, flags=Qt.Widget)
-        box4.setObjectName("box4")
-        box4.setStyleSheet("QWidget#box4 {border: 1px solid grey}")
-        internal_layout = QVBoxLayout(self)
-        internal_layout.setContentsMargins(10, 10, 10, 10)
-        internal_layout.setSpacing(10)
-        button = QPushButton('NEGOZIO', self)
-        button.setFont(font)
-        button.clicked.connect(partial(controller.open_Abilities_Window, 1))
-        internal_layout.addWidget(button, alignment=Qt.AlignVCenter)
-        box4.setLayout(internal_layout)
+        pixmap = QPixmap('img/negozio.png')
+        box4 = QLabel(self)
+        box4.setPixmap(pixmap)
+        box4.setObjectName('img/negozio.png')
+        box4.mousePressEvent = self.my_open_Abilities_Window
+        box4.setStyleSheet("border: 1px solid grey")
 
         box = QWidget(self, flags=Qt.Widget)
         internal_layout = QHBoxLayout(self)
-        internal_layout.setContentsMargins(0,0,0,0)
+        internal_layout.setContentsMargins(10, 5, 10, 15)
         internal_layout.setSpacing(10)
-        internal_layout.addWidget(frame1)
+        internal_layout.addWidget(box1)
         internal_layout.addWidget(box2)
         internal_layout.addWidget(box3)
         internal_layout.addWidget(box4)
@@ -148,7 +132,7 @@ class HomeWindow(QWidget):
 
         layout = QVBoxLayout(self)
         layout.setSpacing(10)
-        layout.setContentsMargins(10,10,10,10)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(frame)
         layout.addWidget(box)
 
@@ -161,3 +145,12 @@ class HomeWindow(QWidget):
         pixmap = QPixmap('img/' + name)
         pixmap = pixmap.scaled(130,130)
         self.image.setPixmap(pixmap)
+
+    def my_open_HomeworkCollectionWindow(self, event):
+        self.controller.open_HomeworkCollectionWindow(True, 0)
+
+    def my_open_AchievementsWindow(self, event):
+        self.controller.open_AchievementsWindow(0)
+
+    def my_open_Abilities_Window(self, event):
+        self.controller.open_Abilities_Window(1, None)
