@@ -137,9 +137,16 @@ class HomeworkCollectionWindow(QWidget):
             other_exercises_box = QHBoxLayout(self)
             other_exercises_box.setAlignment(Qt.AlignLeft)
             other_exercises_box.setContentsMargins(0, 0, 0, 0)
+            other_exercises_box_v = QVBoxLayout(self)
+            other_exercises_box_v.setContentsMargins(0, 0, 0, 0)
+            width_students = 0
+
             proff_exercises_box = QHBoxLayout(self)
             proff_exercises_box.setAlignment(Qt.AlignLeft)
             proff_exercises_box.setContentsMargins(0, 0, 0, 0)
+            width = 0
+            proff_exercises_box_v = QVBoxLayout(self)
+            proff_exercises_box_v.setContentsMargins(0, 0, 0, 0)
 
             proff_counter = other_counter = 0
             temp_exercises = []
@@ -188,19 +195,46 @@ class HomeworkCollectionWindow(QWidget):
                     else:
                         exercise.setStyleSheet('QWidget#exercise {background-color: #66ee66; border: 1px solid grey;}')
 
-                    if i.creator == self.data.my_proff:
-                        proff_exercises_box.addWidget(exercise, alignment=Qt.AlignLeft)
+                    if i.creator in self.data.my_proff:
+                        width += exercise.sizeHint().width()
+                        if width > 580:
+                            width = exercise.sizeHint().width()
+                            proff_exercises_widget = QWidget(self, flags=Qt.Widget)
+                            proff_exercises_widget.setLayout(proff_exercises_box)
+                            proff_exercises_box_v.addWidget(proff_exercises_widget)
+                            proff_exercises_box = QHBoxLayout(self)
+                            proff_exercises_box.setAlignment(Qt.AlignLeft)
+                            proff_exercises_box.setContentsMargins(0, 0, 0, 0)
+                        proff_exercises_box.addWidget(exercise)
                         proff_counter += 1
                     else:
+                        width_students += exercise.sizeHint().width()
+                        if width_students > 580:
+                            width_students = exercise.sizeHint().width()
+                            other_exercises_widget = QWidget(self, flags=Qt.Widget)
+                            other_exercises_widget.setLayout(other_exercises_box)
+                            other_exercises_box_v.addWidget(other_exercises_widget)
+                            other_exercises_box = QHBoxLayout(self)
+                            other_exercises_box.setAlignment(Qt.AlignLeft)
+                            other_exercises_box.setContentsMargins(0, 0, 0, 0)
                         other_exercises_box.addWidget(exercise, alignment=Qt.AlignLeft)
                         other_counter += 1
             for i in temp_exercises:
                 exercises.remove(i)
 
-            proff_exercises_widget = QWidget(self, flags=Qt.Widget)
-            proff_exercises_widget.setLayout(proff_exercises_box)
+
             other_exercises_widget = QWidget(self, flags=Qt.Widget)
             other_exercises_widget.setLayout(other_exercises_box)
+            other_exercises_box_v.addWidget(other_exercises_widget)
+
+            proff_exercises_widget = QWidget(self, flags=Qt.Widget)
+            proff_exercises_widget.setLayout(proff_exercises_box)
+            proff_exercises_box_v.addWidget(proff_exercises_widget)
+
+            proff_exercises_widget = QWidget(self, flags=Qt.Widget)
+            proff_exercises_widget.setLayout(proff_exercises_box_v)
+            other_exercises_widget = QWidget(self, flags=Qt.Widget)
+            other_exercises_widget.setLayout(other_exercises_box_v)
             both_exercises_box = QVBoxLayout(self)
             both_exercises_box.setContentsMargins(0, 0, 0, 0)
             both_exercises_box.addWidget(proff_exercises_widget, alignment=Qt.AlignTop)
@@ -214,7 +248,7 @@ class HomeworkCollectionWindow(QWidget):
                 other_exercises_widget.hide()
 
             exercises_box = QHBoxLayout(self)
-            exercises_box.setContentsMargins(20, 20, 20, 20)
+            exercises_box.setContentsMargins(20, 20, 0, 20)
             exercises_box.addWidget(date_exercises, alignment=Qt.AlignTop)
             exercises_box.addWidget(both_exercises_widget, alignment=Qt.AlignLeft)
             exercises_widget = QWidget(self, flags=Qt.Widget)

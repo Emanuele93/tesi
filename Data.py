@@ -73,7 +73,7 @@ class Data:
         self.my_name = f.readline()[0:-1]
         self.my_psw = f.readline()[0:-1]
         self.my_class = f.readline()[0:-1]
-        self.my_proff = None
+        self.my_proff = []
         self.mates = []
         self.get_class_components()
 
@@ -177,7 +177,7 @@ class Data:
         return self.get_file_color_styles("favorite_style.txt")
 
     def get_class_components(self):
-        self.my_proff = ''
+        self.my_proff = []
         self.mates = []
         try:
             r = requests.post("http://programmingisagame.netsons.org/get_class_components.php",
@@ -187,7 +187,7 @@ class Data:
                 if int(i['student_type']) > 0:
                     self.mates.append(i['username'])
                 else:
-                    self.my_proff = i['username']
+                    self.my_proff.append(i['username'])
         except requests.exceptions.RequestException as e:
             confirm = ConfirmWindow('Gamification - Errore di connessione',
                                     "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "

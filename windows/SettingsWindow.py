@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QDialog, QPushButton, QWidget, QVBoxLayout, QLabel, 
 
 from Data import DefaultColorStyles
 from windows.ConfirmWindow import ConfirmWindow
+from windows.LoginWindow import LoginWindow
 
 
 class SettingsWindow(QDialog):
@@ -125,7 +126,6 @@ class SettingsWindow(QDialog):
         image_widget = QWidget(self, flags=Qt.Widget)
         image_widget.setLayout(box)
 
-
         intro_font_dimesion = QLabel(self)
         intro_font_dimesion.setText('Dimensione del testo: ')
         check_15 = QCheckBox("15px")
@@ -172,11 +172,28 @@ class SettingsWindow(QDialog):
         code_result_orientation = QWidget(self, flags=Qt.Widget)
         code_result_orientation.setLayout(box)
 
+        pixmap = QPixmap('img/logout.png')
+        pixmap = pixmap.scaled(50, 50)
+        logout = QLabel(self)
+        logout.setPixmap(pixmap)
+        logout.setObjectName('img/logout.png')
+        logout.mousePressEvent = self.log_out_on_click
+        if self.exercise_window is not None:
+            logout.hide()
+
+        box = QHBoxLayout(self)
+        box. setContentsMargins(0, 50, 0, 0)
+        box.addWidget(logout)
+        box.setAlignment(Qt.AlignRight)
+        logout = QWidget(self, flags=Qt.Widget)
+        logout.setLayout(box)
+
         box = QVBoxLayout(self)
         box.setSpacing(0)
         box.addWidget(image_widget)
         box.addWidget(code_result_orientation)
         box.addWidget(font_dimesion)
+        box.addWidget(logout)
         widget = QWidget(self, flags=Qt.Widget)
         widget.setLayout(box)
         return widget
@@ -412,6 +429,18 @@ class SettingsWindow(QDialog):
             self.selection_image_widget.hide()
         else:
             self.selection_image_widget.show()
+
+    def log_out_on_click(self, event):
+        text = "\n\n" + self.data.my_class + "\n"
+        text += str(self.data.code_result_horizontal_orientation) + "\n"
+        text += str(self.data.code_font_size)
+        f = open('user_info.txt', "w")
+        f.write(text)
+        f.close()
+
+        self.close()
+        self.parent.open_LoginWindow()
+
 
     def image_on_click(self, name, event):
         try:

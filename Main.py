@@ -19,20 +19,22 @@ class WindowsController(QWidget):
         self.setFixedSize(QSize(800, 600))
         self.setWindowTitle("Gamification")
         self.data = None
+        self.mainWin = None
 
         self.box = QHBoxLayout(self)
         self.box.setContentsMargins(0, 0, 0, 0)
         if path.isfile('user_info.txt'):
             self.data = Data()
             self.mainWin = HomeWindow(self, self.data)
-        else:
-            self.mainWin = LoginWindow(self)
-        self.box.addWidget(self.mainWin)
+            self.box.addWidget(self.mainWin)
+            self.mainWin.show()
 
-        self.mainWin.show()
+    def set_login(self, login):
+        self.login = login
 
     def open_window(self, window):
-        self.mainWin.setParent(None)
+        if self.mainWin is not None:
+            self.mainWin.setParent(None)
         self.mainWin = window
         self.box.addWidget(self.mainWin)
         self.mainWin.show()
@@ -62,5 +64,15 @@ class WindowsController(QWidget):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     win = WindowsController()
-    win.show()
+    loginWin = LoginWindow(win)
+    win.set_login(loginWin)
+    if path.isfile('user_info.txt'):
+        f = open("user_info.txt", "r")
+        if f.readline()[0:-1] == "":
+            loginWin = LoginWindow(win)
+            loginWin.show()
+        else:
+            win.show()
+    else:
+        loginWin.show()
     sys.exit(app.exec_())

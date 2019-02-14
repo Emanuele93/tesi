@@ -4,7 +4,7 @@ import io
 from functools import partial
 
 import requests
-from PyQt5.QtGui import QTextCursor, QFont
+from PyQt5.QtGui import QTextCursor, QFont, QFontMetricsF
 from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QPushButton, QSplitter, QHBoxLayout, QVBoxLayout, \
     QLineEdit, QCheckBox, QCalendarWidget, QLabel, QScrollArea, QDialog, QComboBox
 from PyQt5.QtCore import *
@@ -59,6 +59,7 @@ class CreateHomeworkWindow(QWidget):
         self.code_editor.verticalScrollBar().valueChanged.connect(self.scroll_numbers)
         self.code_editor.setPlaceholderText("Inserire il codice di partenza\n(Non obbligatorio)")
         self.code_editor.setText('')
+        self.code_editor.setTabStopDistance(QFontMetricsF(self.code_editor.font()).width(' ') * 12)
 
         self.results = QPlainTextEdit(self)
         self.results.setReadOnly(True)
@@ -108,10 +109,13 @@ class CreateHomeworkWindow(QWidget):
         self.title_widget.setFont(font)
         self.title_ready = False
 
+        calendar_intro = QLabel("Data di consegna del compito:", self)
+        calendar_intro.setContentsMargins(0, 20, 0, 0)
+
         self.calendar_widget = MyCalendar(self)
         self.calendar_widget.setVerticalHeaderFormat(QCalendarWidget.NoVerticalHeader)
         self.calendar_widget.setMinimumDate(QDate.currentDate())
-        self.calendar_widget.setContentsMargins(0, 20, 0, 20)
+        self.calendar_widget.setContentsMargins(0, 0, 0, 20)
         self.calendar_widget.setFixedHeight(300)
         self.calendar_widget.setGridVisible(True)
         self.calendar_widget.clicked.connect(self.title_form_changed)
@@ -399,6 +403,7 @@ class CreateHomeworkWindow(QWidget):
         settings_box = QVBoxLayout(self)
         settings_box.setAlignment(Qt.AlignTop)
         settings_box.addWidget(self.title_widget)
+        settings_box.addWidget(calendar_intro)
         settings_box.addWidget(self.calendar_widget)
         settings_box.addWidget(widget2)
         settings_box.addWidget(widget3)

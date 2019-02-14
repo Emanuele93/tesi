@@ -1,22 +1,29 @@
+import sys
+import threading
 from functools import partial
+from os import path
 
 import requests
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLineEdit, QDialog, QHBoxLayout
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QApplication, QLineEdit, QPushButton, QVBoxLayout, QDialog
 from PyQt5.QtCore import *
 
 from Data import Data
+from windows.AbilitiesWindow import AbilitiesWindow
+from windows.AchievementsWindow import AchievementsWindow
 from windows.ConfirmWindow import ConfirmWindow
+from windows.HomeWindow import HomeWindow
+from windows.HomeworkCollectionWindow import HomeworkCollectionWindow
+from windows.LoginWindow import LoginWindow
 
 
-class LoginWindow(QWidget):
-    def __init__(self, home):
-        super(LoginWindow, self).__init__(flags=Qt.Window)
-        self.setWindowTitle("Gamification - Login")
+class MyWindow(QWidget):
+    def __init__(self):
+        super(MyWindow, self).__init__(flags=Qt.Window)
+        self.setWindowTitle("Gamification - Signin")
         self.setFixedSize(QSize(500, 400))
         font = QFont()
         font.setPixelSize(20)
-        self.home = home
 
         user = QLineEdit(self)
         user.setPlaceholderText("Username")
@@ -39,7 +46,7 @@ class LoginWindow(QWidget):
         classe.setTextMargins(10, 2, 10, 2)
         self.classe = False
 
-        button = QPushButton('Login', self)
+        button = QPushButton('Registra', self)
         button.setFont(font)
         button.setFixedSize(100, 50)
         button.setEnabled(False)
@@ -96,27 +103,18 @@ class LoginWindow(QWidget):
 
     def button_on_click(self, user, password, classe):
         try:
-            r = requests.post("http://programmingisagame.netsons.org/login.php",
+            r = requests.post("http://programmingisagame.netsons.org/singin.php",
                               data={'username': user.text().strip(), 'password': password.text().strip(),
                                     'class': classe.text().strip()})
             if r.text == 'ok':
-                f = open('user_info.txt', "w")
-                f.write(
-                    user.text().strip() + "\n" + password.text().strip() + "\n" + classe.text().strip() + "\nTrue\n20")
-                f.close()
-                self.home.data = Data()
-                self.home.open_MainWindow()
-                self.home.show()
-                self.close()
+                user.setStyleSheet('color: green')
+                password.setStyleSheet('color: green')
+                classe.setStyleSheet('color: green')
             elif r.text == 'username':
                 user.setStyleSheet('color: red')
                 password.setStyleSheet('color: black')
                 classe.setStyleSheet('color: black')
-            elif r.text == 'password':
-                user.setStyleSheet('color: black')
-                password.setStyleSheet('color: red')
-                classe.setStyleSheet('color: black')
-            elif r.text == 'classe':
+            elif r.text == 'class':
                 user.setStyleSheet('color: black')
                 password.setStyleSheet('color: black')
                 classe.setStyleSheet('color: red')
@@ -129,3 +127,10 @@ class LoginWindow(QWidget):
                 print('ok')
             confirm.deleteLater()
             exit()
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    win = MyWindow()
+    win.show()
+    sys.exit(app.exec_())

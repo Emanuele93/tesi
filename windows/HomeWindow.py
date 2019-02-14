@@ -4,6 +4,7 @@ from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QFrame, QLabel
 from PyQt5.QtCore import *
 
+from windows.LoginWindow import LoginWindow
 from windows.SettingsWindow import SettingsWindow
 
 
@@ -154,3 +155,7 @@ class HomeWindow(QWidget):
 
     def my_open_Abilities_Window(self, event):
         self.controller.open_Abilities_Window(1, None)
+
+    def open_LoginWindow(self):
+        self.controller.login.show()
+        self.controller.hide()

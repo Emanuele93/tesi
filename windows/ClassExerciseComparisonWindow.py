@@ -24,7 +24,6 @@ class ClassExerciseComparisonWindow(QDialog):
         self.code_widgets = []
 
         order_by = int(order_by)
-        print(order_by)
         if order_by == 1 or order_by == 2:
             order_by -= 1
             for i in range(0, len(class_solutions) - 1):
@@ -57,6 +56,16 @@ class ClassExerciseComparisonWindow(QDialog):
                         t = class_solutions[i].copy()
                         class_solutions[i] = class_solutions[j].copy()
                         class_solutions[j] = t.copy()
+        if order_by > 0:
+            for j in range(1, 4):
+                pos = 0
+                for i in range(0, len(class_solutions)):
+                    if int(class_solutions[pos]['impurity']) == j:
+                        temp = class_solutions[pos]
+                        class_solutions.pop(pos)
+                        class_solutions.append(temp)
+                    else:
+                        pos += 1
 
         students_widgets = []
         pos = 1

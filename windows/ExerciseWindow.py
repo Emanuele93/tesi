@@ -7,7 +7,7 @@ from functools import partial
 from os import path
 
 import requests
-from PyQt5.QtGui import QTextCursor, QFont, QPixmap
+from PyQt5.QtGui import QTextCursor, QFont, QPixmap, QFontMetricsF
 from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QPushButton, QSplitter, QHBoxLayout, QVBoxLayout, \
     QLabel, QDialog
 from PyQt5.QtCore import *
@@ -62,6 +62,7 @@ class ExerciseWindow(QWidget):
         self.code_editor.textChanged.connect(self.format_text)
         self.code_editor.verticalScrollBar().valueChanged.connect(self.scroll_numbers)
         self.code_editor.setText(self.exercise.start_code if self.exercise.solution is None else self.exercise.solution)
+        self.code_editor.setTabStopDistance(QFontMetricsF(self.code_editor.font()).width(' ') * 12)
         self.code_editor.setObjectName("code_editor")
         self.code_editor.setStyleSheet("QWidget#code_editor {background-color: "
                                        + self.color_styles.code_background_color + "; color: "
@@ -330,9 +331,8 @@ class ExerciseWindow(QWidget):
         if self.exercise.executable:
             self.play_button_on_click(None)
         warning = False
-        money = 100
-        if self.exercise.creator == self.data.my_proff:
-            money = 150 if self.exercise.level == 'Difficile' else 100
+        impurity = 0
+        money = 150 if self.exercise.level == 'Difficile' else 100
 
         confermation_text = "Sei sicuro di voler inviare l'esercizio?<br>" \
                             "La tua soluzione non potrà più essere modificata!"
@@ -386,6 +386,7 @@ class ExerciseWindow(QWidget):
                                  "Attenzione, hai usato più risorse rispetto al limite assegnato!<br>" \
                                  "In questo modo l'esercizio potrebbe esser valutato sbagliato!</span>"
             warning = True
+            impurity = 1
             if money > 0:
                 money -= 50
 
@@ -393,10 +394,11 @@ class ExerciseWindow(QWidget):
             confermation_text += "<br><br><span style=\" color: red;\">" \
                                  "Attenzione, il tuo codice ha degli errori e non viene eseguito interamente!<br>" \
                                  "In questo modo l'esercizio potrebbe esser valutato sbagliato!</span>"
-            if money > 0 and (self.exercise.creator != self.data.my_proff
+            if money > 0 and (self.exercise.creator not in self.data.my_proff
                               or not (self.exercise.level == 'Medio' and warning)):
                 money -= 50
             warning = True
+            impurity += 2
 
         if owned and warning:
             if money > 0:
@@ -406,6 +408,8 @@ class ExerciseWindow(QWidget):
                 confermation_text += "<br><br><span style=\" color: #ff5500;\"> " \
                                      "Consegnando così non guadagnerai neanche un soldo!</span>"
 
+        if self.exercise.creator not in self.data.my_proff:
+            money = 0
         ok_text = 'Invia comunque' if warning else 'Invia'
         confirm = ConfirmWindow('Gamification - "' + self.exercise.title + '" by ' + self.exercise.creator,
                                 confermation_text, parent=self, ok=ok_text, cancel='Annulla')
@@ -433,7 +437,7 @@ class ExerciseWindow(QWidget):
                                   data={'username': self.data.my_name, 'password': self.data.my_psw,
                                         'class': self.data.my_class, 'id': self.exercise.id, 'color_style': cs,
                                         'delivery_date': data, 'solution': self.code_editor.toPlainText(),
-                                        'resources_used': resources, 'money': str(money)})
+                                        'resources_used': resources, 'money': str(money), 'impurity': str(impurity)})
                 if r.text != "":
                     self.exercise.solution = self.code_editor.toPlainText()
                     self.exercise.delivery_date = datetime.datetime.now()
