@@ -36,6 +36,7 @@ class HomeworkCollectionWindow(QWidget):
             bottom_widget = QWidget(self, flags=Qt.Widget)
             bottom_widget.setLayout(box)
             self.add_homework_button.setEnabled(False)
+            self.home_button.setEnabled(False)
         else:
             bottom_widget = self.make_bottom_widget()
 
@@ -49,11 +50,11 @@ class HomeworkCollectionWindow(QWidget):
         font = QFont()
         font.setPixelSize(15)
 
-        home_button = QPushButton('HOME', self)
-        home_button.setFixedSize(100, 50)
-        home_button.clicked.connect(self.controller.open_MainWindow)
-        home_button.setFont(font)
-        home_button.setStyleSheet('background-color: #ffdd55')
+        self.home_button = QPushButton('HOME', self)
+        self.home_button.setFixedSize(100, 50)
+        self.home_button.clicked.connect(self.controller.open_MainWindow)
+        self.home_button.setFont(font)
+        self.home_button.setStyleSheet('background-color: #ffdd55')
 
         l = 1
         old = 0
@@ -106,7 +107,7 @@ class HomeworkCollectionWindow(QWidget):
 
         top_box = QHBoxLayout(self)
         top_box.setContentsMargins(20, 0, 20, 0)
-        top_box.addWidget(home_button)
+        top_box.addWidget(self.home_button)
         top_box.addWidget(soldi_widget, alignment=Qt.AlignTop)
         top_box.addWidget(self.add_homework_button, alignment=Qt.AlignRight)
         top_box.setSpacing(80)

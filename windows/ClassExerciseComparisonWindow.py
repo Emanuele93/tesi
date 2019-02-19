@@ -15,13 +15,18 @@ class ClassExerciseComparisonWindow(QDialog):
     def __init__(self, title, class_solutions, order_by, exercise_limit, exercise_window, parent=None):
         QDialog.__init__(self, parent, flags=Qt.Dialog)
         self.setWindowTitle(title)
-        self.setMinimumWidth(900)
+        self.setMinimumWidth(1200)
         self.setFixedHeight(465)
         self.exercise_window = exercise_window
         self.parent = parent
         self.limits = exercise_limit
         self.color_styles = None
         self.code_widgets = []
+
+        if self.exercise_window.data.my_name not in self.exercise_window.data.my_proff:
+            for i in class_solutions:
+                if i['visible'] == '0':
+                    class_solutions.remove(i)
 
         order_by = int(order_by)
         if order_by == 1 or order_by == 2:
@@ -110,10 +115,12 @@ class ClassExerciseComparisonWindow(QDialog):
         if order:
             pos.hide()
 
-        title = QLabel(solution['username'], self)
+        title_str = solution['username'] if solution['visible'] == '1' else "(" + solution['username'] + ")"
+        title = QLabel(title_str, self)
         title.setFont(font)
         title.setContentsMargins(0, 10, 10, 0)
-        title.setFixedWidth(110)
+        title.setFixedWidth(130)
+        title.setWordWrap(True)
 
         font.setPixelSize(15)
 
@@ -216,7 +223,7 @@ class ClassExerciseComparisonWindow(QDialog):
         box.addWidget(self.h_box('if utilizzati:', resources['if'], self.limits['if'], False))
         box.addWidget(self.h_box('elif utilizzati:', resources['elif'], self.limits['elif'], False))
         box.addWidget(self.h_box('else utilizzati:', resources['else'], self.limits['else'], False))
-        box.addWidget(self.h_box('Condizioni:', resources['conditions'], self.limits['conditions'], True))
+        box.addWidget(self.h_box('Selezioni:', resources['conditions'], self.limits['conditions'], True))
         box.addWidget(self.h_box('for utilizzati:', resources['for'], self.limits['for'], False))
         box.addWidget(self.h_box('while utilizzati:', resources['while'], self.limits['while'], False))
         box.addWidget(self.h_box('Cicli:', resources['cycles'], self.limits['cycles'], True))

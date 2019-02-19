@@ -172,6 +172,26 @@ class SettingsWindow(QDialog):
         code_result_orientation = QWidget(self, flags=Qt.Widget)
         code_result_orientation.setLayout(box)
 
+        intro_visible = QLabel("Visibile agli studenti: ", self)
+        check_1 = QCheckBox("Si")
+        check_1.setChecked(self.data.visible)
+        check_2 = QCheckBox("No")
+        check_2.setChecked(not self.data.visible)
+
+        self.bg3 = QButtonGroup()
+        self.bg3.addButton(check_1, 1)
+        self.bg3.addButton(check_2, 2)
+        self.bg3.buttonClicked[QAbstractButton].connect(self.set_visible)
+
+        box = QHBoxLayout(self)
+        box.setAlignment(Qt.AlignLeft)
+        box.setSpacing(15)
+        box.addWidget(intro_visible)
+        box.addWidget(check_1)
+        box.addWidget(check_2)
+        visible = QWidget(self, flags=Qt.Widget)
+        visible.setLayout(box)
+
         pixmap = QPixmap('img/logout.png')
         pixmap = pixmap.scaled(50, 50)
         logout = QLabel(self)
@@ -193,6 +213,7 @@ class SettingsWindow(QDialog):
         box.addWidget(image_widget)
         box.addWidget(code_result_orientation)
         box.addWidget(font_dimesion)
+        box.addWidget(visible)
         box.addWidget(logout)
         widget = QWidget(self, flags=Qt.Widget)
         widget.setLayout(box)
@@ -423,6 +444,22 @@ class SettingsWindow(QDialog):
         f.close()
         if self.exercise_window is not None:
             self.exercise_window.update_text_result_orientation()
+
+    def set_visible(self, btn):
+        try:
+            visible = 1 if btn.text() == "Si" else 0
+            r = requests.post("http://programmingisagame.netsons.org/set_user_visible.php",
+                              data={'username': self.data.my_name, 'password': self.data.my_psw, 'visible': visible})
+            if r.text != "":
+                self.data.visible = True if btn.text() == "Si" else False
+        except requests.exceptions.RequestException as e:
+            confirm = ConfirmWindow('Gamification - Errore di connessione',
+                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
+                                    "connessione<br>Controllare la connessione internet e riprovare</span>",
+                                    ok="Ok", cancel=None)
+            if confirm.exec_() == QDialog.Accepted:
+                print('ok')
+            confirm.deleteLater()
 
     def selection_image_on_click(self, event):
         if self.selection_image_widget.isVisible():

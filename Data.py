@@ -90,6 +90,7 @@ class Data:
         self.owned_images = []
         self.make_homework_coin = False
         self.watch_homework_coin = False
+        self.visible = True
         self.exercises = []
         self.get_user_data()
 
@@ -111,6 +112,7 @@ class Data:
         self.owned_images = []
         self.make_homework_coin = False
         self.watch_homework_coin = False
+        self.visible = True
         try:
             r = requests.post("http://programmingisagame.netsons.org/get_user.php",
                               data={'username': self.my_name, 'password': self.my_psw})
@@ -118,6 +120,7 @@ class Data:
             if len(j) > 0:
                 self.money = int(j[0]['money'])
                 self.level = int(j[0]['exp'])
+                self.visible = j[0]['visible'] == '1'
                 lev = (j[0]['level_variables']).split(',')
                 self.level_variables = {'lines': int(lev[0]), 'variables': int(lev[1]), 'if': int(lev[2]), 'elif': int(lev[3]),
                                         'else': int(lev[4]), 'for': int(lev[5]), 'while': int(lev[6]), 'functions': int(lev[7])}

@@ -1,3 +1,5 @@
+from threading import Thread
+import functools
 import datetime
 import json
 import re
@@ -8,7 +10,7 @@ from os import path
 
 import requests
 from PyQt5.QtGui import QTextCursor, QFont, QPixmap, QFontMetricsF
-from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QPushButton, QSplitter, QHBoxLayout, QVBoxLayout, \
+from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QSplitter, QHBoxLayout, QVBoxLayout, \
     QLabel, QDialog
 from PyQt5.QtCore import *
 
@@ -178,11 +180,13 @@ class ExerciseWindow(QWidget):
         watch_button.setPixmap(pixmap)
         watch_button.setObjectName('img/watch.png')
         watch_button.mousePressEvent = partial(self.watch_button_on_click, watch_button)
+        watch_button.setEnabled(self.data.visible)
 
         if self.exercise.delivery_date is None:
             try:
                 r = requests.post("http://programmingisagame.netsons.org/check_watch_homework_coin.php",
-                                  data={'username': self.data.my_name, 'password': self.data.my_psw, 'id': self.exercise.id})
+                                  data={'username': self.data.my_name, 'password': self.data.my_psw,
+                                        'id': self.exercise.id})
                 if r.text == "":
                     watch_button.hide()
             except requests.exceptions.RequestException as e:
@@ -198,7 +202,6 @@ class ExerciseWindow(QWidget):
         if self.exercise.delivery_date is not None:
             box1.addWidget(watch_button)
             box1.setSpacing(50)
-
 
         box2 = QHBoxLayout(self)
         box2.setAlignment(Qt.AlignHCenter)
@@ -223,37 +226,78 @@ class ExerciseWindow(QWidget):
         box.addWidget(self.more_options)
         return box
 
-    def play_button_on_click(self, event):
-        temp_vars = {}
+    @staticmethod
+    def timeout(timeout):
+        def deco(func):
+            @functools.wraps(func)
+            def wrapper(*args, **kwargs):
+                res = [Exception('function [%s] timeout [%s seconds] exceeded!' % (func.__name__, timeout))]
+
+                def newFunc():
+                    try:
+                        res[0] = func(*args, **kwargs)
+                    except Exception as e:
+                        res[0] = e
+
+                t = Thread(target=newFunc)
+                t.daemon = True
+                try:
+                    t.start()
+                    t.join(timeout)
+                except Exception as je:
+                    print('error starting thread')
+                    raise je
+                ret = res[0]
+                if isinstance(ret, BaseException):
+                    raise ret
+                return ret
+
+            return wrapper
+
+        return deco
+
+    def execution(self):
         try:
             stream = io.StringIO()
             with contextlib.redirect_stdout(stream):
-                exec(self.code_editor.toPlainText(), globals(), temp_vars)
-            result = stream.getvalue()
+                exec(self.code_editor.toPlainText(), globals(), self.execution_temp_vars)
+            self.execution_result = stream.getvalue()
             self.code_compile = True
         except Exception as E:
-            result = str(E)
+            self.execution_result = str(E)
             self.code_compile = False
 
             i = 0
-            temp_result = ''
+            self.execution_temp_result = ''
             texts = self.code_editor.toPlainText().split('\n')
             text = texts[i]
             while i < len(texts):
                 try:
                     stream = io.StringIO()
                     with contextlib.redirect_stdout(stream):
-                        exec(text, globals(), temp_vars)
-                    temp_result = stream.getvalue()
+                        exec(text, globals(), self.execution_temp_vars)
+                    self.execution_temp_result = stream.getvalue()
                 except Exception as E:
-                    temp_result = temp_result
+                    self.execution_temp_result = self.execution_temp_result
                 i += 1
                 if i < len(texts):
                     text += '\n' + texts[i]
-            if temp_result != '':
-                result = temp_result + '\n' + result
 
-        self.results.setPlainText(result)
+    def play_button_on_click(self, event):
+        self.execution_temp_vars = {}
+        self.execution_result = ''
+        self.execution_temp_result = ''
+
+        func = self.timeout(timeout=5)(self.execution)
+        try:
+            func()
+        except Exception as E:
+            self.execution_result = E
+
+        if self.execution_temp_result != '':
+            self.execution_result = self.execution_temp_result + '\n' + self.execution_result
+
+        self.results.setPlainText(self.execution_result)
         if self.code_compile:
             self.results.setStyleSheet(
                 "QWidget#results {background-color: " + self.color_styles.results_background_color
@@ -263,12 +307,13 @@ class ExerciseWindow(QWidget):
                                        + self.color_styles.error_results_background_color + "; color: "
                                        + self.color_styles.error_results_text_color + ";}")
 
-        self.variables_used_number.setText(str(len(temp_vars)))
-        self.resources_used['variables'] = len(temp_vars)
-        if self.exercise.limits['variables'] is not None and len(temp_vars) > self.exercise.limits['variables']:
+        self.variables_used_number.setText(str(len(self.execution_temp_vars)))
+        self.resources_used['variables'] = len(self.execution_temp_vars)
+        if self.exercise.limits['variables'] is not None and len(self.execution_temp_vars) > self.exercise.limits[
+            'variables']:
             color = 'red'
         elif self.data.owned_variables['variables'] is not None \
-                and len(temp_vars) > self.data.owned_variables['variables']:
+                and len(self.execution_temp_vars) > self.data.owned_variables['variables']:
             color = '#ff5500'
         else:
             color = 'black'
@@ -294,11 +339,11 @@ class ExerciseWindow(QWidget):
                 f = open('saves/_lib.txt', 'r')
                 for i in f:
                     if not_find:
-                        if i[len(i.split(':')[0])+1:-1] == file:
+                        if i[len(i.split(':')[0]) + 1:-1] == file:
                             not_find = False
                             file_name = i.split(':')[0]
                         else:
-                            file_name = str(int(i.split(':')[0])+1)
+                            file_name = str(int(i.split(':')[0]) + 1)
                 f.close()
             if not_find:
                 f = open('saves/_lib.txt', 'a')
@@ -408,8 +453,14 @@ class ExerciseWindow(QWidget):
                 confermation_text += "<br><br><span style=\" color: #ff5500;\"> " \
                                      "Consegnando così non guadagnerai neanche un soldo!</span>"
 
-        if self.exercise.creator not in self.data.my_proff:
-            money = 0
+        if self.exercise.creator not in self.data.my_proff and money > 0:
+            if impurity == 0:
+                money = 10
+            elif impurity < 3:
+                money = 5
+            else:
+                money = 0
+
         ok_text = 'Invia comunque' if warning else 'Invia'
         confirm = ConfirmWindow('Gamification - "' + self.exercise.title + '" by ' + self.exercise.creator,
                                 confermation_text, parent=self, ok=ok_text, cancel='Annulla')
@@ -443,12 +494,14 @@ class ExerciseWindow(QWidget):
                     self.exercise.delivery_date = datetime.datetime.now()
                     self.exercise.resources_used = self.resources_used
                     self.data.money += money
+                    self.data.level += 0 if money == 0 else \
+                        (1 if money == 50 or money == 5 else (2 if money == 10 or money == 100 else 3))
                     self.closer_controller.close_ExerciseWindow(self.exercise)
             except requests.exceptions.RequestException as e:
                 confirm2 = ConfirmWindow('Gamification - Errore di connessione',
-                                        "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                        "connessione<br>Controllare la propria connessione internet e riprovare</span>",
-                                        ok="Ok", cancel=None)
+                                         "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
+                                         "connessione<br>Controllare la propria connessione internet e riprovare</span>",
+                                         ok="Ok", cancel=None)
                 if confirm2.exec_() == QDialog.Accepted:
                     print('ok')
                 confirm2.deleteLater()
@@ -469,8 +522,8 @@ class ExerciseWindow(QWidget):
                 self.data.watch_homework_coin = (r.text != "removed")
                 try:
                     r = requests.post("http://programmingisagame.netsons.org/get_class_exercise_solutions.php",
-                              data={'username': self.data.my_name, 'password': self.data.my_psw,
-                                    'exercise': self.exercise.id, 'class': self.data.my_class})
+                                      data={'username': self.data.my_name, 'password': self.data.my_psw,
+                                            'exercise': self.exercise.id, 'class': self.data.my_class})
                     if r.text != "":
                         class_solutions = json.loads(r.text[1: len(r.text)])
                         confirm = ClassExerciseComparisonWindow(
@@ -602,7 +655,7 @@ class ExerciseWindow(QWidget):
         intro_if = self.create_label("if")
         intro_elif = self.create_label("elif")
         intro_else = self.create_label("else")
-        intro_conditions = self.create_margin_label("Conditions ")
+        intro_conditions = self.create_margin_label("Selezioni ")
         intro_for = self.create_label("For ")
         intro_while = self.create_label("While ")
         intro_cycles = self.create_margin_label("Cicli ")

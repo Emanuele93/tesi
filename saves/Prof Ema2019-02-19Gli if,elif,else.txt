@@ -1,0 +1,3 @@
+x, y, z = 8, 3, 7
+print(str(x) + str(y) + str(z) + ' = ' + str(x + y + z) + " ?") 
+''' 837 = 18 ? ''' 

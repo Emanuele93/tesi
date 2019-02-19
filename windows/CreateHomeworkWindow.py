@@ -1,7 +1,9 @@
+import functools
 import re
 import contextlib
 import io
 from functools import partial
+from threading import Thread
 
 import requests
 from PyQt5.QtGui import QTextCursor, QFont, QFontMetricsF
@@ -442,20 +444,49 @@ class CreateHomeworkWindow(QWidget):
         box.addWidget(scroll_area)
         return box
 
-    def play_button_on_click(self):
-        self.temp_vars = {}
+    @staticmethod
+    def timeout(timeout):
+        def deco(func):
+            @functools.wraps(func)
+            def wrapper(*args, **kwargs):
+                res = [Exception('function [%s] timeout [%s seconds] exceeded!' % (func.__name__, timeout))]
+
+                def newFunc():
+                    try:
+                        res[0] = func(*args, **kwargs)
+                    except Exception as e:
+                        res[0] = e
+
+                t = Thread(target=newFunc)
+                t.daemon = True
+                try:
+                    t.start()
+                    t.join(timeout)
+                except Exception as je:
+                    print('error starting thread')
+                    raise je
+                ret = res[0]
+                if isinstance(ret, BaseException):
+                    raise ret
+                return ret
+
+            return wrapper
+
+        return deco
+
+    def execution(self):
         try:
             stream = io.StringIO()
             with contextlib.redirect_stdout(stream):
                 exec(self.code_editor.toPlainText(), globals(), self.temp_vars)
-            result = stream.getvalue()
-            errors = False
+            self.execution_result = stream.getvalue()
+            self.execution_errors = False
         except Exception as E:
-            result = str(E)
-            errors = True
+            self.execution_result = str(E)
+            self.execution_errors = True
 
             i = 0
-            temp_result = ''
+            self.execution_temp_result = ''
             texts = self.code_editor.toPlainText().split('\n')
             text = texts[i]
             while i < len(texts):
@@ -463,22 +494,33 @@ class CreateHomeworkWindow(QWidget):
                     stream = io.StringIO()
                     with contextlib.redirect_stdout(stream):
                         exec(text, globals(), self.temp_vars)
-                    temp_result = stream.getvalue()
+                    self.execution_temp_result = stream.getvalue()
                 except Exception as E:
-                    temp_result = temp_result
+                    self.execution_temp_result = self.execution_temp_result
                 i += 1
                 if i < len(texts):
                     text += '\n' + texts[i]
-            if temp_result != '':
-                result = temp_result + '\n' + result
 
-        self.results.setPlainText(result)
-        if errors:
+    def play_button_on_click(self):
+        self.temp_vars = {}
+        self.execution_result = ''
+        self.execution_temp_result = ''
+
+        func = self.timeout(timeout=5)(self.execution)
+        try:
+            func()
+        except Exception as E:
+            self.execution_result = E
+        if self.execution_temp_result != '':
+            self.execution_result = self.execution_temp_result + '\n' + self.execution_result
+
+        self.results.setPlainText(self.execution_result)
+        if self.execution_errors:
             self.results.setStyleSheet('color: red')
         else:
             self.results.setStyleSheet('color: black')
         self.update_function_counters()
-        return errors
+        return self.execution_errors
 
     def text_exercise_changed(self):
         if self.text_exercise.toPlainText().strip() == '':

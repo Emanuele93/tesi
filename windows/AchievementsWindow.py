@@ -72,6 +72,7 @@ class AchievementsWindow(QWidget):
         open_leaderboard_button.setFixedSize(250, 50)
         open_leaderboard_button.setFont(font)
         open_leaderboard_button.setStyleSheet("background-color: #ffdd55")
+        open_leaderboard_button.setEnabled(self.data.visible)
 
         l = 1
         old = 0
@@ -149,6 +150,7 @@ class AchievementsWindow(QWidget):
             title = QLabel(self.achievements[i]['title'], self)
             title.setFont(font)
             title.setContentsMargins(10, 10, 10, 0)
+            title.setWordWrap(True)
             description = QLabel(self.achievements[i]['description'], self)
             description.setWordWrap(True)
             description.setContentsMargins(10, 0, 10, 2)
@@ -164,7 +166,7 @@ class AchievementsWindow(QWidget):
             money.setStyleSheet("QWidget#money {border: 1px solid grey; background-color: #ffea00}")
             money.setContentsMargins(0,5,0,5)
             box.addWidget(money)
-            exp = QLabel(str(self.achievements[i]['value']) + " exp", self)
+            exp = QLabel(str(self.achievements[i]['value'] * 3) + " exp", self)
             exp.setAlignment(Qt.AlignCenter)
             exp.setObjectName("exp")
             exp.setStyleSheet("QWidget#exp {border: 1px solid grey; background-color: #9999FF}")

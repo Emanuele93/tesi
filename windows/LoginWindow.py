@@ -30,6 +30,7 @@ class LoginWindow(QWidget):
         password.setFixedWidth(400)
         password.setFont(font)
         password.setTextMargins(10, 2, 10, 2)
+        password.setEchoMode(QLineEdit.Password)
         self.password = False
 
         classe = QLineEdit(self)
