@@ -253,6 +253,13 @@ class CreateHomeworkWindow(QWidget):
         self.order_by.addItem("Classifica per numero di condizioni")
         self.order_by.addItem("Classifica per numero di cicli")
 
+        lookable_intro = QLabel(self)
+        lookable_intro.setStyleSheet("border: 0px solid grey; border-bottom: 1px solid grey")
+        lookable_intro.setText("Esercizio sbirciabile: ")
+
+        self.lookable_check = QCheckBox(self)
+        self.lookable_check.setChecked(True)
+
         self.send_button = QPushButton('Fine', self)
         self.send_button.setFixedSize(100, 50)
         self.send_button.setEnabled(False)
@@ -402,6 +409,12 @@ class CreateHomeworkWindow(QWidget):
         order_by_widget = QWidget(self, flags=Qt.Widget)
         order_by_widget.setLayout(box)
 
+        box = QHBoxLayout(self)
+        box.addWidget(lookable_intro)
+        box.addWidget(self.lookable_check)
+        widget_look = QWidget(self, flags=Qt.Widget)
+        widget_look.setLayout(box)
+
         settings_box = QVBoxLayout(self)
         settings_box.setAlignment(Qt.AlignTop)
         settings_box.addWidget(self.title_widget)
@@ -415,6 +428,7 @@ class CreateHomeworkWindow(QWidget):
         settings_box.addWidget(for_while_widget)
         settings_box.addWidget(functions_limit_widget)
         settings_box.addWidget(widget4)
+        settings_box.addWidget(widget_look)
         settings_box.addWidget(order_by_widget)
         settings = QWidget(self)
         settings.setLayout(settings_box)
@@ -657,6 +671,7 @@ class CreateHomeworkWindow(QWidget):
                      + str(else_limit) + ',' + str(conditions_limit) + ',' + str(for_limit) + ',' + str(while_limit) \
                      + ',' + str(cycles_limit) + ',' + str(functions_limit)
             executable = '1' if self.executable_check.isChecked() else '0'
+            lookable = '1' if self.lookable_check.isChecked() else '0'
 
             try:
                 r = requests.post("http://programmingisagame.netsons.org/add_exercise.php",
@@ -664,7 +679,7 @@ class CreateHomeworkWindow(QWidget):
                                         'class': self.data.my_class, 'date': date, 'title': title, 'text': text,
                                         'level': level, 'white_paper_mode': white_paper_mode, 'start_code': start_code,
                                         'limits': limits, 'executable': executable,
-                                        'order': self.order_by.currentIndex()})
+                                        'order': self.order_by.currentIndex(), 'lookable': lookable})
                 if r.text != "":
                     self.closer_controller.close_CreateHomeworkWindow()
             except requests.exceptions.RequestException as e:

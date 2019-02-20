@@ -187,7 +187,7 @@ class HomeworkCollectionWindow(QWidget):
                     exercise = QWidget(self, flags=Qt.Widget)
                     exercise.setLayout(box)
                     exercise.setObjectName("exercise")
-                    exercise.mousePressEvent = partial(self.open_ExerciseWindow, i)
+                    exercise.mousePressEvent = partial(self.open_ExerciseWindow, i, False)
 
                     if (i.solution is None or i.solution == i.start_code) and i.delivery_date is None:
                         exercise.setStyleSheet('QWidget#exercise {background-color: #dd6666; border: 1px solid grey;}')
@@ -272,7 +272,7 @@ class HomeworkCollectionWindow(QWidget):
         self.scroll.verticalScrollBar().setValue(self.pos)
         return self.scroll
 
-    def open_ExerciseWindow(self, exercise, event):
+    def open_ExerciseWindow(self, exercise, show_results, event):
         for i in self.exercise_windows:
             if i[0] == exercise.id:
                 i[1].hide()
@@ -281,17 +281,19 @@ class HomeworkCollectionWindow(QWidget):
         cw = ExerciseWindow(exercise, self.data, self)
         self.exercise_windows.append([exercise.id, cw])
         cw.show()
+        if show_results:
+            cw.watch_button_on_click(None, None)
 
     def close_ExerciseWindow(self, exercise):
         for i in self.exercise_windows:
             if i[0] == exercise.id:
-                i[1].close()
                 self.exercise_windows.remove(i)
                 self.update()
                 return
 
     def update(self):
         self.controller.open_HomeworkCollectionWindow(False, self.scroll.verticalScrollBar().value())
+        # self.open_ExerciseWindow(ex, self.data.visible, None) con questa riga di codice si riapre sulle soluzioni
 
     def open_CreateHomeworkWindow(self):
         if self.new_exercise is None:

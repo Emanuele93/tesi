@@ -192,6 +192,27 @@ class SettingsWindow(QDialog):
         visible = QWidget(self, flags=Qt.Widget)
         visible.setLayout(box)
 
+        intro_student_exercises_visible = QLabel("Compiti degli studenti: ", self)
+        check_1 = QCheckBox("Visibili")
+        check_1.setChecked(self.data.student_exercises_visible)
+        check_2 = QCheckBox("Non visibili")
+        check_2.setChecked(not self.data.student_exercises_visible)
+
+        self.bg4 = QButtonGroup()
+        self.bg4.addButton(check_1, 1)
+        self.bg4.addButton(check_2, 2)
+        self.bg4.buttonClicked[QAbstractButton].connect(self.set_student_exercises_visible)
+
+        box = QHBoxLayout(self)
+        box.setAlignment(Qt.AlignLeft)
+        box.setSpacing(15)
+        box.addWidget(intro_student_exercises_visible)
+        box.addWidget(check_1)
+        box.addWidget(check_2)
+        student_exercises_visible = QWidget(self, flags=Qt.Widget)
+        student_exercises_visible.setLayout(box)
+        student_exercises_visible.setVisible(self.data.my_name in self.data.my_proff)
+
         pixmap = QPixmap('img/logout.png')
         pixmap = pixmap.scaled(50, 50)
         logout = QLabel(self)
@@ -214,6 +235,7 @@ class SettingsWindow(QDialog):
         box.addWidget(code_result_orientation)
         box.addWidget(font_dimesion)
         box.addWidget(visible)
+        box.addWidget(student_exercises_visible)
         box.addWidget(logout)
         widget = QWidget(self, flags=Qt.Widget)
         widget.setLayout(box)
@@ -452,6 +474,23 @@ class SettingsWindow(QDialog):
                               data={'username': self.data.my_name, 'password': self.data.my_psw, 'visible': visible})
             if r.text != "":
                 self.data.visible = True if btn.text() == "Si" else False
+        except requests.exceptions.RequestException as e:
+            confirm = ConfirmWindow('Gamification - Errore di connessione',
+                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
+                                    "connessione<br>Controllare la connessione internet e riprovare</span>",
+                                    ok="Ok", cancel=None)
+            if confirm.exec_() == QDialog.Accepted:
+                print('ok')
+            confirm.deleteLater()
+
+    def set_student_exercises_visible(self, btn):
+        try:
+            visible = 1 if btn.text() == "Visibili" else 0
+            r = requests.post("http://programmingisagame.netsons.org/set_student_exercises_visible.php",
+                              data={'username': self.data.my_name, 'password': self.data.my_psw,
+                                    'class': self.data.my_class, 'visible': visible})
+            if r.text != "":
+                self.data.student_exercises_visible = True if btn.text() == "Visibili" else False
         except requests.exceptions.RequestException as e:
             confirm = ConfirmWindow('Gamification - Errore di connessione',
                                     "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "

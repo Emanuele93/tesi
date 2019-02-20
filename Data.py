@@ -22,7 +22,7 @@ class KeyWord:
 
 class Exercise:
     def __init__(self, ex_id, creator, date, title, text, level, white_paper_mode, start_code, limits, executable,
-                 color_styles=None, delivery_date=None, solution=None, resources_used=None):
+                 lookable, color_styles=None, delivery_date=None, solution=None, resources_used=None):
         self.id = ex_id
         self.creator = creator
         self.date = date
@@ -31,8 +31,9 @@ class Exercise:
         self.level = level
         self.white_paper_mode = white_paper_mode
         self.start_code = start_code
-        self.limits = limits  # 10
+        self.limits = limits
         self.executable = executable
+        self.lookable = lookable
 
         self.color_styles = color_styles
         self.delivery_date = delivery_date
@@ -75,6 +76,7 @@ class Data:
         self.my_class = f.readline()[0:-1]
         self.my_proff = []
         self.mates = []
+        self.student_exercises_visible = True
         self.get_class_components()
 
         self.code_result_horizontal_orientation = True if f.readline()[0:-1] == "True" else False
@@ -185,12 +187,20 @@ class Data:
         try:
             r = requests.post("http://programmingisagame.netsons.org/get_class_components.php",
                               data={'username': self.my_name, 'password': self.my_psw, 'class': self.my_class})
-            j = json.loads(r.text)
-            for i in j:
-                if int(i['student_type']) > 0:
-                    self.mates.append(i['username'])
-                else:
-                    self.my_proff.append(i['username'])
+            if r.text != "":
+                j = json.loads(r.text)
+                for i in j:
+                    if int(i['student_type']) > 0:
+                        self.mates.append(i['username'])
+                    else:
+                        self.my_proff.append(i['username'])
+            r = requests.post("http://programmingisagame.netsons.org/get_class_student_exercises_visible.php",
+                              data={'username': self.my_name, 'password': self.my_psw, 'class': self.my_class})
+            if r.text != "":
+                self.student_exercises_visible = json.loads(r.text)[0]['student_ex_visible'] == '1'
+
+            if r.text == '0':
+                self.student_exercises_visible = False
         except requests.exceptions.RequestException as e:
             confirm = ConfirmWindow('Gamification - Errore di connessione',
                                     "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
@@ -226,9 +236,10 @@ class Data:
                           'cycles': None if lev[8] == 'None' else int(lev[8]),
                           'def': None if lev[9] == 'None' else int(lev[9])}
                 executable = False if int(i['executable']) == 0 else True
+                lookable = False if int(i['lookable']) == 0 else True
 
                 ex = Exercise(i['exercise_id'], i['creator'], date, i['title'], i['text'], level, white_paper_mode,
-                              i['start_code'], limits, executable)
+                              i['start_code'], limits, executable, lookable)
 
                 find = False
                 for solution_k in k:

@@ -145,13 +145,27 @@ class ExerciseWindow(QWidget):
 
         pixmap = QPixmap('img/more.png')
         pixmap = pixmap.scaled(50, 50)
-        more_button = QLabel(self)
-        more_button.setPixmap(pixmap)
-        more_button.setObjectName('img/more.png')
-        more_button.mousePressEvent = self.more_button_on_click
+        self.more_button = QLabel(self)
+        self.more_button.setPixmap(pixmap)
+        self.more_button.setObjectName('img/more.png')
+        self.more_button.mousePressEvent = self.more_button_on_click
         if self.exercise.delivery_date is not None:
             self.save_button.hide()
-            more_button.hide()
+            self.more_button.hide()
+
+        pixmap = QPixmap('img/watch.png')
+        pixmap = pixmap.scaled(50, 50)
+        watch_button2 = QLabel(self)
+        watch_button2.setPixmap(pixmap)
+        watch_button2.setObjectName('img/watch.png')
+        watch_button2.mousePressEvent = partial(self.watch_button_on_click, watch_button2)
+        watch_button2.setEnabled(self.data.visible)
+
+        box = QHBoxLayout(self)
+        box.setContentsMargins(30, 0, 0, 0)
+        box.addWidget(watch_button2)
+        self.watch_button2 = QWidget(self, flags=Qt.Widget)
+        self.watch_button2.setLayout(box)
 
         pixmap = QPixmap('img/settings.png')
         pixmap = pixmap.scaled(50, 50)
@@ -174,15 +188,19 @@ class ExerciseWindow(QWidget):
         restart_button.setObjectName('img/reset.png')
         restart_button.mousePressEvent = self.restart_button_on_click
 
-        pixmap = QPixmap('img/watch.png')
+        if self.exercise.lookable or self.data.my_name in self.data.my_proff:
+            pixmap = QPixmap('img/watch.png')
+        else:
+            pixmap = QPixmap('img/not_watch.png')
         pixmap = pixmap.scaled(50, 50)
         watch_button = QLabel(self)
         watch_button.setPixmap(pixmap)
         watch_button.setObjectName('img/watch.png')
-        watch_button.mousePressEvent = partial(self.watch_button_on_click, watch_button)
+        if self.exercise.lookable or self.data.my_name in self.data.my_proff:
+            watch_button.mousePressEvent = partial(self.watch_button_on_click, watch_button)
         watch_button.setEnabled(self.data.visible)
 
-        if self.exercise.delivery_date is None:
+        if self.exercise.delivery_date is None and self.exercise.lookable:
             try:
                 r = requests.post("http://programmingisagame.netsons.org/check_watch_homework_coin.php",
                                   data={'username': self.data.my_name, 'password': self.data.my_psw,
@@ -198,10 +216,10 @@ class ExerciseWindow(QWidget):
         box1.setContentsMargins(0, 0, 0, 0)
         box1.addWidget(play_button)
         box1.addWidget(self.save_button)
-        box1.addWidget(more_button)
-        if self.exercise.delivery_date is not None:
-            box1.addWidget(watch_button)
-            box1.setSpacing(50)
+        box1.addWidget(self.more_button)
+        box1.addWidget(self.watch_button2)
+        if self.exercise.delivery_date is None:
+            self.watch_button2.hide()
 
         box2 = QHBoxLayout(self)
         box2.setAlignment(Qt.AlignHCenter)
@@ -210,8 +228,7 @@ class ExerciseWindow(QWidget):
         box2.addWidget(settings_button)
         box2.addWidget(send_button)
         box2.addWidget(restart_button)
-        if self.exercise.delivery_date is None:
-            box2.addWidget(watch_button)
+        box2.addWidget(watch_button)
 
         widget1 = QWidget(self, flags=Qt.Widget)
         widget1.setLayout(box1)
@@ -497,6 +514,13 @@ class ExerciseWindow(QWidget):
                     self.data.level += 0 if money == 0 else \
                         (1 if money == 50 or money == 5 else (2 if money == 10 or money == 100 else 3))
                     self.closer_controller.close_ExerciseWindow(self.exercise)
+                    self.save_button.hide()
+                    self.more_options.hide()
+                    self.more_button.hide()
+                    self.watch_button2.show()
+                    self.code_editor.setReadOnly(True)
+                    if self.data.visible:
+                        self.watch_button_on_click(None, None)
             except requests.exceptions.RequestException as e:
                 confirm2 = ConfirmWindow('Gamification - Errore di connessione',
                                          "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "

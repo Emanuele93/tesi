@@ -29,7 +29,6 @@ class ClassAchievementsComparisonWindow(QDialog):
                 for i in range(0, len(mates)):
                     if i > 0 and mates[i]['exp'] != mates[i-1]['exp']:
                         pos += 1
-                    print(mates[i]['visible'])
                     if mates[i]['visible'] == '1' or self.data.my_name in self.data.my_proff:
                         students_widgets.append(self.make_student_widget(mates[i], pos, mates[i]['visible'] == '1'))
                     else:
