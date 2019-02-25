@@ -16,7 +16,7 @@ class ClassExerciseComparisonWindow(QDialog):
         QDialog.__init__(self, parent, flags=Qt.Dialog)
         self.setWindowTitle(title)
         self.setMinimumWidth(1200)
-        self.setFixedHeight(465)
+        self.setFixedHeight(530)
         self.exercise_window = exercise_window
         self.parent = parent
         self.limits = exercise_limit
@@ -89,15 +89,35 @@ class ClassExerciseComparisonWindow(QDialog):
             title = QLabel("Nessuno ha ancora consegnato questo compito", self)
             title.setFont(font)
             box.addWidget(title, alignment=Qt.AlignCenter)
-
         widget = QWidget(self, flags=Qt.Widget)
         widget.setLayout(box)
+
+        print('1')
+        font = QFont()
+        font.setPixelSize(20)
+        print('1')
+        log_line = QLabel('Soluzioni della classe: "' + self.exercise_window.data.my_class + '" all' + "'" +
+                          'esercizio "' + self.exercise_window.exercise.title + '"', self)
+        print('1')
+        log_line.setFont(font)
+        box = QHBoxLayout(self)
+        box.addWidget(log_line)
+        box.setContentsMargins(75, 0, 0, 0)
+        log_line = QWidget(self, flags=Qt.Widget)
+        log_line.setLayout(box)
+        log_line.setObjectName("log_line")
+        log_line.setStyleSheet("QWidget#log_line {border: 1px solid grey; border-right: 0px solid grey; "
+                               "border-left: 0px solid grey; background-color: #ffff55}")
+        log_line.setFixedHeight(50)
+
+        print('1')
         scroll = QScrollArea(self)
         scroll.setWidget(widget)
         scroll.setObjectName("scroll")
         scroll.setStyleSheet("QWidget#scroll {border: 0px solid grey}")
-        box = QHBoxLayout(self)
+        box = QVBoxLayout(self)
         box.setContentsMargins(0, 0, 0, 0)
+        box.addWidget(log_line)
         box.addWidget(scroll)
 
         for i in self.code_widgets:

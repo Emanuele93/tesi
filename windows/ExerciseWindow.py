@@ -122,6 +122,54 @@ class ExerciseWindow(QWidget):
         box.addWidget(splitter2)
         box.setContentsMargins(0, 0, 0, 0)
 
+        approved_button = QLabel(self)
+        if self.exercise.approved:
+            pixmap = QPixmap('img/approved.png')
+            approved_button.setObjectName('img/approved.png')
+        else:
+            pixmap = QPixmap('img/not_approved.png')
+            approved_button.setObjectName('img/not_approved.png')
+        pixmap = pixmap.scaled(50, 50)
+        approved_button.setPixmap(pixmap)
+        approved_button.setFixedSize(70, 70)
+        approved_button.setAlignment(Qt.AlignCenter)
+        if not self.exercise.approved and self.data.my_name in self.data.my_proff:
+            approved_button.mousePressEvent = partial(self.approved_button_on_click, approved_button)
+        approved_button.move(self.width()-80, 10)
+        self.resizeEvent = partial(self.resize_window, approved_button)
+
+    def resize_window(self, widget, event):
+        widget.move(self.width()-80, 10)
+
+    def approved_button_on_click(self, widget, event):
+        confirm = ConfirmWindow('Gamification - conferma approvazione',
+                                "Sei sicuro di voler approvare l'esercizio?<br>L'approvazione non può essere revocata!",
+                                parent=self, ok='Conferma', cancel='Annulla')
+        if confirm.exec_() == QDialog.Accepted:
+            try:
+                r = requests.post("http://programmingisagame.netsons.org/approve_exercise.php",
+                                  data={'username': self.data.my_name, 'password': self.data.my_psw,
+                                        'class': self.data.my_class, 'id': self.exercise.id})
+                if r.text != "":
+                    confirm.deleteLater()
+                    pixmap = QPixmap('img/approved.png')
+                    pixmap = pixmap.scaled(50, 50)
+                    widget.setObjectName('img/approved.png')
+                    widget.setPixmap(pixmap)
+                    self.exercise.approved = True
+                    self.exercise.delivery_date = None
+                    self.data.get_user_data()
+                    self.closer_controller.update()
+            except requests.exceptions.RequestException as e:
+                confirm2 = ConfirmWindow('Gamification - Errore di connessione',
+                                         "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
+                                         "connessione<br>Controllare la propria connessione internet e riprovare</span>",
+                                         ok="Ok", cancel=None)
+                if confirm2.exec_() == QDialog.Accepted:
+                    print('ok')
+                confirm2.deleteLater()
+        confirm.deleteLater()
+
     def update_text_result_orientation(self):
         self.coding_widget.setOrientation(
             Qt.Horizontal if self.data.code_result_horizontal_orientation else Qt.Vertical)
@@ -155,17 +203,12 @@ class ExerciseWindow(QWidget):
 
         pixmap = QPixmap('img/watch.png')
         pixmap = pixmap.scaled(50, 50)
-        watch_button2 = QLabel(self)
-        watch_button2.setPixmap(pixmap)
-        watch_button2.setObjectName('img/watch.png')
-        watch_button2.mousePressEvent = partial(self.watch_button_on_click, watch_button2)
-        watch_button2.setEnabled(self.data.visible)
-
-        box = QHBoxLayout(self)
-        box.setContentsMargins(30, 0, 0, 0)
-        box.addWidget(watch_button2)
-        self.watch_button2 = QWidget(self, flags=Qt.Widget)
-        self.watch_button2.setLayout(box)
+        self.watch_button2 = QLabel(self)
+        self.watch_button2.setPixmap(pixmap)
+        self.watch_button2.setObjectName('img/watch.png')
+        self.watch_button2.mousePressEvent = partial(self.watch_button_on_click, self.watch_button2)
+        self.watch_button2.setEnabled(self.data.visible or self.data.my_name in self.data.my_proff)
+        self.watch_button2.setContentsMargins(30, 0, 0, 0)
 
         pixmap = QPixmap('img/settings.png')
         pixmap = pixmap.scaled(50, 50)
@@ -193,12 +236,12 @@ class ExerciseWindow(QWidget):
         else:
             pixmap = QPixmap('img/not_watch.png')
         pixmap = pixmap.scaled(50, 50)
-        watch_button = QLabel(self)
-        watch_button.setPixmap(pixmap)
-        watch_button.setObjectName('img/watch.png')
+        self.watch_button = QLabel(self)
+        self.watch_button.setPixmap(pixmap)
+        self.watch_button.setObjectName('img/watch.png')
         if self.exercise.lookable or self.data.my_name in self.data.my_proff:
-            watch_button.mousePressEvent = partial(self.watch_button_on_click, watch_button)
-        watch_button.setEnabled(self.data.visible)
+            self.watch_button.mousePressEvent = partial(self.watch_button_on_click, self.watch_button)
+        self.watch_button.setEnabled(self.data.visible or self.data.my_name in self.data.my_proff)
 
         if self.exercise.delivery_date is None and self.exercise.lookable:
             try:
@@ -206,7 +249,7 @@ class ExerciseWindow(QWidget):
                                   data={'username': self.data.my_name, 'password': self.data.my_psw,
                                         'id': self.exercise.id})
                 if r.text == "":
-                    watch_button.hide()
+                    self.watch_button.hide()
             except requests.exceptions.RequestException as e:
                 print('problemi di connessione')
 
@@ -228,7 +271,7 @@ class ExerciseWindow(QWidget):
         box2.addWidget(settings_button)
         box2.addWidget(send_button)
         box2.addWidget(restart_button)
-        box2.addWidget(watch_button)
+        box2.addWidget(self.watch_button)
 
         widget1 = QWidget(self, flags=Qt.Widget)
         widget1.setLayout(box1)
@@ -470,7 +513,7 @@ class ExerciseWindow(QWidget):
                 confermation_text += "<br><br><span style=\" color: #ff5500;\"> " \
                                      "Consegnando così non guadagnerai neanche un soldo!</span>"
 
-        if self.exercise.creator not in self.data.my_proff and money > 0:
+        if not self.exercise.approved:
             if impurity == 0:
                 money = 10
             elif impurity < 3:

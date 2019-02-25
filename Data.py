@@ -22,7 +22,7 @@ class KeyWord:
 
 class Exercise:
     def __init__(self, ex_id, creator, date, title, text, level, white_paper_mode, start_code, limits, executable,
-                 lookable, color_styles=None, delivery_date=None, solution=None, resources_used=None):
+                 lookable, approved, color_styles=None, delivery_date=None, solution=None, resources_used=None):
         self.id = ex_id
         self.creator = creator
         self.date = date
@@ -34,6 +34,7 @@ class Exercise:
         self.limits = limits
         self.executable = executable
         self.lookable = lookable
+        self.approved =approved
 
         self.color_styles = color_styles
         self.delivery_date = delivery_date
@@ -237,9 +238,10 @@ class Data:
                           'def': None if lev[9] == 'None' else int(lev[9])}
                 executable = False if int(i['executable']) == 0 else True
                 lookable = False if int(i['lookable']) == 0 else True
+                approved = False if int(i['approved']) == 0 else True
 
                 ex = Exercise(i['exercise_id'], i['creator'], date, i['title'], i['text'], level, white_paper_mode,
-                              i['start_code'], limits, executable, lookable)
+                              i['start_code'], limits, executable, lookable, approved)
 
                 find = False
                 for solution_k in k:

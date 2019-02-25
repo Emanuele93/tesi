@@ -26,22 +26,22 @@ class AbilitiesWindow(QWidget):
         font.setPixelSize(15)
 
         home_button = QPushButton('HOME', self)
-        home_button.setFixedSize(100, 50)
+        home_button.setFixedSize(115, 50)
         home_button.clicked.connect(self.home.open_MainWindow)
         home_button.setFont(font)
         home_button.setStyleSheet("background-color: #ffdd55")
 
         button1 = QPushButton('CONTATORI', self)
-        button1.setFixedHeight(50)
+        button1.setFixedSize(115, 50)
         button1.setFont(font)
         button2 = QPushButton('COLORI', self)
-        button2.setFixedHeight(50)
+        button2.setFixedSize(115, 50)
         button2.setFont(font)
         button3 = QPushButton('SKIN', self)
-        button3.setFixedHeight(50)
+        button3.setFixedSize(115, 50)
         button3.setFont(font)
         button4 = QPushButton('GETTONI', self)
-        button4.setFixedHeight(50)
+        button4.setFixedSize(115, 50)
         button4.setFont(font)
 
         page1 = self.make_page1()
@@ -49,74 +49,99 @@ class AbilitiesWindow(QWidget):
         page3 = self.make_page3()
         page4 = self.make_page4()
 
+        font_log = QFont()
+        font_log.setPixelSize(17)
+        self.logLine = QLabel(self)
+        self.logLine.setFont(font_log)
+
         button1.clicked.connect(
-            partial(self.open_subpage, button1, page1, button2, page2, button3, page3, button4, page4))
+            partial(self.open_subpage, button1, page1, button2, page2, button3, page3, button4, page4,
+                    "Aumenta i tuoi contatori per riuscire a completare ogni esercizio"))
         button2.clicked.connect(
-            partial(self.open_subpage, button2, page2, button1, page1, button3, page3, button4, page4))
+            partial(self.open_subpage, button2, page2, button1, page1, button3, page3, button4, page4,
+                    "Acquista nuovi colori per personalizzare il tuo codice"))
         button3.clicked.connect(
-            partial(self.open_subpage, button3, page3, button2, page2, button1, page1, button4, page4))
+            partial(self.open_subpage, button3, page3, button2, page2, button1, page1, button4, page4,
+                    "Cambia la tua immagine profilo"))
         button4.clicked.connect(
-            partial(self.open_subpage, button4, page4, button2, page2, button3, page3, button1, page1))
+            partial(self.open_subpage, button4, page4, button2, page2, button3, page3, button1, page1,
+                    "Compra un gettone per ampliare le tue possibilità"))
 
         if page == 1:
-            self.open_subpage(button1, page1, button2, page2, button3, page3, button4, page4)
+            self.open_subpage(button1, page1, button2, page2, button3, page3, button4, page4,
+                              "Aumenta i tuoi contatori per riuscire a completare ogni esercizio")
         elif page == 2:
-            self.open_subpage(button2, page2, button1, page1, button3, page3, button4, page4)
+            self.open_subpage(button2, page2, button1, page1, button3, page3, button4, page4,
+                              "Acquista nuovi colori per personalizzare il tuo codice")
         elif page == 3:
-            self.open_subpage(button3, page3, button1, page1, button2, page2, button4, page4)
+            self.open_subpage(button3, page3, button1, page1, button2, page2, button4, page4,
+                              "Cambia la tua immagine profilo")
         elif page == 4:
-            self.open_subpage(button4, page4, button1, page1, button2, page2, button3, page3)
+            self.open_subpage(button4, page4, button1, page1, button2, page2, button3, page3,
+                              "Compra un gettone per ampliare le tue possibilità")
 
         self.soldi = QLabel(str(self.data.money) + ' soldi', self)
         self.soldi.setFont(font)
+        self.soldi.setContentsMargins(20, 5, 20, 5)
+        self.soldi.setObjectName("soldi")
+        self.soldi.setStyleSheet("QWidget#soldi {border: 1px solid grey; background-color: #ffea00}")
+        self.soldi.setFixedHeight(45)
 
         empty = QWidget(self, flags=Qt.Widget)
         empty.setFixedWidth(20)
 
-        home_box = QHBoxLayout(self)
-        home_box.addWidget(home_button)
-        home_box.setContentsMargins(0, 0, 40, 0)
-        home_widget = QWidget(self, flags=Qt.Widget)
-        home_widget.setLayout(home_box)
-        home_widget.setFixedWidth(180)
+        buttons_box = QHBoxLayout(self)
+        buttons_box.addWidget(button1)
+        buttons_box.addWidget(button2)
+        buttons_box.addWidget(button3)
+        buttons_box.addWidget(button4)
+        buttons_box.setContentsMargins(0, 0, 0, 0)
+        buttons_box.setSpacing(0)
+        buttons_box.setAlignment(Qt.AlignCenter)
+        buttons_widget = QWidget(self, flags=Qt.Widget)
+        buttons_widget.setLayout(buttons_box)
+
+        font.setPixelSize(25)
+        font.setBold(True)
+        title = QLabel("Negozio", self)
+        title.setFont(font)
+        title.setStyleSheet("color: #ffffff")
 
         top_box = QHBoxLayout(self)
-        top_box.addWidget(home_widget)
-        top_box.addWidget(button1)
-        top_box.addWidget(button2)
-        top_box.addWidget(button3)
-        top_box.addWidget(button4)
-        top_box.setContentsMargins(20, 10, 20, 10)
-        top_box.setSpacing(0)
+        top_box.addWidget(home_button)
+        top_box.addWidget(title)
+        top_box.addWidget(buttons_widget)
+        top_box.setContentsMargins(20, 0, 20, 0)
+        top_box.setSpacing(40)
         top_widget = QWidget(self, flags=Qt.Widget)
         top_widget.setLayout(top_box)
-        top_widget.setFixedHeight(90)
+        top_widget.setFixedHeight(80)
         top_widget.setObjectName("topStyle")
         top_widget.setStyleSheet("QWidget#topStyle {border: 0px solid grey; border-bottom: 1px solid grey; "
-                                 "background-color: #47d271}")
+                                 "border-top: 1px solid grey; background-color: #47d271}")
 
         box = QHBoxLayout(self)
-        box.addWidget(self.soldi)
-        box.setContentsMargins(20, 10, 20, 10)
-        box.setAlignment(Qt.AlignRight)
+        box.addWidget(self.logLine)
+        box.addWidget(self.soldi, alignment=Qt.AlignRight)
+        box.setContentsMargins(80, 0, 5, 0)
         bottom_widget = QWidget(self, flags=Qt.Widget)
         bottom_widget.setLayout(box)
-        bottom_widget.setObjectName("soldi")
-        bottom_widget.setStyleSheet("QWidget#soldi {border: 1px solid grey; border-top: 0px solid grey; "
-                                    "background-color: #ffea00}")
-        bottom_widget.setFixedHeight(50)
+        bottom_widget.setObjectName("bw")
+        bottom_widget.setStyleSheet("QWidget#bw {border: 0px solid grey; border-bottom: 1px solid grey; "
+                                    "background-color: #99cc99}")
+        bottom_widget.setFixedHeight(55)
 
         window_layaut = QVBoxLayout(self)
         window_layaut.setContentsMargins(0, 0, 0, 0)
         window_layaut.addWidget(top_widget)
-        window_layaut.addWidget(bottom_widget, alignment=Qt.AlignRight)
+        window_layaut.addWidget(bottom_widget)
         window_layaut.addWidget(page1)
         window_layaut.addWidget(page2)
         window_layaut.addWidget(page3)
         window_layaut.addWidget(page4)
         window_layaut.setSpacing(0)
 
-    def open_subpage(self, b1, p1, b2, p2, b3, p3, b4, p4):
+    def open_subpage(self, b1, p1, b2, p2, b3, p3, b4, p4, logline):
         p1.setVisible(True)
         p2.setVisible(False)
         p3.setVisible(False)
@@ -125,6 +150,7 @@ class AbilitiesWindow(QWidget):
         b2.setStyleSheet('background-color: #ffdd55')
         b3.setStyleSheet('background-color: #ffdd55')
         b4.setStyleSheet('background-color: #ffdd55')
+        self.logLine.setText(logline)
 
     def make_page1(self):
         box = QHBoxLayout(self)
@@ -141,8 +167,11 @@ class AbilitiesWindow(QWidget):
         widget_variables = QWidget(self, flags=Qt.Widget)
         widget_variables.setLayout(box)
 
+        font = QFont()
+        font.setPixelSize(15)
+
         box = QHBoxLayout(self)
-        box.setContentsMargins(0, 0, 0, 0)
+        box.setSpacing(20)
         box.addWidget(self.counter_upgrade_widget('if'))
         box.addWidget(self.counter_upgrade_widget('elif'))
         box.addWidget(self.counter_upgrade_widget('else'))
@@ -150,53 +179,77 @@ class AbilitiesWindow(QWidget):
         widget_conditions = QWidget(self, flags=Qt.Widget)
         widget_conditions.setLayout(box)
 
-        box = QHBoxLayout(self)
+        title = QLabel('Selezioni', self)
+        title.setFont(font)
+        title.setAlignment(Qt.AlignHCenter)
+        title.setStyleSheet("border: 1px solid grey; background-color: #ccccff")
+        title.setContentsMargins(5, 3, 5, 3)
+
+        width = widget_conditions.sizeHint().width()
+
+        box = QVBoxLayout(self)
+        box.addWidget(title)
+        box.addWidget(widget_conditions)
         box.setContentsMargins(0, 0, 0, 0)
+        box.setSpacing(0)
+        box.setAlignment(Qt.AlignLeft)
+        widget_conditions = QWidget(self, flags=Qt.Widget)
+        widget_conditions.setLayout(box)
+        widget_conditions.setObjectName("widget_cycles")
+        widget_conditions.setStyleSheet("QWidget#widget_cycles {border: 1px solid grey; background-color: #aaaaff}")
+        widget_conditions.setFixedWidth(width)
+
+        box = QHBoxLayout(self)
+        box.setSpacing(20)
         box.addWidget(self.counter_upgrade_widget('for'))
         box.addWidget(self.counter_upgrade_widget('while'))
         box.setAlignment(Qt.AlignLeft)
         widget_cycles = QWidget(self, flags=Qt.Widget)
         widget_cycles.setLayout(box)
 
+        title = QLabel('Cicli', self)
+        title.setFont(font)
+        title.setAlignment(Qt.AlignHCenter)
+        title.setStyleSheet("border: 1px solid grey; background-color: #ccccff")
+        title.setContentsMargins(5, 3, 5, 3)
+
+        width = widget_cycles.sizeHint().width()
+
+        box = QVBoxLayout(self)
+        box.addWidget(title)
+        box.addWidget(widget_cycles)
+        box.setContentsMargins(0, 0, 0, 0)
+        box.setSpacing(0)
+        box.setAlignment(Qt.AlignLeft)
+        widget_cycles = QWidget(self, flags=Qt.Widget)
+        widget_cycles.setLayout(box)
+        widget_cycles.setObjectName("widget_cycles")
+        widget_cycles.setStyleSheet("QWidget#widget_cycles {border: 1px solid grey; background-color: #aaaaff}")
+        widget_cycles.setFixedWidth(width)
+
         box = QHBoxLayout(self)
         box.setContentsMargins(0, 0, 0, 0)
-        box.addWidget(self.counter_upgrade_widget('def'))
+        box.addWidget(self.counter_upgrade_widget('Funzioni (def)'))
         box.setAlignment(Qt.AlignLeft)
         widget_functions = QWidget(self, flags=Qt.Widget)
         widget_functions.setLayout(box)
 
         box = QVBoxLayout(self)
-        box.setSpacing(25)
-        box.setContentsMargins(0, 0, 0, 0)
+        box.setSpacing(12)
+        box.setContentsMargins(100, 15, 0, 0)
         box.addWidget(widget_lines)
         box.addWidget(widget_variables)
-        box.setAlignment(Qt.AlignTop)
-        widget1 = QWidget(self, flags=Qt.Widget)
-        widget1.setLayout(box)
-
-        box = QVBoxLayout(self)
-        box.setContentsMargins(0, 0, 0, 0)
-        box.setSpacing(25)
         box.addWidget(widget_conditions)
         box.addWidget(widget_cycles)
         box.addWidget(widget_functions)
         box.setAlignment(Qt.AlignTop)
-        widget2 = QWidget(self, flags=Qt.Widget)
-        widget2.setLayout(box)
-
-        box = QHBoxLayout(self)
-        box.setContentsMargins(0, 50, 0, 0)
-        box.setSpacing(50)
-        box.addWidget(widget1)
-        box.addWidget(widget2)
-        box.setAlignment(Qt.AlignHCenter)
         widget = QWidget(self, flags=Qt.Widget)
         widget.setLayout(box)
         return widget
 
     def counter_upgrade_widget(self, name):
         font = QFont()
-        font.setPixelSize(15)
+        font.setPixelSize(17)
 
         name_label = QLabel(self)
         name_label.setText(name)
@@ -207,25 +260,24 @@ class AbilitiesWindow(QWidget):
             name = 'lines'
         elif name == 'Variabili':
             name = 'variables'
-        elif name == 'def':
+        elif name == 'Funzioni (def)':
             name = 'functions'
 
         lev = self.data.level_variables[name]
         numbers_upgrade = QLabel(self)
-        if lev < len(self.data.variables_numbers[name]) - 1:
-            numbers_upgrade.setText(str(self.data.variables_numbers[name][lev]) + ' &#8594; '
-                                    + str(self.data.variables_numbers[name][lev + 1]))
-        elif lev < len(self.data.variables_numbers[name]):
-            numbers_upgrade.setText(str(self.data.variables_numbers[name][lev]) + ' &#8594; No Limit ')
+        if lev < len(self.data.variables_numbers[name]):
+            numbers_upgrade.setText(str(self.data.variables_numbers[name][lev]))
         else:
-            numbers_upgrade.setText(' ')
+            numbers_upgrade.setText(' &#8734; ')
         numbers_upgrade.setTextFormat(Qt.RichText)
         numbers_upgrade.setContentsMargins(10, 0, 10, 0)
         numbers_upgrade.setFont(font)
 
+        upgrade_value = QLabel(self)
         cost = QPushButton(self)
-        cost.clicked.connect(partial(self.upgrade_counter, name, cost, numbers_upgrade))
+        cost.clicked.connect(partial(self.upgrade_counter, name, cost, numbers_upgrade, upgrade_value))
         cost.setFont(font)
+        cost.setStyleSheet('background-color: #ffff55')
         self.buttons[name] = cost
 
         if lev < len(self.data.variables_numbers[name]):
@@ -233,24 +285,45 @@ class AbilitiesWindow(QWidget):
             if self.data.variables_cost[name][lev] > self.data.money:
                 cost.setEnabled(False)
         else:
-            cost.setText(' No limit ')
-            cost.setEnabled(False)
             self.buttons.pop(name)
 
+        lev = self.data.level_variables[name]
+        if lev < len(self.data.variables_numbers[name])-1:
+            upgrade_value.setText('+ ' + str(self.data.variables_numbers[name][lev + 1] -
+                                             self.data.variables_numbers[name][lev]))
+        else:
+            upgrade_value.setText(' + &#8734; ')
+        upgrade_value.setTextFormat(Qt.RichText)
+        upgrade_value.setFont(font)
+
         box = QVBoxLayout(self)
+        box.setAlignment(Qt.AlignCenter)
+        box.setSpacing(2)
+        box.addWidget(upgrade_value, alignment=Qt.AlignHCenter)
+        box.addWidget(cost)
+        box.setAlignment(Qt.AlignLeft)
+        box.setContentsMargins(0, 3, 0, 0)
+        cost = QWidget(self, flags=Qt.Widget)
+        cost.setLayout(box)
+
+        if lev >= len(self.data.variables_numbers[name]):
+            cost.hide()
+
+        box = QHBoxLayout(self)
+        box.setAlignment(Qt.AlignLeft)
         box.addWidget(name_label)
         box.addWidget(numbers_upgrade)
         box.addWidget(cost)
-        box.setAlignment(Qt.AlignTop)
-        box.setContentsMargins(0, 10, 0, 0)
+        box.setAlignment(Qt.AlignLeft)
+        box.setContentsMargins(5, 0, 0, 0)
 
         widget = QWidget(self, flags=Qt.Widget)
         widget.setLayout(box)
         widget.setObjectName("counter")
-        widget.setStyleSheet("QWidget#counter {border: 1px solid grey;}")
+        widget.setStyleSheet("QWidget#counter {border: 1px solid grey; background-color: #ccccff}")
         return widget
 
-    def upgrade_counter(self, name, button, numbers):
+    def upgrade_counter(self, name, button, numbers, upgrade_value):
         try:
             r = requests.post("http://programmingisagame.netsons.org/add_level.php?name="+name,
                               data={'username': self.data.my_name, 'password': self.data.my_psw})
@@ -261,19 +334,22 @@ class AbilitiesWindow(QWidget):
                 self.data.level_variables[name] += 1
                 self.data.owned_variables = self.data.get_owned_variables_numbers()
                 lev = self.data.level_variables[name]
-                if lev < len(self.data.variables_numbers[name]) - 1:
-                    numbers.setText(str(self.data.variables_numbers[name][lev]) + ' &#8594; '
-                                    + str(self.data.variables_numbers[name][lev + 1]))
-                elif lev < len(self.data.variables_numbers[name]):
-                    numbers.setText(str(self.data.variables_numbers[name][lev]) + ' &#8594; No Limit ')
+                if lev < len(self.data.variables_numbers[name]):
+                    numbers.setText(str(self.data.variables_numbers[name][lev]))
                 else:
-                    numbers.setText(' ')
+                    numbers.setText(' &#8734; ')
+
+                if lev < len(self.data.variables_numbers[name])-1:
+                    upgrade_value.setText('+ ' + str(self.data.variables_numbers[name][lev + 1] -
+                                                     self.data.variables_numbers[name][lev]))
+                else:
+                    upgrade_value.setText(' + &#8734; ')
 
                 if lev < len(self.data.variables_numbers[name]):
                     button.setText(str(self.data.variables_cost[name][lev]) + ' soldi')
                 else:
-                    button.setText(' No limit ')
-                    button.setEnabled(False)
+                    button.hide()
+                    upgrade_value.hide()
                     self.buttons.pop(name)
 
                 self.update_buttons_price()
@@ -295,13 +371,13 @@ class AbilitiesWindow(QWidget):
                 i.setEnabled(False)
         if 200 > self.data.money:
             self.make_homework_coin.setEnabled(False)
-        if 500 > self.data.money:
+        if 450 > self.data.money:
             self.watch_homework_coin.setEnabled(False)
 
     def make_page2(self):
         v_box = QVBoxLayout(self)
         v_box.setSpacing(15)
-        v_box.setAlignment(Qt.AlignTop)
+        v_box.setAlignment(Qt.AlignCenter)
         h_box = QHBoxLayout(self)
         h_box.setSpacing(15)
         h_box.setContentsMargins(0, 0, 0, 0)
@@ -331,7 +407,7 @@ class AbilitiesWindow(QWidget):
     def make_color_widget(self, color):
         change = QPushButton('Cambia colore', self)
         change.setFixedSize(120, 30)
-        change.setStyleSheet('background-color: #dddddd')
+        change.setStyleSheet('background-color: #ffff55')
         change.hide()
 
         label = QLabel(self)
@@ -342,7 +418,7 @@ class AbilitiesWindow(QWidget):
 
         price = QPushButton('100 soldi', self)
         price.setFixedSize(120, 30)
-        price.setStyleSheet('background-color: #dddddd')
+        price.setStyleSheet('background-color: #ffff55')
 
         price.clicked.connect(partial(self.buy_color_on_click, label, price, color))
         change.clicked.connect(partial(self.change_color_on_click, label))
@@ -428,7 +504,7 @@ class AbilitiesWindow(QWidget):
     def make_page3(self):
         v_box = QVBoxLayout(self)
         v_box.setSpacing(5)
-        v_box.setAlignment(Qt.AlignTop)
+        v_box.setAlignment(Qt.AlignCenter)
         h_box = QHBoxLayout(self)
         h_box.setSpacing(5)
         h_box.setContentsMargins(0, 0, 0, 0)
@@ -464,7 +540,7 @@ class AbilitiesWindow(QWidget):
 
         price = QPushButton(str(self.data.all_images[key]) + ' soldi', self)
         price.setFixedSize(120, 30)
-        price.setStyleSheet('background-color: #dddddd')
+        price.setStyleSheet('background-color: #ffff55')
         price.clicked.connect(partial(self.buy_image_on_click, price, key))
         self.images_buttons[price] = self.data.all_images[key]
 
@@ -524,18 +600,40 @@ class AbilitiesWindow(QWidget):
         label1 = QLabel('Gettone crea compito', self)
         label1.setFont(font)
 
+        label1_description1 = QLabel('Questo gettone consente di creare un compito da consegnare alla classe.', self)
+        label1_description1.setFixedSize(450, 20)
+        label1_description1.setWordWrap(True)
+        label1_description2 = QLabel('Sarà visibile solo dal prof finchè non verrà approvato.', self)
+        label1_description2.setFixedSize(450, 20)
+        label1_description2.setWordWrap(True)
+        if self.data.student_exercises_visible:
+            label1_description2.hide()
+
         self.make_homework_coin = QPushButton('200 soldi', self)
-        self.make_homework_coin.setFixedSize(150, 40)
+        self.make_homework_coin.setFixedWidth(150)
         self.make_homework_coin.setFont(font)
         self.make_homework_coin.clicked.connect(self.buy_make_homework_coin)
+        self.make_homework_coin.setStyleSheet('background-color: #ffff55')
 
         label2 = QLabel('Gettone sbircia compito', self)
         label2.setFont(font)
 
-        self.watch_homework_coin = QPushButton('500 soldi', self)
-        self.watch_homework_coin.setFixedSize(150, 40)
+        label2_description1 = QLabel("Questo gettone consente di guardare le soluzioni degli alti utenti "
+                                     "prima ancora di aver consegnato.", self)
+        label2_description1.setWordWrap(True)
+        label2_description1.setFixedSize(450, 33)
+        label2_description2 = QLabel("Il gettone non viene consumato se al momento dell'utilizzo nessuno ha inviato la "
+                                     "propria soluzione.", self)
+        label2_description2.setWordWrap(True)
+        label2_description2.setFixedSize(450, 33)
+        label2_description3 = QLabel("Utilizzabile solo in alcuni esercizi.", self)
+        label2_description3.setWordWrap(True)
+
+        self.watch_homework_coin = QPushButton('450 soldi', self)
+        self.watch_homework_coin.setFixedWidth(150)
         self.watch_homework_coin.setFont(font)
         self.watch_homework_coin.clicked.connect(self.buy_watch_homework_coin)
+        self.watch_homework_coin.setStyleSheet('background-color: #ffff55')
 
         if 200 > self.data.money:
             self.make_homework_coin.setEnabled(False)
@@ -543,22 +641,37 @@ class AbilitiesWindow(QWidget):
             self.make_homework_coin.setEnabled(False)
             self.make_homework_coin.setText('Acquistato')
 
-        if 500 > self.data.money:
+        if 450 > self.data.money:
             self.watch_homework_coin.setEnabled(False)
         if self.data.watch_homework_coin:
             self.watch_homework_coin.setEnabled(False)
             self.watch_homework_coin.setText('Acquistato')
 
-        box = QHBoxLayout(self)
-        box.setAlignment(Qt.AlignCenter)
+        box = QVBoxLayout(self)
         box.addWidget(label1)
-        box.addWidget(self.make_homework_coin)
+        box.addWidget(label1_description1)
+        box.addWidget(label1_description2)
         widget1 = QWidget(self, flags=Qt.Widget)
         widget1.setLayout(box)
 
         box = QHBoxLayout(self)
         box.setAlignment(Qt.AlignCenter)
+        box.addWidget(widget1)
+        box.addWidget(self.make_homework_coin)
+        widget1 = QWidget(self, flags=Qt.Widget)
+        widget1.setLayout(box)
+
+        box = QVBoxLayout(self)
         box.addWidget(label2)
+        box.addWidget(label2_description1)
+        box.addWidget(label2_description2)
+        box.addWidget(label2_description3)
+        widget2 = QWidget(self, flags=Qt.Widget)
+        widget2.setLayout(box)
+
+        box = QHBoxLayout(self)
+        box.setAlignment(Qt.AlignCenter)
+        box.addWidget(widget2)
         box.addWidget(self.watch_homework_coin)
         widget2 = QWidget(self, flags=Qt.Widget)
         widget2.setLayout(box)
@@ -594,7 +707,7 @@ class AbilitiesWindow(QWidget):
                 self.watch_homework_coin.setEnabled(False)
                 self.watch_homework_coin.setText('Acquistato')
                 self.data.watch_homework_coin = True
-                self.data.money -= 500
+                self.data.money -= 450
                 self.soldi.setText(str(self.data.money) + ' soldi')
                 self.update_buttons_price()
         except requests.exceptions.RequestException as e:
@@ -614,7 +727,7 @@ class ColorWindow(QDialog):
     def __init__(self, color, data, parent=None):
         QDialog.__init__(self, parent)
         self.setWindowTitle('Gamification - Cambia colore')
-        self.setFixedSize(QSize(600, 300))
+        self.setFixedSize(QSize(600, 450))
 
         self.data = data
         self.original = color

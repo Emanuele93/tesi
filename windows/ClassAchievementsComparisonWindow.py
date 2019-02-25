@@ -12,8 +12,7 @@ class ClassAchievementsComparisonWindow(QDialog):
     def __init__(self, data, achievements_titles, parent=None):
         QDialog.__init__(self, parent, flags=Qt.Dialog)
         self.setWindowTitle("Gamification - Classifica")
-        self.setMinimumWidth(600)
-        self.setMinimumHeight(500)
+        self.setMinimumSize(1200, 550)
         self.achievements_titles = achievements_titles
         self.data = data
 
@@ -39,11 +38,23 @@ class ClassAchievementsComparisonWindow(QDialog):
                     else:
                         students_widgets.append(self.make_student_widget(mates[i], i))
                     '''
+                font = QFont()
+                font.setPixelSize(20)
+                log_line = QLabel('Classifica della classe: "' + self.data.my_class + '" per esperieza raccolta', self)
+                log_line.setFont(font)
+                box = QHBoxLayout(self)
+                box.addWidget(log_line)
+                box.setContentsMargins(75, 0, 0, 0)
+                log_line = QWidget(self, flags=Qt.Widget)
+                log_line.setLayout(box)
+                log_line.setObjectName("log_line")
+                log_line.setStyleSheet("QWidget#log_line {border: 1px solid grey; border-right: 0px solid grey; "
+                                       "border-left: 0px solid grey; background-color: #88c5ff}")
+                log_line.setFixedHeight(50)
 
                 box = QHBoxLayout(self)
                 box.setAlignment(Qt.AlignLeft)
                 random.shuffle(not_visible_students_widget)
-                #box.addWidget(my_widget, alignment=Qt.AlignLeft)
                 for i in students_widgets:
                     box.addWidget(i, alignment=Qt.AlignLeft)
                 for i in not_visible_students_widget:
@@ -54,8 +65,9 @@ class ClassAchievementsComparisonWindow(QDialog):
                 scroll.setWidget(widget)
                 scroll.setObjectName("scroll")
                 scroll.setStyleSheet("QWidget#scroll {border: 0px solid grey}")
-                box = QHBoxLayout(self)
+                box = QVBoxLayout(self)
                 box.setContentsMargins(0,0,0,0)
+                box.addWidget(log_line)
                 box.addWidget(scroll)
 
         except requests.exceptions.RequestException as e:
@@ -78,7 +90,6 @@ class ClassAchievementsComparisonWindow(QDialog):
 
         title = QLabel(user['username'], self)
         title.setFont(font)
-        title.setFixedWidth(150)
 
         font.setPixelSize(15)
 
@@ -130,6 +141,7 @@ class ClassAchievementsComparisonWindow(QDialog):
         money.setStyleSheet("background-color: yellow; border: 1px solid grey")
 
         box = QHBoxLayout(self)
+        box.setSpacing(5)
         box.addWidget(pos)
         box.addWidget(title)
         who = QWidget(self, flags=Qt.Widget)

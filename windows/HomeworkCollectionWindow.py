@@ -2,7 +2,7 @@ import threading
 from functools import partial
 
 from PyQt5.QtGui import QFont, QPixmap, QMovie
-from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QPushButton, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel
+from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel
 from PyQt5.QtCore import *
 
 from windows.CreateHomeworkWindow import CreateHomeworkWindow
@@ -56,6 +56,14 @@ class HomeworkCollectionWindow(QWidget):
         self.home_button.setFont(font)
         self.home_button.setStyleSheet('background-color: #ffdd55')
 
+        self.add_homework_button = QPushButton('AGGIUNGI COMPITO', self)
+        self.add_homework_button.clicked.connect(self.open_CreateHomeworkWindow)
+        self.add_homework_button.setFixedSize(250, 50)
+        self.add_homework_button.setFont(font)
+        self.add_homework_button.setStyleSheet("background-color: #ffdd55")
+        if not self.data.make_homework_coin:
+            self.add_homework_button.setEnabled(False)
+
         l = 1
         old = 0
         for i in self.data.level_progression:
@@ -91,32 +99,69 @@ class HomeworkCollectionWindow(QWidget):
 
         box = QHBoxLayout(self)
         box.setAlignment(Qt.AlignCenter)
+        box.setSpacing(5)
         box.addWidget(level)
         box.addWidget(soldi)
-        box.setContentsMargins(10, 10, 10, 10)
+        box.setContentsMargins(0, 0, 0, 0)
         soldi_widget = QWidget(self, flags=Qt.Widget)
         soldi_widget.setLayout(box)
 
-        self.add_homework_button = QPushButton('AGGIUNGI COMPITO', self)
-        self.add_homework_button.clicked.connect(self.open_CreateHomeworkWindow)
-        self.add_homework_button.setFixedSize(250, 50)
-        self.add_homework_button.setFont(font)
-        self.add_homework_button.setStyleSheet("background-color: #ffdd55")
-        if not self.data.make_homework_coin:
-            self.add_homework_button.setEnabled(False)
+        font.setPixelSize(25)
+        font.setBold(True)
+        title = QLabel("Compiti di " + self.data.my_name, self)
+        title.setFont(font)
+        title.setAlignment(Qt.AlignHCenter)
+        title.setStyleSheet("color: #ffffff")
+
+        '''
+        box = QVBoxLayout(self)
+        box.setAlignment(Qt.AlignCenter)
+        box.setContentsMargins(7, 7, 7, 7)
+        box.setSpacing(5)
+        box.addWidget(title)
+        box.addWidget(soldi_widget)
+        box.setAlignment(Qt.AlignLeft)
+        soldi_widget = QWidget(self, flags=Qt.Widget)
+        soldi_widget.setLayout(box)
+        '''
 
         top_box = QHBoxLayout(self)
         top_box.setContentsMargins(20, 0, 20, 0)
+        top_box.setSpacing(40)
         top_box.addWidget(self.home_button)
-        top_box.addWidget(soldi_widget, alignment=Qt.AlignTop)
+        top_box.addWidget(title, alignment=Qt.AlignCenter)
         top_box.addWidget(self.add_homework_button, alignment=Qt.AlignRight)
-        top_box.setSpacing(80)
+        #top_box.addWidget(soldi_widget, alignment=Qt.AlignRight)
         top_widget = QWidget(self, flags=Qt.Widget)
         top_widget.setLayout(top_box)
         top_widget.setObjectName("topStyle")
         top_widget.setStyleSheet("QWidget#topStyle {border: 0px solid grey; border-bottom: 1px solid grey; "
                                  "border-top: 1px solid grey; background-color: #ffbd49}")
-        top_widget.setFixedHeight(90)
+        top_widget.setFixedHeight(80)
+
+        font.setPixelSize(17)
+        font.setBold(False)
+        log_line = QLabel('Risolvi, consegna, confronta e guadagna.', self)
+        log_line.setFont(font)
+        box = QHBoxLayout(self)
+        box.addWidget(log_line)
+        box.addWidget(soldi_widget, alignment=Qt.AlignRight)
+        box.setContentsMargins(75, 0, 5, 0)
+        log_line = QWidget(self, flags=Qt.Widget)
+        log_line.setLayout(box)
+        log_line.setObjectName("log_line")
+        log_line.setStyleSheet("QWidget#log_line {border: 0px solid grey; border-bottom: 1px solid grey; "
+                               "background-color: #ffff55}")
+        log_line.setFixedHeight(55)
+
+        top_box = QVBoxLayout(self)
+        top_box.setAlignment(Qt.AlignTop)
+        top_box.setContentsMargins(0, 0, 0, 0)
+        top_box.setSpacing(0)
+        top_box.addWidget(top_widget)
+        top_box.addWidget(log_line)
+        top_widget = QWidget(self, flags=Qt.Widget)
+        top_widget.setLayout(top_box)
         return top_widget
 
     def make_bottom_widget(self):
@@ -154,9 +199,20 @@ class HomeworkCollectionWindow(QWidget):
             for i in exercises:
                 if i.date == date:
                     temp_exercises.append(i)
+
+                    pixmap = QPixmap('img/approved.png')
+                    pixmap = pixmap.scaled(30, 30)
+                    approved_icon = QLabel(self)
+                    approved_icon.setPixmap(pixmap)
+                    approved_icon.setObjectName('img/approved.png')
+                    approved_icon.setFixedWidth(35)
+                    approved_icon.setContentsMargins(5, 0, 0, 10)
+                    if not i.approved:
+                        approved_icon.hide()
+
                     title = QLabel(i.title, self)
                     title.setFont(font)
-                    title.setContentsMargins(20, 10, 5, 0)
+                    title.setContentsMargins(0, 10, 5, 0)
 
                     s = '&#x25EF;' if i.level == 'Facile' \
                         else ('&#x25EF;<br>&#x25EF;' if i.level == 'Medio' else '&#x25EF;<br>&#x25EF;<br>&#x25EF;')
@@ -166,12 +222,15 @@ class HomeworkCollectionWindow(QWidget):
                     difficulty.setFont(f)
 
                     by = QLabel("<i>by " + i.creator + "</i>", self)
-                    by.setContentsMargins(20, 0, 5, 10)
+                    by.setContentsMargins(0, 0, 5, 10)
                     by.setTextFormat(Qt.RichText)
 
                     box = QVBoxLayout(self)
                     box.setAlignment(Qt.AlignTop)
-                    box.setContentsMargins(0, 0, 0, 0)
+                    if i.approved:
+                        box.setContentsMargins(5, 0, 0, 0)
+                    else:
+                        box.setContentsMargins(15, 0, 0, 0)
                     box.setSpacing(0)
                     box.addWidget(title, alignment=Qt.AlignTop)
                     box.addWidget(by, alignment=Qt.AlignTop)
@@ -179,11 +238,11 @@ class HomeworkCollectionWindow(QWidget):
                     exercise.setLayout(box)
 
                     box = QHBoxLayout(self)
-                    box.setAlignment(Qt.AlignTop)
                     box.setContentsMargins(0, 0, 0, 0)
                     box.setSpacing(0)
-                    box.addWidget(exercise, alignment=Qt.AlignVCenter)
-                    box.addWidget(difficulty, alignment=Qt.AlignLeft)
+                    box.addWidget(approved_icon)
+                    box.addWidget(exercise)
+                    box.addWidget(difficulty)
                     exercise = QWidget(self, flags=Qt.Widget)
                     exercise.setLayout(box)
                     exercise.setObjectName("exercise")
@@ -198,7 +257,7 @@ class HomeworkCollectionWindow(QWidget):
 
                     if i.creator in self.data.my_proff:
                         width += exercise.sizeHint().width()
-                        if width > 580:
+                        if width > 600:
                             width = exercise.sizeHint().width()
                             proff_exercises_widget = QWidget(self, flags=Qt.Widget)
                             proff_exercises_widget.setLayout(proff_exercises_box)
@@ -210,7 +269,7 @@ class HomeworkCollectionWindow(QWidget):
                         proff_counter += 1
                     else:
                         width_students += exercise.sizeHint().width()
-                        if width_students > 580:
+                        if width_students > 600:
                             width_students = exercise.sizeHint().width()
                             other_exercises_widget = QWidget(self, flags=Qt.Widget)
                             other_exercises_widget.setLayout(other_exercises_box)
@@ -259,7 +318,6 @@ class HomeworkCollectionWindow(QWidget):
                                            "border-bottom: 1px solid grey;}")
             bottom_box.addWidget(exercises_widget, alignment=Qt.AlignTop)
         bottom_box.setAlignment(Qt.AlignTop)
-        bottom_box.setContentsMargins(20,20,20,20)
         bottom_box.setSpacing(20)
         bottom_widget = QWidget(self, flags=Qt.Widget)
         bottom_widget.setLayout(bottom_box)
@@ -293,7 +351,6 @@ class HomeworkCollectionWindow(QWidget):
 
     def update(self):
         self.controller.open_HomeworkCollectionWindow(False, self.scroll.verticalScrollBar().value())
-        # self.open_ExerciseWindow(ex, self.data.visible, None) con questa riga di codice si riapre sulle soluzioni
 
     def open_CreateHomeworkWindow(self):
         if self.new_exercise is None:

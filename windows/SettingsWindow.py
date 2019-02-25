@@ -474,6 +474,9 @@ class SettingsWindow(QDialog):
                               data={'username': self.data.my_name, 'password': self.data.my_psw, 'visible': visible})
             if r.text != "":
                 self.data.visible = True if btn.text() == "Si" else False
+                if self.exercise_window is not None:
+                    self.exercise_window.watch_button.setEnabled(self.data.visible
+                                                                 or self.data.my_name in self.data.my_proff)
         except requests.exceptions.RequestException as e:
             confirm = ConfirmWindow('Gamification - Errore di connessione',
                                     "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
