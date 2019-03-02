@@ -1,20 +1,11 @@
 import sys
-import threading
 from functools import partial
-from os import path
 
 import requests
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QApplication, QLineEdit, QPushButton, QVBoxLayout, QDialog
+from PyQt5.QtWidgets import QWidget, QApplication, QLineEdit, QPushButton, QVBoxLayout, QDialog, QLabel
 from PyQt5.QtCore import *
-
-from Data import Data
-from windows.AbilitiesWindow import AbilitiesWindow
-from windows.AchievementsWindow import AchievementsWindow
 from windows.ConfirmWindow import ConfirmWindow
-from windows.HomeWindow import HomeWindow
-from windows.HomeworkCollectionWindow import HomeworkCollectionWindow
-from windows.LoginWindow import LoginWindow
 
 
 class MyWindow(QWidget):
@@ -24,6 +15,18 @@ class MyWindow(QWidget):
         self.setFixedSize(QSize(500, 400))
         font = QFont()
         font.setPixelSize(20)
+
+        title = QLabel('THE GAME OF PROGRAMMING', self)
+        title.setFont(font)
+        title.setStyleSheet('background-color: #5994d3; border: 1px solid grey; '
+                            'border-left: 0px solid grey; border-right: 0px solid grey')
+        title.setFixedSize(500, 60)
+        title.setAlignment(Qt.AlignCenter)
+
+        font.setPixelSize(20)
+        subtitle = QLabel('Inserire i dati di registrazione:', self)
+        subtitle.setFont(font)
+        subtitle.setAlignment(Qt.AlignCenter)
 
         user = QLineEdit(self)
         user.setPlaceholderText("Username")
@@ -58,10 +61,22 @@ class MyWindow(QWidget):
         button.clicked.connect(partial(self.button_on_click, user, password, classe))
 
         box = QVBoxLayout(self)
+        box.setAlignment(Qt.AlignTop)
+        box.setSpacing(30)
+        box.addWidget(subtitle, alignment=Qt.AlignHCenter)
         box.addWidget(user, alignment=Qt.AlignHCenter)
         box.addWidget(password, alignment=Qt.AlignHCenter)
         box.addWidget(classe, alignment=Qt.AlignHCenter)
         box.addWidget(button, alignment=Qt.AlignHCenter)
+        form = QWidget(self, flags=Qt.Widget)
+        form.setLayout(box)
+
+        box = QVBoxLayout(self)
+        box.setContentsMargins(0, 0, 0, 0)
+        box.setAlignment(Qt.AlignTop)
+        box.setSpacing(7)
+        box.addWidget(title, alignment=Qt.AlignHCenter)
+        box.addWidget(form, alignment=Qt.AlignHCenter)
 
     def user_changed(self, user, button):
         if user.text().strip() != '':
@@ -102,7 +117,8 @@ class MyWindow(QWidget):
         self.classe = False
         button.setEnabled(False)
 
-    def button_on_click(self, user, password, classe):
+    @staticmethod
+    def button_on_click(user, password, classe):
         try:
             r = requests.post("http://programmingisagame.netsons.org/singin.php",
                               data={'username': user.text().strip(), 'password': password.text().strip(),

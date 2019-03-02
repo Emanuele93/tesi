@@ -8,17 +8,17 @@ from PyQt5.QtWidgets import QDialog, QPushButton, QWidget, QVBoxLayout, QLabel, 
 
 from Data import DefaultColorStyles
 from windows.ConfirmWindow import ConfirmWindow
-from windows.LoginWindow import LoginWindow
 
 
 class SettingsWindow(QDialog):
     def __init__(self, title, data, exercise_window, parent=None):
         QDialog.__init__(self, parent)
         self.setWindowTitle(title)
-        self.setFixedSize(QSize(450, 600))
+        self.setFixedSize(QSize(465, 600))
         self.exercise_window = exercise_window
         self.parent = parent
         self.data = data
+        self.current_image_label = None
         self.current_button = None
         self.current_key = None
         self.color_buttons = {}
@@ -40,19 +40,22 @@ class SettingsWindow(QDialog):
         }
 
         font = QFont()
-        font.setPixelSize(15)
+        font.setPixelSize(17)
         self.personal_settings_button = QPushButton('Impostazioni personali', self)
         self.personal_settings_button.clicked.connect(self.personal_settings_button_on_click)
-        self.personal_settings_button.setFixedHeight(50)
+        self.personal_settings_button.setFixedHeight(55)
         self.personal_settings_button.setFont(font)
 
-        self.exercise_settings_button = QPushButton("Impostazioni dell'esercizio", self)
+        text_temp = "Colorazione preferita\ndegli esercizi" \
+            if exercise_window is None or self.exercise_window.exercise.id is None else "Colorazione dell'esercizio"
+        self.exercise_settings_button = QPushButton(text_temp, self)
         self.exercise_settings_button.clicked.connect(self.exercise_settings_button_on_click)
-        self.exercise_settings_button.setFixedHeight(50)
+        self.exercise_settings_button.setFixedHeight(55)
         self.exercise_settings_button.setFont(font)
 
         self.personal_settings_widget = QScrollArea(self)
         self.personal_settings_widget.setWidget(self.get_personal_settings_widget())
+        self.personal_settings_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.exercise_settings_widget = QScrollArea(self)
         self.exercise_settings_widget.setWidget(self.get_exercise_settings_widget())
 
@@ -86,16 +89,16 @@ class SettingsWindow(QDialog):
         self.exercise_settings_widget.hide()
         self.selection_color_widget.hide()
         self.selection_image_widget.hide()
-        self.personal_settings_button.setStyleSheet('background-color: grey')
-        self.exercise_settings_button.setStyleSheet('background-color: #c9c9c9')
+        self.personal_settings_button.setStyleSheet('background-color: #dd9933')
+        self.exercise_settings_button.setStyleSheet('background-color: #ffdd55')
 
     def exercise_settings_button_on_click(self):
         self.personal_settings_widget.hide()
         self.exercise_settings_widget.show()
         self.selection_color_widget.hide()
         self.selection_image_widget.hide()
-        self.personal_settings_button.setStyleSheet('background-color: #c9c9c9')
-        self.exercise_settings_button.setStyleSheet('background-color: grey')
+        self.personal_settings_button.setStyleSheet('background-color: #ffdd55')
+        self.exercise_settings_button.setStyleSheet('background-color: #dd9933')
 
     def show_selection_color_widget(self, text, button):
         if self.current_button == button and self.selection_color_widget.isVisible():
@@ -108,7 +111,7 @@ class SettingsWindow(QDialog):
 
     def get_personal_settings_widget(self):
         font = QFont()
-        font.setPixelSize(13)
+        font.setPixelSize(15)
         label = QLabel(self)
         label.setText('Immagine utente: ')
         label.setFont(font)
@@ -119,22 +122,29 @@ class SettingsWindow(QDialog):
         self.current_img.setPixmap(pixmap)
         self.current_img.setObjectName(self.data.current_image)
         self.current_img.mousePressEvent = self.selection_image_on_click
+        self.current_img.setStyleSheet('border: 1px solid grey')
 
         box = QHBoxLayout(self)
+        box.setAlignment(Qt.AlignLeft)
+        box.setSpacing(20)
         box.addWidget(label)
         box.addWidget(self.current_img)
         image_widget = QWidget(self, flags=Qt.Widget)
         image_widget.setLayout(box)
 
-        intro_font_dimesion = QLabel(self)
-        intro_font_dimesion.setText('Dimensione del testo: ')
+        intro_font_dimesion = QLabel('Dimensione del testo: ', self)
+        intro_font_dimesion.setFont(font)
         check_15 = QCheckBox("15px")
+        check_15.setFont(font)
         if self.data.code_font_size == 15: check_15.setChecked(True)
         check_20 = QCheckBox("20px")
+        check_20.setFont(font)
         if self.data.code_font_size == 20: check_20.setChecked(True)
         check_25 = QCheckBox("25px")
+        check_25.setFont(font)
         if self.data.code_font_size == 25: check_25.setChecked(True)
         check_30 = QCheckBox("30px")
+        check_30.setFont(font)
         if self.data.code_font_size == 30: check_30.setChecked(True)
 
         self.bg1 = QButtonGroup()
@@ -153,11 +163,13 @@ class SettingsWindow(QDialog):
         font_dimesion = QWidget(self, flags=Qt.Widget)
         font_dimesion.setLayout(box)
 
-        intro_code_orientation = QLabel(self)
-        intro_code_orientation.setText('Disposizione codice e risultati: ')
+        intro_code_orientation = QLabel('Disposizione codice e risultati: ', self)
+        intro_code_orientation.setFont(font)
         check_h = QCheckBox("Orizzontale")
+        check_h.setFont(font)
         check_h.setChecked(self.data.code_result_horizontal_orientation)
         check_v = QCheckBox("Verticale")
+        check_v.setFont(font)
         check_v.setChecked(not self.data.code_result_horizontal_orientation)
 
         self.bg2 = QButtonGroup()
@@ -172,10 +184,13 @@ class SettingsWindow(QDialog):
         code_result_orientation = QWidget(self, flags=Qt.Widget)
         code_result_orientation.setLayout(box)
 
-        intro_visible = QLabel("Visibile agli studenti: ", self)
+        intro_visible = QLabel("Modalità riservata: ", self)
+        intro_visible.setFont(font)
         check_1 = QCheckBox("Si")
+        check_1.setFont(font)
         check_1.setChecked(self.data.visible)
         check_2 = QCheckBox("No")
+        check_2.setFont(font)
         check_2.setChecked(not self.data.visible)
 
         self.bg3 = QButtonGroup()
@@ -192,10 +207,13 @@ class SettingsWindow(QDialog):
         visible = QWidget(self, flags=Qt.Widget)
         visible.setLayout(box)
 
-        intro_student_exercises_visible = QLabel("Compiti degli studenti: ", self)
+        intro_student_exercises_visible = QLabel("Compiti non approvati: ", self)
+        intro_student_exercises_visible.setFont(font)
         check_1 = QCheckBox("Visibili")
+        check_1.setFont(font)
         check_1.setChecked(self.data.student_exercises_visible)
         check_2 = QCheckBox("Non visibili")
+        check_2.setFont(font)
         check_2.setChecked(not self.data.student_exercises_visible)
 
         self.bg4 = QButtonGroup()
@@ -223,14 +241,17 @@ class SettingsWindow(QDialog):
             logout.hide()
 
         box = QHBoxLayout(self)
-        box. setContentsMargins(0, 50, 0, 0)
+        if self.data.my_name in self.data.my_proff:
+            box. setContentsMargins(0, 100, 20, 0)
+        else:
+            box. setContentsMargins(0, 150, 20, 0)
         box.addWidget(logout)
         box.setAlignment(Qt.AlignRight)
         logout = QWidget(self, flags=Qt.Widget)
         logout.setLayout(box)
 
         box = QVBoxLayout(self)
-        box.setSpacing(0)
+        box.setSpacing(10)
         box.addWidget(image_widget)
         box.addWidget(code_result_orientation)
         box.addWidget(font_dimesion)
@@ -252,16 +273,21 @@ class SettingsWindow(QDialog):
         widget = QWidget(self, flags=Qt.Widget)
         widget.setLayout(box)
 
+        font = QFont()
+        font.setPixelSize(15)
         button1 = QPushButton('Ritorna alle impostazioni preferite', self)
         button1.clicked.connect(self.set_style_preferred)
+        button1.setFont(font)
 
         button2 = QPushButton('Ritorna alle impostazioni di default', self)
         button2.clicked.connect(self.set_style_default)
+        button2.setFont(font)
 
         button3 = QPushButton('Salva come impostazioni preferite', self)
         button3.clicked.connect(self.set_preferences)
+        button3.setFont(font)
 
-        if self.exercise_window is None:
+        if self.exercise_window is None or self.exercise_window.exercise.id is None:
             button3.hide()
             button1.hide()
 
@@ -276,7 +302,7 @@ class SettingsWindow(QDialog):
 
     def color_selector(self, text, color):
         font = QFont()
-        font.setPixelSize(13)
+        font.setPixelSize(15)
         label = QLabel(self)
         label.setText(text)
         label.setFont(font)
@@ -301,7 +327,7 @@ class SettingsWindow(QDialog):
 
     def color_selector_key_word(self, word, color, bold):
         font = QFont()
-        font.setPixelSize(13)
+        font.setPixelSize(15)
         label = QLabel(self)
         label.setText('Colore della funzione <b>' + word + '</b>')
         label.setTextFormat(Qt.RichText)
@@ -318,6 +344,7 @@ class SettingsWindow(QDialog):
         check.setChecked(bold)
         check.stateChanged.connect(partial(self.set_bold, word, check))
         check.setFixedWidth(100)
+        check.setFont(font)
 
         self.check_keys[word] = check
 
@@ -335,6 +362,7 @@ class SettingsWindow(QDialog):
         self.selection_color_title = QLabel(self)
         self.selection_color_title.setText('colori:')
         self.selection_color_title.setFont(font)
+        self.selection_color_title.setContentsMargins(15, 0, 15, 0)
 
         box = QHBoxLayout(self)
         box.setContentsMargins(0,0,0,0)
@@ -343,14 +371,14 @@ class SettingsWindow(QDialog):
             button = QPushButton('', self)
             button.clicked.connect(partial(self.set_lib_element, i))
             button.setStyleSheet('background-color: ' + i)
-            button.setFixedSize(50, 50)
+            button.setFixedSize(70, 70)
             box.addWidget(button)
 
         widget = QWidget(self, flags=Qt.Widget)
         widget.setLayout(box)
 
         box = QVBoxLayout(self)
-        box.setContentsMargins(20,20,20,20)
+        box.setContentsMargins(20,15,20,20)
         box.setSpacing(20)
         box.addWidget(self.selection_color_title)
         box.addWidget(widget)
@@ -365,7 +393,7 @@ class SettingsWindow(QDialog):
         font = QFont()
         font.setPixelSize(15)
         selection_image_title = QLabel(self)
-        selection_image_title.setText('Immagini:')
+        selection_image_title.setText("Seleziona l'immagine che preferisci:")
         selection_image_title.setFont(font)
         selection_image_title.setContentsMargins(20,0,0,0)
 
@@ -379,7 +407,11 @@ class SettingsWindow(QDialog):
             pixmap = pixmap.scaled(100,100)
             label.setPixmap(pixmap)
             label.setObjectName(i)
-            label.mousePressEvent = partial(self.image_on_click, i)
+            label.mousePressEvent = partial(self.image_on_click, i, label)
+            label.setStyleSheet('border: 1px solid grey')
+            if self.data.current_image==i:
+                label.setStyleSheet('border: 3px solid #5555ee')
+                self.current_image_label = label
             box.addWidget(label)
 
         widget = QWidget(self, flags=Qt.Widget)
@@ -397,7 +429,7 @@ class SettingsWindow(QDialog):
         widget.setLayout(box)
         widget.hide()
         widget.setStyleSheet('background-color: #c9c9c9')
-        widget.setFixedHeight(190)
+        widget.setFixedHeight(200)
 
         return widget
 
@@ -425,6 +457,10 @@ class SettingsWindow(QDialog):
         if self.exercise_window is None:
             self.data.color_styles = self.color_styles.__copy__()
             self.data.write_file_color_styles('favorite_style.txt', self.data.color_styles)
+        elif self.exercise_window.exercise.id is None:
+            self.data.color_styles = self.color_styles.__copy__()
+            self.data.write_file_color_styles('favorite_style.txt', self.data.color_styles)
+            self.exercise_window.set_color_styles(self.color_styles)
         else:
             self.exercise_window.set_color_styles(self.color_styles)
             self.data.write_file_color_styles('styles/' + self.exercise_window.exercise.id + '.txt', self.color_styles)
@@ -437,6 +473,10 @@ class SettingsWindow(QDialog):
         if self.exercise_window is None:
             self.data.color_styles = self.color_styles.__copy__()
             self.data.write_file_color_styles('favorite_style.txt', self.data.color_styles)
+        elif self.exercise_window.exercise.id is None:
+            self.data.color_styles = self.color_styles.__copy__()
+            self.data.write_file_color_styles('favorite_style.txt', self.data.color_styles)
+            self.exercise_window.set_color_styles(self.color_styles)
         else:
             self.exercise_window.set_color_styles(self.color_styles)
             self.data.write_file_color_styles('styles/' + self.exercise_window.exercise.id + '.txt', self.color_styles)
@@ -474,7 +514,7 @@ class SettingsWindow(QDialog):
                               data={'username': self.data.my_name, 'password': self.data.my_psw, 'visible': visible})
             if r.text != "":
                 self.data.visible = True if btn.text() == "Si" else False
-                if self.exercise_window is not None:
+                if self.exercise_window is not None and self.exercise_window.exercise.id is not None:
                     self.exercise_window.watch_button.setEnabled(self.data.visible
                                                                  or self.data.my_name in self.data.my_proff)
         except requests.exceptions.RequestException as e:
@@ -521,7 +561,7 @@ class SettingsWindow(QDialog):
         self.parent.open_LoginWindow()
 
 
-    def image_on_click(self, name, event):
+    def image_on_click(self, name, label, event):
         try:
             r = requests.post("http://programmingisagame.netsons.org/select_user_image.php",
                               data={'username': self.data.my_name, 'password': self.data.my_psw, 'img': name})
@@ -532,6 +572,9 @@ class SettingsWindow(QDialog):
                 self.data.current_image = name
                 if self.exercise_window is None:
                     self.parent.set_image(name)
+                label.setStyleSheet('border: 3px solid #5555ee')
+                self.current_image_label.setStyleSheet('border: 0px solid #000000')
+                self.current_image_label = label
         except requests.exceptions.RequestException as e:
             confirm = ConfirmWindow('Gamification - Errore di connessione',
                                     "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
@@ -580,6 +623,10 @@ class SettingsWindow(QDialog):
         if self.exercise_window is None:
             self.data.color_styles = self.color_styles.__copy__()
             self.data.write_file_color_styles('favorite_style.txt', self.data.color_styles)
+        elif self.exercise_window.exercise.id is None:
+            self.data.color_styles = self.color_styles.__copy__()
+            self.data.write_file_color_styles('favorite_style.txt', self.data.color_styles)
+            self.exercise_window.set_color_styles(cs)
         else:
             self.exercise_window.set_color_styles(cs)
             self.data.write_file_color_styles('styles/' + self.exercise_window.exercise.id + '.txt', self.color_styles)

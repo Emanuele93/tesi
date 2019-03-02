@@ -2,9 +2,8 @@ from functools import partial
 
 import requests
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLineEdit, QDialog, QHBoxLayout
+from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLineEdit, QDialog, QLabel
 from PyQt5.QtCore import *
-
 from Data import Data
 from windows.ConfirmWindow import ConfirmWindow
 
@@ -15,8 +14,20 @@ class LoginWindow(QWidget):
         self.setWindowTitle("Gamification - Login")
         self.setFixedSize(QSize(500, 400))
         font = QFont()
-        font.setPixelSize(20)
+        font.setPixelSize(25)
         self.home = home
+
+        title = QLabel('THE GAME OF PROGRAMMING', self)
+        title.setFont(font)
+        title.setStyleSheet('background-color: #59d394; border: 1px solid grey; '
+                            'border-left: 0px solid grey; border-right: 0px solid grey')
+        title.setFixedSize(500, 60)
+        title.setAlignment(Qt.AlignCenter)
+
+        font.setPixelSize(20)
+        subtitle = QLabel('Inserire i dati di accesso:', self)
+        subtitle.setFont(font)
+        subtitle.setAlignment(Qt.AlignCenter)
 
         user = QLineEdit(self)
         user.setPlaceholderText("Username")
@@ -51,10 +62,22 @@ class LoginWindow(QWidget):
         button.clicked.connect(partial(self.button_on_click, user, password, classe))
 
         box = QVBoxLayout(self)
+        box.setAlignment(Qt.AlignTop)
+        box.setSpacing(30)
+        box.addWidget(subtitle, alignment=Qt.AlignHCenter)
         box.addWidget(user, alignment=Qt.AlignHCenter)
         box.addWidget(password, alignment=Qt.AlignHCenter)
         box.addWidget(classe, alignment=Qt.AlignHCenter)
         box.addWidget(button, alignment=Qt.AlignHCenter)
+        form = QWidget(self, flags=Qt.Widget)
+        form.setLayout(box)
+
+        box = QVBoxLayout(self)
+        box.setContentsMargins(0, 0, 0, 0)
+        box.setAlignment(Qt.AlignTop)
+        box.setSpacing(7)
+        box.addWidget(title, alignment=Qt.AlignHCenter)
+        box.addWidget(form, alignment=Qt.AlignHCenter)
 
     def user_changed(self, user, button):
         if user.text().strip() != '':

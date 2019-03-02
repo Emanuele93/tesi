@@ -123,7 +123,7 @@ class HomeWindow(QWidget):
         box1 = QLabel(self)
         box1.setPixmap(pixmap)
         box1.setObjectName('img/esercizi.png')
-        #box1.mousePressEvent = self.my_open_HomeworkCollectionWindow
+        box1.mousePressEvent = self.controller.open_ExercisesCollectionWindow
         box1.setStyleSheet("border: 1px solid grey")
 
         pixmap = QPixmap('img/compiti.png')

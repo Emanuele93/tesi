@@ -70,6 +70,16 @@ class Data:
 
     level_progression = [10, 20, 40, 60, 90, 120, 160, 200, 250, 300, 360, 420, 490, 560, 640, 720, 810, 900]
 
+    variables_exercises = [Exercise(None, None, None, "Cos'è una variabile", "Le variabili servono a ...", 'Medio', True, "# Scrivi qui il codice", {'lines': 3, 'variables': 2, 'if': 1, 'elif': 2, 'else': 1, 'conditions': 1, 'for': 2, 'while': 2, 'cycles': 1, 'def': 3}, False, True, True),
+                           Exercise(None, None, None, "Cambio di tipo", "Cambiare il tipo di una variabile è utile per ...", 'Facile', False, "# Scrivi qui il codice", {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, True, False, False)]
+    conditions_exercises = [Exercise(None, None, None, "Cos'è l'if", "L'if serve a ...", 'Facile', False, "# Scrivi qui il codice", {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, True, False, False),
+                            Exercise(None, None, None, "Cos'è l'elif", "L'elif serve a ...", 'Facile', False, "# Scrivi qui il codice", {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, True, False, False),
+                            Exercise(None, None, None, "Cos'è l'else", "L'else serve a ...", 'Facile', False, "# Scrivi qui il codice", {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, True, False, False)]
+    cycles_exercises = [Exercise(None, None, None, "Cos'è il for", "Il for serve a ...", 'Facile', False, "# Scrivi qui il codice", {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, True, False, False),
+                        Exercise(None, None, None, "Cos'è il while", "Il while serve a ...", 'Facile', False, "# Scrivi qui il codice", {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, True, False, False)]
+    functions_exercises = [Exercise(None, None, None, "Cos'è una funzione", "Il def serve a ...", 'Facile', False, "# Scrivi qui il codice", {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, True, False, False),
+                           Exercise(None, None, None, "La ricorsività", "Fare una funzione ricorsiva serve a ...", 'Facile', False, "# Scrivi qui il codice", {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, True, False, False)]
+
     def __init__(self):
         f = open("user_info.txt", "r")
         self.my_name = f.readline()[0:-1]

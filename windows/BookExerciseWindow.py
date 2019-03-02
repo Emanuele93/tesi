@@ -1,40 +1,31 @@
 from threading import Thread
 import functools
-import datetime
-import json
 import re
 import contextlib
 import io
-from functools import partial
 from os import path
-
-import requests
 from PyQt5.QtGui import QTextCursor, QFont, QPixmap, QFontMetricsF
-from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QSplitter, QHBoxLayout, QVBoxLayout, \
-    QLabel, QDialog
+from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QSplitter, QHBoxLayout, QVBoxLayout, QLabel, QDialog
 from PyQt5.QtCore import *
 
-from windows.ClassExerciseComparisonWindow import ClassExerciseComparisonWindow
 from windows.ConfirmWindow import ConfirmWindow
 from windows.SettingsWindow import SettingsWindow
 
 
-class ExerciseWindow(QWidget):
-    def __init__(self, exercise, data, closer_controller):
-        super(ExerciseWindow, self).__init__(flags=Qt.Window)
+class BookExerciseWindow(QWidget):
+    def __init__(self, exercise, data, exercise_widget):
+        super(BookExerciseWindow, self).__init__(flags=Qt.Window)
         self.setMinimumSize(QSize(1000, 650))
-        self.setWindowTitle('Gamification - "' + exercise.title + '" by ' + exercise.creator)
+        self.setWindowTitle('Gamification - "' + exercise.title + '"')
         self.exercise = exercise
         self.data = data
-        self.closer_controller = closer_controller
+        self.exercise_widget = exercise_widget
+
         self.text_changed = True
         self.more_options_is_visible = False
         self.code_compile = True
-        self.watch_homework_coin = False
         self.resources_used = {'lines': 0, 'variables': 0, 'if': 0, 'elif': 0, 'else': 0, 'conditions': 0,
                                'for': 0, 'while': 0, 'cycles': 0, 'def': 0}
-
-        self.color_styles = data.color_styles if exercise.color_styles is None else exercise.color_styles
 
         play_option_widget = QWidget(self, flags=Qt.Widget)
         play_option_widget.setLayout(self.get_play_option_widget())
@@ -56,8 +47,9 @@ class ExerciseWindow(QWidget):
         self.numbers.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.numbers.setFixedWidth(50)
         self.numbers.setObjectName("code_editor")
-        self.numbers.setStyleSheet("QWidget#code_editor {background-color: " + self.color_styles.code_background_color
-                                   + "; color: " + self.color_styles.code_text_color + ";}")
+        self.numbers.setStyleSheet("QWidget#code_editor {background-color: "
+                                   + self.data.color_styles.code_background_color
+                                   + "; color: " + self.data.color_styles.code_text_color + ";}")
 
         self.code_editor = QTextEdit(self)
         self.code_editor.setLineWrapMode(self.code_editor.NoWrap)
@@ -67,8 +59,8 @@ class ExerciseWindow(QWidget):
         self.code_editor.setTabStopDistance(QFontMetricsF(self.code_editor.font()).width(' ') * 12)
         self.code_editor.setObjectName("code_editor")
         self.code_editor.setStyleSheet("QWidget#code_editor {background-color: "
-                                       + self.color_styles.code_background_color + "; color: "
-                                       + self.color_styles.code_text_color + ";}")
+                                       + self.data.color_styles.code_background_color + "; color: "
+                                       + self.data.color_styles.code_text_color + ";}")
         if self.exercise.delivery_date is not None:
             self.code_editor.setReadOnly(True)
 
@@ -76,8 +68,9 @@ class ExerciseWindow(QWidget):
         self.results.setReadOnly(True)
         self.results.setLineWrapMode(self.results.NoWrap)
         self.results.setObjectName("results")
-        self.results.setStyleSheet("QWidget#results {background-color: " + self.color_styles.results_background_color
-                                   + "; color: " + self.color_styles.results_text_color + ";}")
+        self.results.setStyleSheet("QWidget#results {background-color: "
+                                   + self.data.color_styles.results_background_color
+                                   + "; color: " + self.data.color_styles.results_text_color + ";}")
         if not self.exercise.executable:
             self.results.hide()
 
@@ -122,53 +115,8 @@ class ExerciseWindow(QWidget):
         box.addWidget(splitter2)
         box.setContentsMargins(0, 0, 0, 0)
 
-        approved_button = QLabel(self)
-        if self.exercise.approved:
-            pixmap = QPixmap('img/approved.png')
-            approved_button.setObjectName('img/approved.png')
-        else:
-            pixmap = QPixmap('img/not_approved.png')
-            approved_button.setObjectName('img/not_approved.png')
-        pixmap = pixmap.scaled(50, 50)
-        approved_button.setPixmap(pixmap)
-        approved_button.setFixedSize(70, 70)
-        approved_button.setAlignment(Qt.AlignCenter)
-        if not self.exercise.approved and self.data.my_name in self.data.my_proff:
-            approved_button.mousePressEvent = partial(self.approved_button_on_click, approved_button)
-        approved_button.move(self.width()-80, 10)
-        self.resizeEvent = partial(self.resize_window, approved_button)
-
     def resize_window(self, widget, event):
         widget.move(self.width()-80, 10)
-
-    def approved_button_on_click(self, widget, event):
-        confirm = ConfirmWindow('Gamification - conferma approvazione',
-                                "Sei sicuro di voler approvare l'esercizio?<br>L'approvazione non può essere revocata!",
-                                parent=self, ok='Conferma', cancel='Annulla')
-        if confirm.exec_() == QDialog.Accepted:
-            try:
-                r = requests.post("http://programmingisagame.netsons.org/approve_exercise.php",
-                                  data={'username': self.data.my_name, 'password': self.data.my_psw,
-                                        'class': self.data.my_class, 'id': self.exercise.id})
-                if r.text != "":
-                    confirm.deleteLater()
-                    pixmap = QPixmap('img/approved.png')
-                    pixmap = pixmap.scaled(50, 50)
-                    widget.setObjectName('img/approved.png')
-                    widget.setPixmap(pixmap)
-                    self.exercise.approved = True
-                    self.exercise.delivery_date = None
-                    self.data.get_user_data()
-                    self.closer_controller.update()
-            except requests.exceptions.RequestException as e:
-                confirm2 = ConfirmWindow('Gamification - Errore di connessione',
-                                         "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                         "connessione<br>Controllare la propria connessione internet e riprovare</span>",
-                                         ok="Ok", cancel=None)
-                if confirm2.exec_() == QDialog.Accepted:
-                    print('ok')
-                confirm2.deleteLater()
-        confirm.deleteLater()
 
     def update_text_result_orientation(self):
         self.coding_widget.setOrientation(
@@ -190,25 +138,8 @@ class ExerciseWindow(QWidget):
         self.save_button.setPixmap(pixmap)
         self.save_button.setObjectName('img/save.png')
         self.save_button.mousePressEvent = self.save_button_on_click
-
-        pixmap = QPixmap('img/more.png')
-        pixmap = pixmap.scaled(50, 50)
-        self.more_button = QLabel(self)
-        self.more_button.setPixmap(pixmap)
-        self.more_button.setObjectName('img/more.png')
-        self.more_button.mousePressEvent = self.more_button_on_click
-        if self.exercise.delivery_date is not None:
+        if self.exercise.text is None:
             self.save_button.hide()
-            self.more_button.hide()
-
-        pixmap = QPixmap('img/watch.png')
-        pixmap = pixmap.scaled(50, 50)
-        self.watch_button2 = QLabel(self)
-        self.watch_button2.setPixmap(pixmap)
-        self.watch_button2.setObjectName('img/watch.png')
-        self.watch_button2.mousePressEvent = partial(self.watch_button_on_click, self.watch_button2)
-        self.watch_button2.setEnabled(self.data.visible or self.data.my_name in self.data.my_proff)
-        self.watch_button2.setContentsMargins(30, 0, 0, 0)
 
         pixmap = QPixmap('img/settings.png')
         pixmap = pixmap.scaled(50, 50)
@@ -217,73 +148,26 @@ class ExerciseWindow(QWidget):
         settings_button.setObjectName('img/settings.png')
         settings_button.mousePressEvent = self.swap_button_on_click
 
-        pixmap = QPixmap('img/upload.png')
-        pixmap = pixmap.scaled(50, 50)
-        send_button = QLabel(self)
-        send_button.setPixmap(pixmap)
-        send_button.setObjectName('img/upload.png')
-        send_button.mousePressEvent = self.send_button_on_click
-
         pixmap = QPixmap('img/reset.png')
         pixmap = pixmap.scaled(50, 50)
         restart_button = QLabel(self)
         restart_button.setPixmap(pixmap)
         restart_button.setObjectName('img/reset.png')
         restart_button.mousePressEvent = self.restart_button_on_click
+        if self.exercise.text is None:
+            restart_button.hide()
 
-        if self.exercise.lookable or self.data.my_name in self.data.my_proff:
-            pixmap = QPixmap('img/watch.png')
+        box = QHBoxLayout(self)
+        box.setAlignment(Qt.AlignCenter)
+        if self.exercise.text is None:
+            box.setSpacing(60)
         else:
-            pixmap = QPixmap('img/not_watch.png')
-        pixmap = pixmap.scaled(50, 50)
-        self.watch_button = QLabel(self)
-        self.watch_button.setPixmap(pixmap)
-        self.watch_button.setObjectName('img/watch.png')
-        if self.exercise.lookable or self.data.my_name in self.data.my_proff:
-            self.watch_button.mousePressEvent = partial(self.watch_button_on_click, self.watch_button)
-        self.watch_button.setEnabled(self.data.visible or self.data.my_name in self.data.my_proff)
-
-        if self.exercise.delivery_date is None and self.exercise.lookable:
-            try:
-                r = requests.post("http://programmingisagame.netsons.org/check_watch_homework_coin.php",
-                                  data={'username': self.data.my_name, 'password': self.data.my_psw,
-                                        'id': self.exercise.id})
-                if r.text == "":
-                    self.watch_button.hide()
-            except requests.exceptions.RequestException as e:
-                print('problemi di connessione')
-
-        box1 = QHBoxLayout(self)
-        box1.setAlignment(Qt.AlignHCenter)
-        box1.setSpacing(20)
-        box1.setContentsMargins(0, 0, 0, 0)
-        box1.addWidget(play_button)
-        box1.addWidget(self.save_button)
-        box1.addWidget(self.more_button)
-        box1.addWidget(self.watch_button2)
-        if self.exercise.delivery_date is None:
-            self.watch_button2.hide()
-
-        box2 = QHBoxLayout(self)
-        box2.setAlignment(Qt.AlignHCenter)
-        box2.setSpacing(20)
-        box2.setContentsMargins(0, 0, 0, 0)
-        box2.addWidget(settings_button)
-        box2.addWidget(send_button)
-        box2.addWidget(restart_button)
-        box2.addWidget(self.watch_button)
-
-        widget1 = QWidget(self, flags=Qt.Widget)
-        widget1.setLayout(box1)
-        self.more_options = QWidget(self, flags=Qt.Widget)
-        self.more_options.setLayout(box2)
-        self.more_options.hide()
-        box = QVBoxLayout(self)
-        box.setAlignment(Qt.AlignVCenter)
-        box.setSpacing(20)
-        box.setContentsMargins(0, 0, 0, 0)
-        box.addWidget(widget1)
-        box.addWidget(self.more_options)
+            box.setSpacing(20)
+        box.setContentsMargins(20, 0, 20, 0)
+        box.addWidget(play_button)
+        box.addWidget(self.save_button)
+        box.addWidget(restart_button)
+        box.addWidget(settings_button)
         return box
 
     @staticmethod
@@ -360,12 +244,12 @@ class ExerciseWindow(QWidget):
         self.results.setPlainText(self.execution_result)
         if self.code_compile:
             self.results.setStyleSheet(
-                "QWidget#results {background-color: " + self.color_styles.results_background_color
-                + "; color: " + self.color_styles.results_text_color + ";}")
+                "QWidget#results {background-color: " + self.data.color_styles.results_background_color
+                + "; color: " + self.data.color_styles.results_text_color + ";}")
         else:
             self.results.setStyleSheet("QWidget#results {background-color: "
-                                       + self.color_styles.error_results_background_color + "; color: "
-                                       + self.color_styles.error_results_text_color + ";}")
+                                       + self.data.color_styles.error_results_background_color + "; color: "
+                                       + self.data.color_styles.error_results_text_color + ";}")
 
         self.variables_used_number.setText(str(len(self.execution_temp_vars)))
         self.resources_used['variables'] = len(self.execution_temp_vars)
@@ -387,8 +271,8 @@ class ExerciseWindow(QWidget):
         self.save_button.setPixmap(pixmap)
         self.exercise.solution = self.code_editor.toPlainText()
 
-        file = self.exercise.id
-        file_name = 'saves/' + self.exercise.id + '.txt'
+        file = self.exercise.title
+        file_name = 'saves/' + self.exercise.title + '.txt'
 
         if file.__contains__('"') or file.__contains__("'") or file.__contains__('?') or file.__contains__('\\') \
                 or file.__contains__('/') or file.__contains__(":") or file.__contains__("*") \
@@ -415,7 +299,7 @@ class ExerciseWindow(QWidget):
         f.write(self.exercise.solution)
         f.close()
 
-        self.closer_controller.update()
+        self.exercise_widget.setStyleSheet('background-color: #99dd99')
 
     def more_button_on_click(self, event):
         if self.more_options_is_visible:
@@ -426,200 +310,22 @@ class ExerciseWindow(QWidget):
         return
 
     def swap_button_on_click(self, event):
-        confirm = SettingsWindow('Gamification - settings - "' + self.exercise.title + '" by ' + self.exercise.creator,
+        self.exercise.color_styles = None
+        confirm = SettingsWindow('Gamification - settings - "' + self.exercise.title,
                                  self.data, self, parent=self)
         if confirm.exec_() == QDialog.Accepted:
             print('ok')
         confirm.deleteLater()
 
-    def send_button_on_click(self, event):
-        if self.exercise.executable:
-            self.play_button_on_click(None)
-        warning = False
-        impurity = 0
-        money = 150 if self.exercise.level == 'Difficile' else 100
-
-        confermation_text = "Sei sicuro di voler inviare l'esercizio?<br>" \
-                            "La tua soluzione non potrà più essere modificata!"
-
-        owned = True
-        if self.data.owned_variables['lines'] is not None \
-                and self.resources_used['lines'] > self.data.owned_variables['lines'] \
-                or self.data.owned_variables['variables'] is not None \
-                and self.resources_used['variables'] > self.data.owned_variables['variables'] \
-                or self.data.owned_variables['if'] is not None \
-                and self.resources_used['if'] > self.data.owned_variables['if'] \
-                or self.data.owned_variables['elif'] is not None \
-                and self.resources_used['elif'] > self.data.owned_variables['elif'] \
-                or self.data.owned_variables['else'] is not None \
-                and self.resources_used['else'] > self.data.owned_variables['else'] \
-                or self.data.owned_variables['for'] is not None \
-                and self.resources_used['for'] > self.data.owned_variables['for'] \
-                or self.data.owned_variables['while'] is not None \
-                and self.resources_used['while'] > self.data.owned_variables['while'] \
-                or self.data.owned_variables['functions'] is not None \
-                and self.resources_used['def'] > self.data.owned_variables['functions']:
-            confermation_text += "<br><br><span style=\" color: #ff5500;\">" \
-                                 "Attenzione, hai usato più risorse di quelle che possiedi!<br>" \
-                                 "In questo modo non guadagnerai neanche un soldo!</span>"
-            warning = True
-            owned = False
-            money = 0
-
-        if (self.exercise.limits['lines'] is not None
-            and self.resources_used['lines'] > self.exercise.limits['lines']) \
-                or (self.exercise.limits['variables'] is not None
-                    and self.resources_used['variables'] > self.exercise.limits['variables']) \
-                or (self.exercise.limits['if'] is not None
-                    and self.resources_used['if'] > self.exercise.limits['if']) \
-                or (self.exercise.limits['elif'] is not None
-                    and self.resources_used['elif'] > self.exercise.limits['elif']) \
-                or (self.exercise.limits['else'] is not None
-                    and self.resources_used['else'] > self.exercise.limits['else']) \
-                or (self.exercise.limits['conditions'] is not None
-                    and self.resources_used['if'] + self.resources_used['elif']
-                    + self.resources_used['else'] > self.exercise.limits['conditions']) \
-                or (self.exercise.limits['for'] is not None
-                    and self.resources_used['for'] > self.exercise.limits['for']) \
-                or (self.exercise.limits['while'] is not None
-                    and self.resources_used['while'] > self.exercise.limits['while']) \
-                or (self.exercise.limits['cycles'] is not None
-                    and self.resources_used['for'] + self.resources_used['while'] > self.exercise.limits['cycles']) \
-                or (self.exercise.limits['def'] is not None
-                    and self.resources_used['def'] > self.exercise.limits['def']):
-            confermation_text += "<br><br><span style=\" color: red;\">" \
-                                 "Attenzione, hai usato più risorse rispetto al limite assegnato!<br>" \
-                                 "In questo modo l'esercizio potrebbe esser valutato sbagliato!</span>"
-            warning = True
-            impurity = 1
-            if money > 0:
-                money -= 50
-
-        if not self.code_compile:
-            confermation_text += "<br><br><span style=\" color: red;\">" \
-                                 "Attenzione, il tuo codice ha degli errori e non viene eseguito interamente!<br>" \
-                                 "In questo modo l'esercizio potrebbe esser valutato sbagliato!</span>"
-            if money > 0 and (self.exercise.creator not in self.data.my_proff
-                              or not (self.exercise.level == 'Medio' and warning)):
-                money -= 50
-            warning = True
-            impurity += 2
-
-        if owned and warning:
-            if money > 0:
-                confermation_text += "<br><br><span style=\" color: #ff5500;\"> " \
-                                     "Consegnando così guadagnerai meno soldi!</span>"
-            else:
-                confermation_text += "<br><br><span style=\" color: #ff5500;\"> " \
-                                     "Consegnando così non guadagnerai neanche un soldo!</span>"
-
-        if not self.exercise.approved:
-            if impurity == 0:
-                money = 10
-            elif impurity < 3:
-                money = 5
-            else:
-                money = 0
-
-        ok_text = 'Invia comunque' if warning else 'Invia'
-        confirm = ConfirmWindow('Gamification - "' + self.exercise.title + '" by ' + self.exercise.creator,
-                                confermation_text, parent=self, ok=ok_text, cancel='Annulla')
-
-        if confirm.exec_() == QDialog.Accepted:
-            data = datetime.datetime.now()
-            data = str(data.year) + "-" + str(data.month) + "-" + str(data.day) + " " + \
-                   str(data.hour) + ":" + str(data.minute) + ":" + str(data.second)
-            resources = str(self.resources_used['lines']) + "," + str(self.resources_used['variables']) + "," + \
-                        str(self.resources_used['if']) + "," + str(self.resources_used['elif']) + "," + \
-                        str(self.resources_used['else']) + "," + str(self.resources_used['for']) + "," + \
-                        str(self.resources_used['while']) + "," + str(self.resources_used['def'])
-            self.exercise.color_styles = self.color_styles.__copy__()
-            cs = self.exercise.color_styles.code_background_color + "," + self.exercise.color_styles.code_text_color + \
-                 "," + self.exercise.color_styles.results_background_color + "," + \
-                 self.exercise.color_styles.results_text_color + "," + \
-                 self.exercise.color_styles.error_results_background_color + "," + \
-                 self.exercise.color_styles.error_results_text_color + "," + self.exercise.color_styles.string_color + \
-                 "," + self.exercise.color_styles.comment_color + "," + \
-                 self.exercise.color_styles.multi_line_comment_color
-            for i in self.exercise.color_styles.keyWords:
-                cs += "," + i.color + "," + ('T' if i.bold else 'F')
-            try:
-                r = requests.post("http://programmingisagame.netsons.org/add_solution.php",
-                                  data={'username': self.data.my_name, 'password': self.data.my_psw,
-                                        'class': self.data.my_class, 'id': self.exercise.id, 'color_style': cs,
-                                        'delivery_date': data, 'solution': self.code_editor.toPlainText(),
-                                        'resources_used': resources, 'money': str(money), 'impurity': str(impurity)})
-                if r.text != "":
-                    self.exercise.solution = self.code_editor.toPlainText()
-                    self.exercise.delivery_date = datetime.datetime.now()
-                    self.exercise.resources_used = self.resources_used
-                    self.data.money += money
-                    self.data.level += 0 if money == 0 else \
-                        (1 if money == 50 or money == 5 else (2 if money == 10 or money == 100 else 3))
-                    self.closer_controller.close_ExerciseWindow(self.exercise)
-                    self.save_button.hide()
-                    self.more_options.hide()
-                    self.more_button.hide()
-                    self.watch_button2.show()
-                    self.code_editor.setReadOnly(True)
-                    if self.data.visible:
-                        self.watch_button_on_click(None, None)
-            except requests.exceptions.RequestException as e:
-                confirm2 = ConfirmWindow('Gamification - Errore di connessione',
-                                         "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                         "connessione<br>Controllare la propria connessione internet e riprovare</span>",
-                                         ok="Ok", cancel=None)
-                if confirm2.exec_() == QDialog.Accepted:
-                    print('ok')
-                confirm2.deleteLater()
-        confirm.deleteLater()
-
     def restart_button_on_click(self, event):
         confirm = ConfirmWindow("Gamification - Ricominciare l'esercizio",
-                                 "<span style=\" color: red;\"> Attenzione, confermi di voler ricominciare "
-                                 "l'esercizio?<br>Tutto ciò che non e stato salvato non sarà più recuperabile</span>",
-                                 ok="Conferma", cancel="Annulla")
+                                "<span style=\" color: red;\"> Attenzione, confermi di voler ricominciare "
+                                "l'esercizio?<br>Tutto ciò che non e stato salvato non sarà più recuperabile</span>",
+                                ok="Conferma", cancel="Annulla")
         if confirm.exec_() == QDialog.Accepted:
             self.code_editor.setText(self.exercise.start_code)
             self.results.setPlainText('')
         confirm.deleteLater()
-
-    def watch_button_on_click(self, button, event):
-        try:
-            r = requests.post("http://programmingisagame.netsons.org/click_watch_homework_coin.php",
-                              data={'username': self.data.my_name, 'password': self.data.my_psw,
-                                    'class': self.data.my_class, 'id': self.exercise.id})
-            if r.text == "":
-                button.hide()
-            else:
-                self.data.watch_homework_coin = (r.text != "removed")
-                try:
-                    r = requests.post("http://programmingisagame.netsons.org/get_class_exercise_solutions.php",
-                                      data={'username': self.data.my_name, 'password': self.data.my_psw,
-                                            'exercise': self.exercise.id, 'class': self.data.my_class})
-                    if r.text != "":
-                        class_solutions = json.loads(r.text[1: len(r.text)])
-                        confirm = ClassExerciseComparisonWindow(
-                            'Gamification - "' + self.exercise.title + '" soluzioni dei compagni',
-                            class_solutions, r.text[0:1], self.exercise.limits, self, parent=self)
-                        confirm.exec_()
-                        confirm.deleteLater()
-                except requests.exceptions.RequestException as e:
-                    confirm = ConfirmWindow('Gamification - Errore di connessione',
-                                            "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                            "connessione<br>Controllare la connessione internet e riprovare</span>",
-                                            ok="Ok", cancel=None)
-                    if confirm.exec_() == QDialog.Accepted:
-                        print('ok')
-                    confirm.deleteLater()
-        except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Gamification - Errore di connessione',
-                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                    "connessione<br>Controllare la propria connessione internet e riprovare</span>",
-                                    ok="Ok", cancel=None)
-            if confirm.exec_() == QDialog.Accepted:
-                print('ok')
-            confirm.deleteLater()
 
     def create_label(self, text):
         font = QFont()
@@ -936,9 +642,9 @@ class ExerciseWindow(QWidget):
                 if i != start:
                     texts.append(text[start:i])
                     start = i
-                text = text[0:i] + '<span style=\" color:' + self.color_styles.comment_color \
+                text = text[0:i] + '<span style=\" color:' + self.data.color_styles.comment_color \
                        + ';\">' + text[i:len(text)]
-                i += len('<span style=\" color:' + self.color_styles.comment_color + ';\">')
+                i += len('<span style=\" color:' + self.data.color_styles.comment_color + ';\">')
                 comment = True
             elif (text[i] == '"' or text[i] == "'") and comment is False:
                 if string_start is None:
@@ -946,18 +652,18 @@ class ExerciseWindow(QWidget):
                         if i != start:
                             texts.append(text[start:i])
                             start = i
-                        text = text[0:i] + '<span style=\" color:' + self.color_styles.multi_line_comment_color \
+                        text = text[0:i] + '<span style=\" color:' + self.data.color_styles.multi_line_comment_color \
                                + ';\">' + text[i:len(text)]
-                        i += len('<span style=\" color:' + self.color_styles.multi_line_comment_color + ';\">') + 2
+                        i += len('<span style=\" color:' + self.data.color_styles.multi_line_comment_color + ';\">') + 2
                         multi_line_comment = True
                         string_start = text[i]
                     elif not multi_line_comment:
                         if i != start:
                             texts.append(text[start:i])
                             start = i
-                        text = text[0:i] + '<span style=\" color:' + self.color_styles.string_color \
+                        text = text[0:i] + '<span style=\" color:' + self.data.color_styles.string_color \
                                + ';\">' + text[i:len(text)]
-                        i += len('<span style=\" color:' + self.color_styles.string_color + ';\">')
+                        i += len('<span style=\" color:' + self.data.color_styles.string_color + ';\">')
                         string_start = text[i]
                 elif text[i] == string_start:
                     if multi_line_comment and i + 2 < len(text) and text[i + 1] == text[i] and text[i + 2] == text[i]:
@@ -1140,7 +846,7 @@ class ExerciseWindow(QWidget):
             text = ''
             for i in range(0, len(texts)):
                 if texts[i] != '' and texts[i][0] != '<':
-                    for word in self.color_styles.keyWords:
+                    for word in self.data.color_styles.keyWords:
                         texts[i], num = self.my_find_and_replace(texts[i], word.word, word.tagged_word(), True)
                         if self.resources_used.get(word.word, None) is not None:
                             self.resources_used[word.word] = self.resources_used[word.word] + num
@@ -1202,34 +908,34 @@ class ExerciseWindow(QWidget):
 
     def set_color_styles(self, color_styles):
         self.exercise.color_styles = color_styles
-        self.color_styles = self.data.color_styles if self.exercise.color_styles is None else self.exercise.color_styles
+        self.data.color_styles = self.data.color_styles if self.exercise.color_styles is None else self.exercise.color_styles
         # Todo da segnare su file
 
         self.code_editor.setStyleSheet("QWidget#code_editor {background-color: "
-                                       + self.color_styles.code_background_color
-                                       + "; color: " + self.color_styles.code_text_color + ";}")
-        self.numbers.setStyleSheet("QWidget#code_editor {background-color: " + self.color_styles.code_background_color
-                                   + "; color: " + self.color_styles.code_text_color + ";}")
+                                       + self.data.color_styles.code_background_color
+                                       + "; color: " + self.data.color_styles.code_text_color + ";}")
+        self.numbers.setStyleSheet("QWidget#code_editor {background-color: " + self.data.color_styles.code_background_color
+                                   + "; color: " + self.data.color_styles.code_text_color + ";}")
         if self.code_compile:
             self.results.setStyleSheet("QWidget#results {background-color: "
-                                       + self.color_styles.results_background_color
-                                       + "; color: " + self.color_styles.results_text_color + ";}")
+                                       + self.data.color_styles.results_background_color
+                                       + "; color: " + self.data.color_styles.results_text_color + ";}")
         else:
             self.results.setStyleSheet("QWidget#results {background-color: "
-                                       + self.color_styles.error_results_background_color + "; color: "
-                                       + self.color_styles.error_results_text_color + ";}")
+                                       + self.data.color_styles.error_results_background_color + "; color: "
+                                       + self.data.color_styles.error_results_text_color + ";}")
         self.format_text()
 
     def show(self):
-        super(ExerciseWindow, self).show()
+        super(BookExerciseWindow, self).show()
         self.update_text_result_orientation()
         self.update_text_font_size()
-        self.color_styles = self.data.color_styles if self.exercise.color_styles is None else self.exercise.color_styles
-        self.numbers.setStyleSheet("QWidget#code_editor {background-color: " + self.color_styles.code_background_color
-                                   + "; color: " + self.color_styles.code_text_color + ";}")
+        self.data.color_styles = self.data.color_styles
+        self.numbers.setStyleSheet("QWidget#code_editor {background-color: " + self.data.color_styles.code_background_color
+                                   + "; color: " + self.data.color_styles.code_text_color + ";}")
         self.code_editor.setStyleSheet("QWidget#code_editor {background-color: "
-                                       + self.color_styles.code_background_color + "; color: "
-                                       + self.color_styles.code_text_color + ";}")
-        self.results.setStyleSheet("QWidget#results {background-color: " + self.color_styles.results_background_color
-                                   + "; color: " + self.color_styles.results_text_color + ";}")
+                                       + self.data.color_styles.code_background_color + "; color: "
+                                       + self.data.color_styles.code_text_color + ";}")
+        self.results.setStyleSheet("QWidget#results {background-color: " + self.data.color_styles.results_background_color
+                                   + "; color: " + self.data.color_styles.results_text_color + ";}")
         self.format_text()

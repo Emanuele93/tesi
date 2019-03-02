@@ -16,7 +16,7 @@ from windows.ConfirmWindow import ConfirmWindow
 
 
 class CreateHomeworkWindow(QWidget):
-    def __init__(self, data, closer_controller):
+    def __init__(self, data, closer_controller, exercise=None):
         super(CreateHomeworkWindow, self).__init__(flags=Qt.Window)
         self.setMinimumSize(QSize(800, 800))
         self.setWindowTitle("Gamification - Creazione di un nuovo esercizio")
@@ -24,6 +24,8 @@ class CreateHomeworkWindow(QWidget):
         self.text_changed = True
         self.temp_vars = {}
         self.resources_correct = True
+        self.text_exercise_ready = False
+        self.exercise = exercise
         self.functions = {
             'if': 0,
             'elif': 0,
@@ -37,18 +39,10 @@ class CreateHomeworkWindow(QWidget):
         self.white_paper_mode = False
         self.difficulty = "Facile"
 
-        settings_widget = QWidget(self, flags=Qt.Widget)
-        settings_widget.setLayout(self.get_settings_layout())
-        settings_widget.setFixedWidth(400)
-        settings_widget.setObjectName("settings_widget")
-        settings_widget.setStyleSheet("QWidget#settings_widget {border: 0px solid grey; "
-                                      "border-right: 1px solid grey}")
-
         self.text_exercise = QPlainTextEdit(self)
         self.text_exercise.setPlaceholderText("  Inserire qui il testo dell'esercizio")
         self.text_exercise.setStyleSheet("QWidget {color: red}")
         self.text_exercise.textChanged.connect(self.text_exercise_changed)
-        self.text_exercise_ready = False
 
         self.numbers = QTextEdit(self)
         self.numbers.setReadOnly(True)
@@ -60,13 +54,22 @@ class CreateHomeworkWindow(QWidget):
         self.code_editor.textChanged.connect(self.format_text)
         self.code_editor.verticalScrollBar().valueChanged.connect(self.scroll_numbers)
         self.code_editor.setPlaceholderText("Inserire il codice di partenza\n(Non obbligatorio)")
-        self.code_editor.setText('')
         self.code_editor.setTabStopDistance(QFontMetricsF(self.code_editor.font()).width(' ') * 12)
 
         self.results = QPlainTextEdit(self)
         self.results.setReadOnly(True)
         self.results.setLineWrapMode(self.results.NoWrap)
 
+        settings_widget = QWidget(self, flags=Qt.Widget)
+        settings_widget.setLayout(self.get_settings_layout())
+        settings_widget.setFixedWidth(400)
+        settings_widget.setObjectName("settings_widget")
+        settings_widget.setStyleSheet("QWidget#settings_widget {border: 0px solid grey; "
+                                      "border-right: 1px solid grey}")
+
+        if self.exercise is not None:
+            self.text_exercise.setPlainText(self.exercise.text)
+        self.code_editor.setText('' if self.exercise is None else self.exercise.start_code)
         self.set_text_font_size(self.data.code_font_size)
 
         box = QHBoxLayout(self)
@@ -264,6 +267,39 @@ class CreateHomeworkWindow(QWidget):
         self.send_button.setFixedSize(100, 50)
         self.send_button.setEnabled(False)
         self.send_button.clicked.connect(self.send_button_on_click)
+
+        if self.exercise is not None:
+            self.title_widget.setText(self.exercise.title)
+            if not self.exercise.executable:
+                self.executable_check.click()
+            if self.exercise.white_paper_mode:
+                white_paper_mode_check.click()
+            if self.exercise.limits['lines'] is not None:
+                self.line_limit_form.setText(str(self.exercise.limits['lines']))
+            if self.exercise.limits['variables'] is not None:
+                self.variables_limit_form.setText(str(self.exercise.limits['variables']))
+            if self.exercise.limits['conditions'] is not None:
+                self.conditions_limit_form.setText(str(self.exercise.limits['conditions']))
+            if self.exercise.limits['if'] is not None:
+                self.if_limit_form.setText(str(self.exercise.limits['if']))
+            if self.exercise.limits['elif'] is not None:
+                self.elif_limit_form.setText(str(self.exercise.limits['elif']))
+            if self.exercise.limits['else'] is not None:
+                self.else_limit_form.setText(str(self.exercise.limits['else']))
+            if self.exercise.limits['cycles'] is not None:
+                self.cycles_limit_form.setText(str(self.exercise.limits['cycles']))
+            if self.exercise.limits['for'] is not None:
+                self.for_limit_form.setText(str(self.exercise.limits['for']))
+            if self.exercise.limits['while'] is not None:
+                self.while_limit_form.setText(str(self.exercise.limits['while']))
+            if self.exercise.limits['def'] is not None:
+                self.functions_limit_form.setText(str(self.exercise.limits['def']))
+            if self.exercise.level == 'Facile':
+                easy_button.click()
+            elif self.exercise.level == 'Medio':
+                medium_button.click()
+            else:
+                hard_button.click()
 
         font.setPixelSize(25)
         tit = QLabel(self)

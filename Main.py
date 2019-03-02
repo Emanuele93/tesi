@@ -8,6 +8,7 @@ from PyQt5.QtCore import *
 from Data import Data
 from windows.AbilitiesWindow import AbilitiesWindow
 from windows.AchievementsWindow import AchievementsWindow
+from windows.ExercisesCollectionWindow import ExercisesCollectionWindow
 from windows.HomeWindow import HomeWindow
 from windows.HomeworkCollectionWindow import HomeworkCollectionWindow
 from windows.LoginWindow import LoginWindow
@@ -24,10 +25,12 @@ class WindowsController(QWidget):
         self.box = QHBoxLayout(self)
         self.box.setContentsMargins(0, 0, 0, 0)
         if path.isfile('user_info.txt'):
-            self.data = Data()
-            self.mainWin = HomeWindow(self, self.data)
-            self.box.addWidget(self.mainWin)
-            self.mainWin.show()
+            f = open("user_info.txt", "r")
+            if f.readline()[0:-1] != "":
+                self.data = Data()
+                self.mainWin = HomeWindow(self, self.data)
+                self.box.addWidget(self.mainWin)
+                self.mainWin.show()
 
     def set_login(self, login):
         self.login = login
@@ -42,6 +45,9 @@ class WindowsController(QWidget):
     def open_MainWindow(self):
         self.data.get_user_data()
         self.open_window(HomeWindow(self, self.data))
+
+    def open_ExercisesCollectionWindow(self, event):
+        self.open_window(ExercisesCollectionWindow(self, self.data))
 
     def open_HomeworkCollectionWindow(self, load, pos):
         self.open_window(HomeworkCollectionWindow(self, self.data, load, pos))
