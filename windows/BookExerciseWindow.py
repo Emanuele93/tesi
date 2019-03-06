@@ -1,11 +1,13 @@
-from threading import Thread
 import functools
+from functools import partial
+from threading import Thread
 import re
 import contextlib
 import io
 from os import path
-from PyQt5.QtGui import QTextCursor, QFont, QPixmap, QFontMetricsF
-from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QSplitter, QHBoxLayout, QVBoxLayout, QLabel, QDialog
+from PyQt5.QtGui import QTextCursor, QFont, QPixmap, QFontMetricsF, QIcon
+from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QSplitter, QHBoxLayout, QVBoxLayout, QLabel, QDialog, \
+    QSizePolicy
 from PyQt5.QtCore import *
 
 from windows.ConfirmWindow import ConfirmWindow
@@ -16,7 +18,8 @@ class BookExerciseWindow(QWidget):
     def __init__(self, exercise, data, exercise_widget):
         super(BookExerciseWindow, self).__init__(flags=Qt.Window)
         self.setMinimumSize(QSize(1000, 650))
-        self.setWindowTitle('Gamification - "' + exercise.title + '"')
+        self.setWindowTitle('Eserciziario - "' + exercise.title + '"')
+        self.setWindowIcon(QIcon("img/logo.png"))
         self.exercise = exercise
         self.data = data
         self.exercise_widget = exercise_widget
@@ -115,6 +118,20 @@ class BookExerciseWindow(QWidget):
         box.addWidget(splitter2)
         box.setContentsMargins(0, 0, 0, 0)
 
+        self.info = QLabel('', self)
+        self.info.setStyleSheet("border: 1px solid grey; background-color: #ffdd99}")
+        self.info.setAlignment(Qt.AlignCenter)
+        self.info.hide()
+
+    def show_text(self, text, dim, rif, event):
+        self.info.setText(text)
+        self.info.show()
+        self.info.setFixedWidth(dim)
+        self.info.move(rif.pos().x() + rif.width() / 5 * 1, rif.pos().y() + rif.height())
+
+    def hide_text(self, event):
+        self.info.hide()
+
     def resize_window(self, widget, event):
         widget.move(self.width()-80, 10)
 
@@ -129,6 +146,8 @@ class BookExerciseWindow(QWidget):
         play_button.setPixmap(pixmap)
         play_button.setObjectName('img/play.png')
         play_button.mousePressEvent = self.play_button_on_click
+        play_button.enterEvent = partial(self.show_text, 'Play', 40, play_button)
+        play_button.leaveEvent = self.hide_text
         if not self.exercise.executable:
             play_button.setEnabled(False)
 
@@ -138,6 +157,8 @@ class BookExerciseWindow(QWidget):
         self.save_button.setPixmap(pixmap)
         self.save_button.setObjectName('img/save.png')
         self.save_button.mousePressEvent = self.save_button_on_click
+        self.save_button.enterEvent = partial(self.show_text, 'Salva', 45, self.save_button)
+        self.save_button.leaveEvent = self.hide_text
         if self.exercise.text is None:
             self.save_button.hide()
 
@@ -147,6 +168,8 @@ class BookExerciseWindow(QWidget):
         settings_button.setPixmap(pixmap)
         settings_button.setObjectName('img/settings.png')
         settings_button.mousePressEvent = self.swap_button_on_click
+        settings_button.enterEvent = partial(self.show_text, 'Impostazioni', 85, settings_button)
+        settings_button.leaveEvent = self.hide_text
 
         pixmap = QPixmap('img/reset.png')
         pixmap = pixmap.scaled(50, 50)
@@ -154,6 +177,8 @@ class BookExerciseWindow(QWidget):
         restart_button.setPixmap(pixmap)
         restart_button.setObjectName('img/reset.png')
         restart_button.mousePressEvent = self.restart_button_on_click
+        restart_button.enterEvent = partial(self.show_text, 'Ricomincia', 75, restart_button)
+        restart_button.leaveEvent = self.hide_text
         if self.exercise.text is None:
             restart_button.hide()
 
@@ -311,14 +336,14 @@ class BookExerciseWindow(QWidget):
 
     def swap_button_on_click(self, event):
         self.exercise.color_styles = None
-        confirm = SettingsWindow('Gamification - settings - "' + self.exercise.title,
+        confirm = SettingsWindow('Settings - "' + self.exercise.title + '"',
                                  self.data, self, parent=self)
         if confirm.exec_() == QDialog.Accepted:
             print('ok')
         confirm.deleteLater()
 
     def restart_button_on_click(self, event):
-        confirm = ConfirmWindow("Gamification - Ricominciare l'esercizio",
+        confirm = ConfirmWindow("Ricominciare l'esercizio",
                                 "<span style=\" color: red;\"> Attenzione, confermi di voler ricominciare "
                                 "l'esercizio?<br>Tutto ciò che non e stato salvato non sarà più recuperabile</span>",
                                 ok="Conferma", cancel="Annulla")

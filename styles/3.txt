@@ -1,5 +1,5 @@
-white
-black
+#000000
+#ffffff
 white
 black
 white

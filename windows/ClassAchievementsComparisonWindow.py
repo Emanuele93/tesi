@@ -3,7 +3,7 @@ import random
 
 import requests
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont, QPixmap
+from PyQt5.QtGui import QFont, QPixmap, QIcon
 from PyQt5.QtWidgets import QDialog, QWidget, QVBoxLayout, QLabel, QHBoxLayout, QScrollArea
 from windows.ConfirmWindow import ConfirmWindow
 
@@ -11,7 +11,8 @@ from windows.ConfirmWindow import ConfirmWindow
 class ClassAchievementsComparisonWindow(QDialog):
     def __init__(self, data, achievements_titles, parent=None):
         QDialog.__init__(self, parent, flags=Qt.Dialog)
-        self.setWindowTitle("Gamification - Classifica")
+        self.setWindowTitle("Classifica")
+        self.setWindowIcon(QIcon("img/logo.png"))
         self.setMinimumSize(1200, 550)
         self.achievements_titles = achievements_titles
         self.data = data
@@ -26,7 +27,8 @@ class ClassAchievementsComparisonWindow(QDialog):
                 mates = json.loads(r.text)
                 pos = 0
                 for i in range(0, len(mates)):
-                    if i > 0 and mates[i]['exp'] != mates[i-1]['exp']:
+                    if mates[i]['exp'] != mates[i-1]['exp'] and \
+                            (mates[i]['visible'] == '1' or self.data.my_name in self.data.my_proff):
                         pos += 1
                     if mates[i]['visible'] == '1' or self.data.my_name in self.data.my_proff:
                         students_widgets.append(self.make_student_widget(mates[i], pos, mates[i]['visible'] == '1'))
@@ -71,7 +73,7 @@ class ClassAchievementsComparisonWindow(QDialog):
                 box.addWidget(scroll)
 
         except requests.exceptions.RequestException as e:
-            c = ConfirmWindow('Gamification - Errore di connessione',
+            c = ConfirmWindow('Errore di connessione',
                                 "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
                                 "connessione<br>Controllare la connessione internet e riprovare</span>",
                                 ok="Ok", cancel=None)
@@ -83,12 +85,13 @@ class ClassAchievementsComparisonWindow(QDialog):
         font = QFont()
         font.setPixelSize(20)
 
-        pos_str = "?" if position is None else ((str(position+1)+"°") if visible else ("? (" + str(position+1)+"°)"))
+        pos_str = "?" if position is None else ((str(position)+"°") if visible else ("(" + str(position)+"°"))
         pos = QLabel(pos_str, self)
         pos.setFont(font)
         pos.setFixedWidth(50)
 
-        title = QLabel(user['username'], self)
+        title = QLabel(user['username'] if visible or self.data.my_name not in self.data.my_proff else
+                       user['username'] + ')', self)
         title.setFont(font)
 
         font.setPixelSize(15)

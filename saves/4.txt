@@ -1,0 +1,5 @@
+var = ' X X X X X '
+i = 5
+while i > 0:
+	print(var)
+	i -= 1 

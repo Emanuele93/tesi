@@ -1,1 +1,7 @@
-# Scrivi qui il codice
+x = 5
+y = 'cinque'
+temp = x
+x = y
+y = temp
+print(x, y)
+# Secondo me il risultato risultato è: cinque  5

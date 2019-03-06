@@ -1,7 +1,7 @@
 from functools import partial
 
 import requests
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLineEdit, QDialog, QLabel
 from PyQt5.QtCore import *
 from Data import Data
@@ -11,7 +11,8 @@ from windows.ConfirmWindow import ConfirmWindow
 class LoginWindow(QWidget):
     def __init__(self, home):
         super(LoginWindow, self).__init__(flags=Qt.Window)
-        self.setWindowTitle("Gamification - Login")
+        self.setWindowTitle("Login")
+        self.setWindowIcon(QIcon("img/logo.png"))
         self.setFixedSize(QSize(500, 400))
         font = QFont()
         font.setPixelSize(25)
@@ -145,7 +146,7 @@ class LoginWindow(QWidget):
                 password.setStyleSheet('color: black')
                 classe.setStyleSheet('color: red')
         except requests.exceptions.RequestException:
-            confirm = ConfirmWindow('Gamification - Errore di connessione',
+            confirm = ConfirmWindow('Errore di connessione',
                                     "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
                                     "connessione<br>Controllare la propria connessione internet</span>",
                                     ok="Chiudi il programma", cancel=None)

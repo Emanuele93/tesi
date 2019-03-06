@@ -2,7 +2,7 @@ import sys
 from functools import partial
 
 import requests
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import QWidget, QApplication, QLineEdit, QPushButton, QVBoxLayout, QDialog, QLabel
 from PyQt5.QtCore import *
 from windows.ConfirmWindow import ConfirmWindow
@@ -11,7 +11,8 @@ from windows.ConfirmWindow import ConfirmWindow
 class MyWindow(QWidget):
     def __init__(self):
         super(MyWindow, self).__init__(flags=Qt.Window)
-        self.setWindowTitle("Gamification - Signin")
+        self.setWindowTitle("Signin")
+        self.setWindowIcon(QIcon("img/logo.png"))
         self.setFixedSize(QSize(500, 400))
         font = QFont()
         font.setPixelSize(20)

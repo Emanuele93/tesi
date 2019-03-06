@@ -1,3 +1,5 @@
 0:Emanuele2019-02-11"prova'?
 1:Emanuele2019-04-04'ciao' a "tutti"
 2:Cos'è una variabile
+3:Cos'è una funzione
+4:Cos'è il while

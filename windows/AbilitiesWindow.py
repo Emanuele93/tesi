@@ -12,7 +12,7 @@ from windows.ConfirmWindow import ConfirmWindow
 class AbilitiesWindow(QWidget):
     def __init__(self, home, data, page=1):
         super(AbilitiesWindow, self).__init__(home, flags=Qt.Widget)
-        home.setWindowTitle("Gamification - Negozio")
+        home.setWindowTitle("Negozio")
         self.data = data
         self.home = home
         self.buttons = {}
@@ -80,12 +80,48 @@ class AbilitiesWindow(QWidget):
             self.open_subpage(button4, page4, button1, page1, button2, page2, button3, page3,
                               "Compra un gettone per ampliare le tue possibilità")
 
+        l = 1
+        old = 0
+        for i in self.data.level_progression:
+            if self.data.level >= i:
+                l += 1
+                old = i
+
+        level_number = QLabel('Liv. ' + str(l), self)
+        level_number.setFont(font)
+        level_number.setStyleSheet('background-color: #9999FF; border: 1px solid grey')
+        level_number.setFixedSize(85, 40)
+        level_number.setContentsMargins(20, 10, 20, 10)
+
+        level_bar = QLabel(self)
+        level_bar.setStyleSheet('background-color: #4040FF')
+        level_bar.setFixedSize(int(85*(self.data.level-old)/(self.data.level_progression[l-1]-old)), 5)
+
+        box = QVBoxLayout(self)
+        box.setSpacing(0)
+        box.setContentsMargins(0, 0, 0, 0)
+        box.addWidget(level_number)
+        box.addWidget(level_bar)
+        level = QWidget(self, flags=Qt.Widget)
+        level.setLayout(box)
+        level.setObjectName("level")
+        level.setStyleSheet("QWidget#level {border: 1px solid grey; background-color: #BBBBFF}")
+
         self.soldi = QLabel(str(self.data.money) + ' soldi', self)
         self.soldi.setFont(font)
+        self.soldi.setStyleSheet("QWidget#soldi {border: 1px solid grey; background-color: #ffea00}")
         self.soldi.setContentsMargins(20, 5, 20, 5)
         self.soldi.setObjectName("soldi")
-        self.soldi.setStyleSheet("QWidget#soldi {border: 1px solid grey; background-color: #ffea00}")
         self.soldi.setFixedHeight(45)
+
+        box = QHBoxLayout(self)
+        box.setAlignment(Qt.AlignCenter)
+        box.setSpacing(5)
+        box.addWidget(level)
+        box.addWidget(self.soldi)
+        box.setContentsMargins(0, 0, 0, 0)
+        soldi_widget = QWidget(self, flags=Qt.Widget)
+        soldi_widget.setLayout(box)
 
         empty = QWidget(self, flags=Qt.Widget)
         empty.setFixedWidth(20)
@@ -122,8 +158,8 @@ class AbilitiesWindow(QWidget):
 
         box = QHBoxLayout(self)
         box.addWidget(self.logLine)
-        box.addWidget(self.soldi, alignment=Qt.AlignRight)
-        box.setContentsMargins(80, 0, 5, 0)
+        box.addWidget(soldi_widget, alignment=Qt.AlignRight)
+        box.setContentsMargins(50, 0, 5, 0)
         bottom_widget = QWidget(self, flags=Qt.Widget)
         bottom_widget.setLayout(box)
         bottom_widget.setObjectName("bw")
@@ -155,14 +191,14 @@ class AbilitiesWindow(QWidget):
     def make_page1(self):
         box = QHBoxLayout(self)
         box.setContentsMargins(0, 0, 0, 0)
-        box.addWidget(self.counter_upgrade_widget('Righe di codice'))
+        box.addWidget(self.counter_upgrade_widget('Righe di codice correnti'))
         box.setAlignment(Qt.AlignLeft)
         widget_lines = QWidget(self, flags=Qt.Widget)
         widget_lines.setLayout(box)
 
         box = QHBoxLayout(self)
         box.setContentsMargins(0, 0, 0, 0)
-        box.addWidget(self.counter_upgrade_widget('Variabili'))
+        box.addWidget(self.counter_upgrade_widget('Variabili correnti'))
         box.setAlignment(Qt.AlignLeft)
         widget_variables = QWidget(self, flags=Qt.Widget)
         widget_variables.setLayout(box)
@@ -179,7 +215,7 @@ class AbilitiesWindow(QWidget):
         widget_conditions = QWidget(self, flags=Qt.Widget)
         widget_conditions.setLayout(box)
 
-        title = QLabel('Selezioni', self)
+        title = QLabel('Selezioni correnti', self)
         title.setFont(font)
         title.setAlignment(Qt.AlignHCenter)
         title.setStyleSheet("border: 1px solid grey; background-color: #ccccff")
@@ -207,7 +243,7 @@ class AbilitiesWindow(QWidget):
         widget_cycles = QWidget(self, flags=Qt.Widget)
         widget_cycles.setLayout(box)
 
-        title = QLabel('Cicli', self)
+        title = QLabel('Cicli correnti', self)
         title.setFont(font)
         title.setAlignment(Qt.AlignHCenter)
         title.setStyleSheet("border: 1px solid grey; background-color: #ccccff")
@@ -229,7 +265,7 @@ class AbilitiesWindow(QWidget):
 
         box = QHBoxLayout(self)
         box.setContentsMargins(0, 0, 0, 0)
-        box.addWidget(self.counter_upgrade_widget('Funzioni (def)'))
+        box.addWidget(self.counter_upgrade_widget('Funzioni correnti (def)'))
         box.setAlignment(Qt.AlignLeft)
         widget_functions = QWidget(self, flags=Qt.Widget)
         widget_functions.setLayout(box)
@@ -256,11 +292,11 @@ class AbilitiesWindow(QWidget):
         name_label.setContentsMargins(10, 0, 10, 0)
         name_label.setFont(font)
 
-        if name == 'Righe di codice':
+        if name == 'Righe di codice correnti':
             name = 'lines'
-        elif name == 'Variabili':
+        elif name == 'Variabili correnti':
             name = 'variables'
-        elif name == 'Funzioni (def)':
+        elif name == 'Funzioni correnti (def)':
             name = 'functions'
 
         lev = self.data.level_variables[name]
@@ -273,6 +309,7 @@ class AbilitiesWindow(QWidget):
         numbers_upgrade.setContentsMargins(10, 0, 10, 0)
         numbers_upgrade.setFont(font)
 
+        font.setPixelSize(15)
         upgrade_value = QLabel(self)
         cost = QPushButton(self)
         cost.clicked.connect(partial(self.upgrade_counter, name, cost, numbers_upgrade, upgrade_value))
@@ -298,11 +335,11 @@ class AbilitiesWindow(QWidget):
 
         box = QVBoxLayout(self)
         box.setAlignment(Qt.AlignCenter)
-        box.setSpacing(2)
+        box.setSpacing(3)
         box.addWidget(upgrade_value, alignment=Qt.AlignHCenter)
         box.addWidget(cost)
         box.setAlignment(Qt.AlignLeft)
-        box.setContentsMargins(0, 3, 0, 0)
+        box.setContentsMargins(0, 0, 0, 0)
         cost = QWidget(self, flags=Qt.Widget)
         cost.setLayout(box)
 
@@ -315,12 +352,13 @@ class AbilitiesWindow(QWidget):
         box.addWidget(numbers_upgrade)
         box.addWidget(cost)
         box.setAlignment(Qt.AlignLeft)
-        box.setContentsMargins(5, 0, 0, 0)
+        box.setContentsMargins(5, 5, 5, 5)
 
         widget = QWidget(self, flags=Qt.Widget)
         widget.setLayout(box)
         widget.setObjectName("counter")
         widget.setStyleSheet("QWidget#counter {border: 1px solid grey; background-color: #ccccff}")
+        widget.setMinimumHeight(55)
         return widget
 
     def upgrade_counter(self, name, button, numbers, upgrade_value):
@@ -371,7 +409,7 @@ class AbilitiesWindow(QWidget):
                 i.setEnabled(False)
         if 200 > self.data.money:
             self.make_homework_coin.setEnabled(False)
-        if 450 > self.data.money:
+        if 350 > self.data.money:
             self.watch_homework_coin.setEnabled(False)
 
     def make_page2(self):
@@ -601,10 +639,10 @@ class AbilitiesWindow(QWidget):
         label1.setFont(font)
 
         label1_description1 = QLabel('Questo gettone consente di creare un compito da consegnare alla classe.', self)
-        label1_description1.setFixedSize(450, 20)
+        label1_description1.setFixedSize(350, 33)
         label1_description1.setWordWrap(True)
         label1_description2 = QLabel('Sarà visibile solo dal prof finchè non verrà approvato.', self)
-        label1_description2.setFixedSize(450, 20)
+        label1_description2.setFixedSize(350, 33)
         label1_description2.setWordWrap(True)
         if self.data.student_exercises_visible:
             label1_description2.hide()
@@ -621,15 +659,15 @@ class AbilitiesWindow(QWidget):
         label2_description1 = QLabel("Questo gettone consente di guardare le soluzioni degli alti utenti "
                                      "prima ancora di aver consegnato.", self)
         label2_description1.setWordWrap(True)
-        label2_description1.setFixedSize(450, 33)
+        label2_description1.setFixedSize(350, 33)
         label2_description2 = QLabel("Il gettone non viene consumato se al momento dell'utilizzo nessuno ha inviato la "
                                      "propria soluzione.", self)
         label2_description2.setWordWrap(True)
-        label2_description2.setFixedSize(450, 33)
+        label2_description2.setFixedSize(350, 33)
         label2_description3 = QLabel("Utilizzabile solo in alcuni esercizi.", self)
         label2_description3.setWordWrap(True)
 
-        self.watch_homework_coin = QPushButton('450 soldi', self)
+        self.watch_homework_coin = QPushButton('350 soldi', self)
         self.watch_homework_coin.setFixedWidth(150)
         self.watch_homework_coin.setFont(font)
         self.watch_homework_coin.clicked.connect(self.buy_watch_homework_coin)
@@ -641,7 +679,7 @@ class AbilitiesWindow(QWidget):
             self.make_homework_coin.setEnabled(False)
             self.make_homework_coin.setText('Acquistato')
 
-        if 450 > self.data.money:
+        if 350 > self.data.money:
             self.watch_homework_coin.setEnabled(False)
         if self.data.watch_homework_coin:
             self.watch_homework_coin.setEnabled(False)
@@ -707,7 +745,7 @@ class AbilitiesWindow(QWidget):
                 self.watch_homework_coin.setEnabled(False)
                 self.watch_homework_coin.setText('Acquistato')
                 self.data.watch_homework_coin = True
-                self.data.money -= 450
+                self.data.money -= 350
                 self.soldi.setText(str(self.data.money) + ' soldi')
                 self.update_buttons_price()
         except requests.exceptions.RequestException as e:
@@ -715,7 +753,7 @@ class AbilitiesWindow(QWidget):
 
     @staticmethod
     def connection_error_message():
-        c = ConfirmWindow('Gamification - Errore di connessione',
+        c = ConfirmWindow('Errore di connessione',
                                 "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
                                 "connessione<br>Controllare la connessione internet e riprovare</span>",
                                 ok="Ok", cancel=None)
@@ -726,8 +764,8 @@ class AbilitiesWindow(QWidget):
 class ColorWindow(QDialog):
     def __init__(self, color, data, parent=None):
         QDialog.__init__(self, parent)
-        self.setWindowTitle('Gamification - Cambia colore')
-        self.setFixedSize(QSize(600, 450))
+        self.setWindowTitle('Cambia colore')
+        self.setFixedSize(QSize(600, 350))
 
         self.data = data
         self.original = color

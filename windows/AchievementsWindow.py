@@ -13,7 +13,7 @@ from windows.ConfirmWindow import ConfirmWindow
 class AchievementsWindow(QWidget):
     def __init__(self, home, data, pos):
         super(AchievementsWindow, self).__init__(home, flags=Qt.Widget)
-        home.setWindowTitle("Gamification - Obiettivi")
+        home.setWindowTitle("Obiettivi")
         self.data = data
         self.controller = home
         self.achievements = []
@@ -46,7 +46,7 @@ class AchievementsWindow(QWidget):
                 self.achievements.append(achievement)
                 self.titles.append(j[i]['title'])
         except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Gamification - Errore di connessione',
+            confirm = ConfirmWindow('Errore di connessione',
                                     "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
                                     "connessione<br>Controllare la connessione internet</span>",
                                     ok="Riprova", cancel="Chiudi il programma")
@@ -282,7 +282,7 @@ class AchievementsWindow(QWidget):
                 self.level_bar.setFixedSize(int(85*(self.data.level-old)/(self.data.level_progression[l-1]-old)), 5)
                 self.controller.open_AchievementsWindow(self.scroll.verticalScrollBar().value())
         except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Gamification - Errore di connessione',
+            confirm = ConfirmWindow('Errore di connessione',
                                     "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
                                     "connessione<br>Controllare la connessione internet e riprovare</span>",
                                     ok="Ok", cancel=None)

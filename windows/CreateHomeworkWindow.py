@@ -6,12 +6,11 @@ from functools import partial
 from threading import Thread
 
 import requests
-from PyQt5.QtGui import QTextCursor, QFont, QFontMetricsF
+from PyQt5.QtGui import QTextCursor, QFont, QFontMetricsF, QIcon
 from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QPushButton, QSplitter, QHBoxLayout, QVBoxLayout, \
     QLineEdit, QCheckBox, QCalendarWidget, QLabel, QScrollArea, QDialog, QComboBox
 from PyQt5.QtCore import *
 
-from Data import Exercise
 from windows.ConfirmWindow import ConfirmWindow
 
 
@@ -19,7 +18,8 @@ class CreateHomeworkWindow(QWidget):
     def __init__(self, data, closer_controller, exercise=None):
         super(CreateHomeworkWindow, self).__init__(flags=Qt.Window)
         self.setMinimumSize(QSize(800, 800))
-        self.setWindowTitle("Gamification - Creazione di un nuovo esercizio")
+        self.setWindowTitle("Creazione di un nuovo esercizio")
+        self.setWindowIcon(QIcon("img/logo.png"))
         self.data = data
         self.text_changed = True
         self.temp_vars = {}
@@ -644,7 +644,7 @@ class CreateHomeworkWindow(QWidget):
                                  "Attenzione, il tuo codice ha degli errori e non viene eseguito interamente!</span>"
 
         ok_text = 'Invia comunque' if errors or not self.resources_correct else 'Invia'
-        confirm = ConfirmWindow("Gamification - Creazione di un nuovo esercizio", confermation_text, parent=self,
+        confirm = ConfirmWindow("Creazione di un nuovo esercizio", confermation_text, parent=self,
                                 ok=ok_text, cancel='Annulla')
 
         if confirm.exec_() == QDialog.Accepted:
@@ -719,7 +719,7 @@ class CreateHomeworkWindow(QWidget):
                 if r.text != "":
                     self.closer_controller.close_CreateHomeworkWindow()
             except requests.exceptions.RequestException as e:
-                confirm2 = ConfirmWindow('Gamification - Errore di connessione',
+                confirm2 = ConfirmWindow('Errore di connessione',
                                         "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
                                         "connessione<br>Controllare la propria connessione internet e riprovare</span>",
                                         ok="Ok", cancel=None)

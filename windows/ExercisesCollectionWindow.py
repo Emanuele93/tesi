@@ -13,7 +13,7 @@ from windows.CreateHomeworkWindow import CreateHomeworkWindow
 class ExercisesCollectionWindow(QWidget):
     def __init__(self, home, data):
         super(ExercisesCollectionWindow, self).__init__(home, flags=Qt.Widget)
-        home.setWindowTitle("Gamification - Esercizi")
+        home.setWindowTitle("Eserciziario")
         self.data = data
         self.home = home
         self.pages = {'0': None}
@@ -30,6 +30,26 @@ class ExercisesCollectionWindow(QWidget):
         window_layaut.addWidget(bottom_widget)
         window_layaut.setContentsMargins(0, 0, 0, 0)
         window_layaut.setSpacing(0)
+
+        self.info = QLabel('', self)
+        self.info.setStyleSheet("border: 1px solid grey; background-color: #ffdd99}")
+        self.info.setAlignment(Qt.AlignCenter)
+        self.info.hide()
+
+    def show_text(self, text, dim, rif, event):
+        self.info.setText(text)
+        self.info.show()
+        self.info.setFixedWidth(dim)
+        pos_x, pos_y = rif.pos().x(), rif.pos().y()
+        parent = rif.parent()
+        while parent and parent is not self:
+            pos_x += parent.pos().x()
+            pos_y += parent.pos().y()
+            parent = parent.parent()
+        self.info.move(pos_x + rif.width() / 5, pos_y + rif.height() / 5 * 4)
+
+    def hide_text(self, event):
+        self.info.hide()
 
     def make_top_widget(self):
         font = QFont()
@@ -169,16 +189,18 @@ class ExercisesCollectionWindow(QWidget):
         internal_box.setAlignment(Qt.AlignTop)
         internal_box.setContentsMargins(20, 10, 20, 10)
         for i in exercises:
-            ex = QLabel(str(len(self.pages)+1) + " - " + i.title, self)
+            ex = QLabel(str(len(self.pages)) + " - " + i.title, self)
             ex.setFont(font)
             ex.setContentsMargins(20, 10, 20, 10)
             ex.setTextFormat(Qt.RichText)
-            self.pages[str(len(self.pages)+1)] = None
+            self.pages[str(len(self.pages))] = None
             dif = QLabel('&#x25EF;' if i.level == 'Facile' else ('&#x25EF;<br>&#x25EF;' if i.level == 'Medio'
                                                                         else '&#x25EF;<br>&#x25EF;<br>&#x25EF;'), self)
             dif.setContentsMargins(0, 5, 10, 5)
             dif.setTextFormat(Qt.RichText)
             dif.setFont(font2)
+            dif.enterEvent = partial(self.show_text, i.level, 60, dif)
+            dif.leaveEvent = self.hide_text
             ex_box = QHBoxLayout(self)
             ex_box.setAlignment(Qt.AlignLeft)
             ex_box.addWidget(ex)
@@ -198,7 +220,6 @@ class ExercisesCollectionWindow(QWidget):
                         solution_file = 'saves/' + j.split(':')[0] + '.txt'
                 f.close()
 
-            ex.mousePressEvent = partial(self.open_exercise, i, str(len(self.pages)), ex)
             if self.data.my_name in self.data.my_proff:
                 pixmap = QPixmap('img/upload.png')
                 pixmap = pixmap.scaled(50, 50)
@@ -206,6 +227,8 @@ class ExercisesCollectionWindow(QWidget):
                 send_button.setPixmap(pixmap)
                 send_button.setObjectName('img/upload.png')
                 send_button.mousePressEvent = partial(self.send_button_on_click, i)
+                send_button.enterEvent = partial(self.show_text, "Consegna alla classe", 150, send_button)
+                send_button.leaveEvent = self.hide_text
                 prof_box = QHBoxLayout(self)
                 prof_box.setContentsMargins(0, 0, 0, 0)
                 prof_box.setSpacing(30)
@@ -214,6 +237,7 @@ class ExercisesCollectionWindow(QWidget):
                 ex = QWidget(self, flags=Qt.Widget)
                 ex.setLayout(prof_box)
 
+            ex.mousePressEvent = partial(self.open_exercise, i, str(len(self.pages)), ex)
             if path.isfile(solution_file):
                 f = open(solution_file, "r")
                 i.solution = f.read()

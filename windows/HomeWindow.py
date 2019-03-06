@@ -11,7 +11,7 @@ from windows.SettingsWindow import SettingsWindow
 class HomeWindow(QWidget):
     def __init__(self, controller, data):
         super(HomeWindow, self).__init__(controller, flags=Qt.Widget)
-        controller.setWindowTitle("Gamification")
+        controller.setWindowTitle("The game of programming")
         font = QFont()
         font.setPixelSize(15)
         self.data = data
@@ -164,7 +164,7 @@ class HomeWindow(QWidget):
         layout.addWidget(box)
 
     def settings_button_on_click(self, event):
-        confirm = SettingsWindow('Gamification - settings', self.data, None, parent=self)
+        confirm = SettingsWindow('Settings', self.data, None, parent=self)
         confirm.exec_()
         confirm.deleteLater()
 
@@ -183,5 +183,5 @@ class HomeWindow(QWidget):
         self.controller.open_Abilities_Window(1, None)
 
     def open_LoginWindow(self):
-        self.controller.login.show()
         self.controller.hide()
+        self.controller.login.show()

@@ -2,7 +2,7 @@ from functools import partial
 
 import requests
 from PyQt5.QtCore import QSize, Qt
-from PyQt5.QtGui import QFont, QPixmap
+from PyQt5.QtGui import QFont, QPixmap, QIcon
 from PyQt5.QtWidgets import QDialog, QPushButton, QWidget, QVBoxLayout, QLabel, QHBoxLayout, QScrollArea, QCheckBox, \
     QButtonGroup, QAbstractButton
 
@@ -14,6 +14,7 @@ class SettingsWindow(QDialog):
     def __init__(self, title, data, exercise_window, parent=None):
         QDialog.__init__(self, parent)
         self.setWindowTitle(title)
+        self.setWindowIcon(QIcon("img/logo.png"))
         self.setFixedSize(QSize(465, 600))
         self.exercise_window = exercise_window
         self.parent = parent
@@ -188,10 +189,10 @@ class SettingsWindow(QDialog):
         intro_visible.setFont(font)
         check_1 = QCheckBox("Si")
         check_1.setFont(font)
-        check_1.setChecked(self.data.visible)
+        check_1.setChecked(not self.data.visible)
         check_2 = QCheckBox("No")
         check_2.setFont(font)
-        check_2.setChecked(not self.data.visible)
+        check_2.setChecked(self.data.visible)
 
         self.bg3 = QButtonGroup()
         self.bg3.addButton(check_1, 1)
@@ -201,9 +202,21 @@ class SettingsWindow(QDialog):
         box = QHBoxLayout(self)
         box.setAlignment(Qt.AlignLeft)
         box.setSpacing(15)
+        box.setContentsMargins(0, 0, 0, 0)
         box.addWidget(intro_visible)
         box.addWidget(check_1)
         box.addWidget(check_2)
+        visible = QWidget(self, flags=Qt.Widget)
+        visible.setLayout(box)
+
+        intro_visible = QLabel("I tuoi compiti e progressi non saranno visibili dagli studenti", self)
+        intro_visible.setFont(font)
+        intro_visible.setWordWrap(True)
+
+        box = QVBoxLayout(self)
+        box.setSpacing(0)
+        box.addWidget(visible)
+        box.addWidget(intro_visible)
         visible = QWidget(self, flags=Qt.Widget)
         visible.setLayout(box)
 
@@ -242,9 +255,9 @@ class SettingsWindow(QDialog):
 
         box = QHBoxLayout(self)
         if self.data.my_name in self.data.my_proff:
-            box. setContentsMargins(0, 100, 20, 0)
+            box. setContentsMargins(0, 80, 20, 0)
         else:
-            box. setContentsMargins(0, 150, 20, 0)
+            box. setContentsMargins(0, 130, 20, 0)
         box.addWidget(logout)
         box.setAlignment(Qt.AlignRight)
         logout = QWidget(self, flags=Qt.Widget)
@@ -399,20 +412,20 @@ class SettingsWindow(QDialog):
 
         box = QHBoxLayout(self)
         box.setSpacing(20)
-        box.setContentsMargins(20,0,20,0)
+        box.setContentsMargins(20, 0, 20, 0)
 
         for i in self.data.owned_images:
             label = QLabel(self)
             pixmap = QPixmap('img/' + i)
-            pixmap = pixmap.scaled(100,100)
+            pixmap = pixmap.scaled(100, 100)
             label.setPixmap(pixmap)
             label.setObjectName(i)
             label.mousePressEvent = partial(self.image_on_click, i, label)
             label.setStyleSheet('border: 1px solid grey')
-            if self.data.current_image==i:
+            if self.data.current_image == i:
                 label.setStyleSheet('border: 3px solid #5555ee')
                 self.current_image_label = label
-            box.addWidget(label)
+            box.addWidget(label, alignment=Qt.AlignCenter)
 
         widget = QWidget(self, flags=Qt.Widget)
         widget.setLayout(box)
@@ -421,7 +434,7 @@ class SettingsWindow(QDialog):
         scroll.setStyleSheet('border: 0px solid grey')
 
         box = QVBoxLayout(self)
-        box.setContentsMargins(0,20,0,0)
+        box.setContentsMargins(0, 20, 0, 0)
         box.setSpacing(20)
         box.addWidget(selection_image_title)
         box.addWidget(scroll)
@@ -509,16 +522,16 @@ class SettingsWindow(QDialog):
 
     def set_visible(self, btn):
         try:
-            visible = 1 if btn.text() == "Si" else 0
+            visible = 1 if btn.text() == "No" else 0
             r = requests.post("http://programmingisagame.netsons.org/set_user_visible.php",
                               data={'username': self.data.my_name, 'password': self.data.my_psw, 'visible': visible})
             if r.text != "":
-                self.data.visible = True if btn.text() == "Si" else False
+                self.data.visible = True if btn.text() == "No" else False
                 if self.exercise_window is not None and self.exercise_window.exercise.id is not None:
                     self.exercise_window.watch_button.setEnabled(self.data.visible
                                                                  or self.data.my_name in self.data.my_proff)
         except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Gamification - Errore di connessione',
+            confirm = ConfirmWindow('Errore di connessione',
                                     "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
                                     "connessione<br>Controllare la connessione internet e riprovare</span>",
                                     ok="Ok", cancel=None)
@@ -535,7 +548,7 @@ class SettingsWindow(QDialog):
             if r.text != "":
                 self.data.student_exercises_visible = True if btn.text() == "Visibili" else False
         except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Gamification - Errore di connessione',
+            confirm = ConfirmWindow('Errore di connessione',
                                     "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
                                     "connessione<br>Controllare la connessione internet e riprovare</span>",
                                     ok="Ok", cancel=None)
@@ -560,7 +573,6 @@ class SettingsWindow(QDialog):
         self.close()
         self.parent.open_LoginWindow()
 
-
     def image_on_click(self, name, label, event):
         try:
             r = requests.post("http://programmingisagame.netsons.org/select_user_image.php",
@@ -576,7 +588,7 @@ class SettingsWindow(QDialog):
                 self.current_image_label.setStyleSheet('border: 0px solid #000000')
                 self.current_image_label = label
         except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Gamification - Errore di connessione',
+            confirm = ConfirmWindow('Errore di connessione',
                                     "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
                                     "connessione<br>Controllare la propria connessione internet e riprovare</span>",
                                     ok="Ok", cancel=None)

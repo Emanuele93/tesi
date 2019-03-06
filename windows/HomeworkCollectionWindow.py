@@ -12,7 +12,7 @@ from windows.ExerciseWindow import ExerciseWindow
 class HomeworkCollectionWindow(QWidget):
     def __init__(self, controller, data, loading, pos):
         super(HomeworkCollectionWindow, self).__init__(controller, flags=Qt.Widget)
-        controller.setWindowTitle("Gamification - Compiti")
+        controller.setWindowTitle("Compiti")
         self.data = data
         self.controller = controller
         self.exercise_windows = []
@@ -45,6 +45,26 @@ class HomeworkCollectionWindow(QWidget):
         window_layaut.addWidget(bottom_widget)
         window_layaut.setContentsMargins(0, 0, 0, 0)
         window_layaut.setSpacing(0)
+
+        self.info = QLabel('', self)
+        self.info.setStyleSheet("border: 1px solid grey; background-color: #ffdd99}")
+        self.info.setAlignment(Qt.AlignCenter)
+        self.info.hide()
+
+    def show_text(self, text, dim, rif, event):
+        self.info.setText(text)
+        self.info.show()
+        self.info.setFixedWidth(dim)
+        pos_x, pos_y = rif.pos().x(), rif.pos().y()
+        parent = rif.parent()
+        while parent and parent is not self:
+            pos_x += parent.pos().x()
+            pos_y += parent.pos().y()
+            parent = parent.parent()
+        self.info.move(pos_x + rif.width() / 5, pos_y + rif.height() / 5 * 4)
+
+    def hide_text(self, event):
+        self.info.hide()
 
     def make_top_widget(self):
         font = QFont()
@@ -220,6 +240,8 @@ class HomeworkCollectionWindow(QWidget):
                     difficulty.setContentsMargins(10, 2, 10, 2)
                     difficulty.setTextFormat(Qt.RichText)
                     difficulty.setFont(f)
+                    difficulty.enterEvent = partial(self.show_text, i.level, 60, difficulty)
+                    difficulty.leaveEvent = self.hide_text
 
                     by = QLabel("<i>by " + i.creator + "</i>", self)
                     by.setContentsMargins(0, 0, 5, 10)

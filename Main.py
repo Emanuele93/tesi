@@ -2,6 +2,7 @@ import sys
 import threading
 from os import path
 
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QApplication
 from PyQt5.QtCore import *
 
@@ -18,7 +19,8 @@ class WindowsController(QWidget):
     def __init__(self):
         super(WindowsController, self).__init__(flags=Qt.Window)
         self.setFixedSize(QSize(800, 600))
-        self.setWindowTitle("Gamification")
+        self.setWindowTitle("The game of programming")
+        self.setWindowIcon(QIcon("img/logo.png"))
         self.data = None
         self.mainWin = None
 
@@ -65,7 +67,6 @@ class WindowsController(QWidget):
 
     def open_AchievementsWindow(self, pos):
         self.open_window(AchievementsWindow(self, self.data, pos))
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

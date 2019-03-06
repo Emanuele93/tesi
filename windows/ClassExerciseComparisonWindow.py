@@ -4,7 +4,7 @@ import re
 from functools import partial
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont, QPixmap
+from PyQt5.QtGui import QFont, QPixmap, QIcon
 from PyQt5.QtWidgets import QDialog, QWidget, QVBoxLayout, QLabel, QHBoxLayout, QScrollArea, QTextEdit, \
     QPlainTextEdit, QSplitter
 
@@ -15,6 +15,7 @@ class ClassExerciseComparisonWindow(QDialog):
     def __init__(self, title, class_solutions, order_by, exercise_limit, exercise_window, parent=None):
         QDialog.__init__(self, parent, flags=Qt.Dialog)
         self.setWindowTitle(title)
+        self.setWindowIcon(QIcon("img/logo.png"))
         self.setMinimumWidth(1200)
         self.setFixedHeight(530)
         self.exercise_window = exercise_window

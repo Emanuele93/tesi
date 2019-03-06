@@ -9,7 +9,7 @@ from functools import partial
 from os import path
 
 import requests
-from PyQt5.QtGui import QTextCursor, QFont, QPixmap, QFontMetricsF
+from PyQt5.QtGui import QTextCursor, QFont, QPixmap, QFontMetricsF, QIcon
 from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QSplitter, QHBoxLayout, QVBoxLayout, \
     QLabel, QDialog
 from PyQt5.QtCore import *
@@ -23,7 +23,8 @@ class ExerciseWindow(QWidget):
     def __init__(self, exercise, data, closer_controller):
         super(ExerciseWindow, self).__init__(flags=Qt.Window)
         self.setMinimumSize(QSize(1000, 650))
-        self.setWindowTitle('Gamification - "' + exercise.title + '" by ' + exercise.creator)
+        self.setWindowTitle('Compito - "' + exercise.title + '" by ' + exercise.creator)
+        self.setWindowIcon(QIcon("img/logo.png"))
         self.exercise = exercise
         self.data = data
         self.closer_controller = closer_controller
@@ -126,23 +127,47 @@ class ExerciseWindow(QWidget):
         if self.exercise.approved:
             pixmap = QPixmap('img/approved.png')
             approved_button.setObjectName('img/approved.png')
+            approved_button.enterEvent = partial(self.show_text, "Compito approvato", 151, approved_button)
         else:
             pixmap = QPixmap('img/not_approved.png')
             approved_button.setObjectName('img/not_approved.png')
+            approved_button.enterEvent = partial(self.show_text, "Compito non approvato", 151, approved_button)
         pixmap = pixmap.scaled(50, 50)
         approved_button.setPixmap(pixmap)
         approved_button.setFixedSize(70, 70)
         approved_button.setAlignment(Qt.AlignCenter)
         if not self.exercise.approved and self.data.my_name in self.data.my_proff:
             approved_button.mousePressEvent = partial(self.approved_button_on_click, approved_button)
+            approved_button.enterEvent = partial(self.show_text, "Approva il compito", 151, approved_button)
+        approved_button.leaveEvent = self.hide_text
         approved_button.move(self.width()-80, 10)
         self.resizeEvent = partial(self.resize_window, approved_button)
+
+        self.info = QLabel('', self)
+        self.info.setStyleSheet("border: 1px solid grey; background-color: #ffdd99}")
+        self.info.setAlignment(Qt.AlignCenter)
+        self.info.hide()
+
+    def show_text(self, text, dim, rif, event):
+        self.info.setText(text)
+        self.info.show()
+        self.info.setFixedWidth(dim)
+        pos_x, pos_y = rif.pos().x(), rif.pos().y()
+        parent = rif.parent()
+        while parent and parent is not self:
+            pos_x += parent.pos().x()
+            pos_y += parent.pos().y()
+            parent = parent.parent()
+        self.info.move(self.width() - 180 if dim == 151 else pos_x + rif.width() / 5, pos_y + rif.height())
+
+    def hide_text(self, event):
+        self.info.hide()
 
     def resize_window(self, widget, event):
         widget.move(self.width()-80, 10)
 
     def approved_button_on_click(self, widget, event):
-        confirm = ConfirmWindow('Gamification - conferma approvazione',
+        confirm = ConfirmWindow('Conferma approvazione',
                                 "Sei sicuro di voler approvare l'esercizio?<br>L'approvazione non può essere revocata!",
                                 parent=self, ok='Conferma', cancel='Annulla')
         if confirm.exec_() == QDialog.Accepted:
@@ -156,12 +181,13 @@ class ExerciseWindow(QWidget):
                     pixmap = pixmap.scaled(50, 50)
                     widget.setObjectName('img/approved.png')
                     widget.setPixmap(pixmap)
+                    widget.enterEvent = partial(self.show_text, "Compito approvato", 151, widget)
                     self.exercise.approved = True
                     self.exercise.delivery_date = None
                     self.data.get_user_data()
                     self.closer_controller.update()
             except requests.exceptions.RequestException as e:
-                confirm2 = ConfirmWindow('Gamification - Errore di connessione',
+                confirm2 = ConfirmWindow('Errore di connessione',
                                          "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
                                          "connessione<br>Controllare la propria connessione internet e riprovare</span>",
                                          ok="Ok", cancel=None)
@@ -181,6 +207,8 @@ class ExerciseWindow(QWidget):
         play_button.setPixmap(pixmap)
         play_button.setObjectName('img/play.png')
         play_button.mousePressEvent = self.play_button_on_click
+        play_button.enterEvent = partial(self.show_text, 'Play', 40, play_button)
+        play_button.leaveEvent = self.hide_text
         if not self.exercise.executable:
             play_button.setEnabled(False)
 
@@ -190,6 +218,8 @@ class ExerciseWindow(QWidget):
         self.save_button.setPixmap(pixmap)
         self.save_button.setObjectName('img/save.png')
         self.save_button.mousePressEvent = self.save_button_on_click
+        self.save_button.enterEvent = partial(self.show_text, 'Salva', 50, self.save_button)
+        self.save_button.leaveEvent = self.hide_text
 
         pixmap = QPixmap('img/more.png')
         pixmap = pixmap.scaled(50, 50)
@@ -197,6 +227,8 @@ class ExerciseWindow(QWidget):
         self.more_button.setPixmap(pixmap)
         self.more_button.setObjectName('img/more.png')
         self.more_button.mousePressEvent = self.more_button_on_click
+        self.more_button.enterEvent = partial(self.show_text, 'Altro', 55, self.more_button)
+        self.more_button.leaveEvent = self.hide_text
         if self.exercise.delivery_date is not None:
             self.save_button.hide()
             self.more_button.hide()
@@ -207,6 +239,8 @@ class ExerciseWindow(QWidget):
         self.watch_button2.setPixmap(pixmap)
         self.watch_button2.setObjectName('img/watch.png')
         self.watch_button2.mousePressEvent = partial(self.watch_button_on_click, self.watch_button2)
+        self.watch_button2.enterEvent = partial(self.show_text, 'Confronta', 70, self.watch_button2)
+        self.watch_button2.leaveEvent = self.hide_text
         self.watch_button2.setEnabled(self.data.visible or self.data.my_name in self.data.my_proff)
         self.watch_button2.setContentsMargins(30, 0, 0, 0)
 
@@ -216,6 +250,8 @@ class ExerciseWindow(QWidget):
         settings_button.setPixmap(pixmap)
         settings_button.setObjectName('img/settings.png')
         settings_button.mousePressEvent = self.swap_button_on_click
+        settings_button.enterEvent = partial(self.show_text, 'Impostazioni', 90, settings_button)
+        settings_button.leaveEvent = self.hide_text
 
         pixmap = QPixmap('img/upload.png')
         pixmap = pixmap.scaled(50, 50)
@@ -223,6 +259,8 @@ class ExerciseWindow(QWidget):
         send_button.setPixmap(pixmap)
         send_button.setObjectName('img/upload.png')
         send_button.mousePressEvent = self.send_button_on_click
+        send_button.enterEvent = partial(self.show_text, 'Invia', 45, send_button)
+        send_button.leaveEvent = self.hide_text
 
         pixmap = QPixmap('img/reset.png')
         pixmap = pixmap.scaled(50, 50)
@@ -230,6 +268,8 @@ class ExerciseWindow(QWidget):
         restart_button.setPixmap(pixmap)
         restart_button.setObjectName('img/reset.png')
         restart_button.mousePressEvent = self.restart_button_on_click
+        restart_button.enterEvent = partial(self.show_text, 'Ricomincia', 75, restart_button)
+        restart_button.leaveEvent = self.hide_text
 
         if self.exercise.lookable or self.data.my_name in self.data.my_proff:
             pixmap = QPixmap('img/watch.png')
@@ -241,6 +281,10 @@ class ExerciseWindow(QWidget):
         self.watch_button.setObjectName('img/watch.png')
         if self.exercise.lookable or self.data.my_name in self.data.my_proff:
             self.watch_button.mousePressEvent = partial(self.watch_button_on_click, self.watch_button)
+            self.watch_button.enterEvent = partial(self.show_text, 'Sbircia', 60, self.watch_button)
+        else:
+            self.watch_button.enterEvent = partial(self.show_text, 'Non sbirciabile', 100, self.watch_button)
+        self.watch_button.leaveEvent = self.hide_text
         self.watch_button.setEnabled(self.data.visible or self.data.my_name in self.data.my_proff)
 
         if self.exercise.delivery_date is None and self.exercise.lookable:
@@ -426,7 +470,7 @@ class ExerciseWindow(QWidget):
         return
 
     def swap_button_on_click(self, event):
-        confirm = SettingsWindow('Gamification - settings - "' + self.exercise.title + '" by ' + self.exercise.creator,
+        confirm = SettingsWindow('Settings - "' + self.exercise.title + '" by ' + self.exercise.creator,
                                  self.data, self, parent=self)
         if confirm.exec_() == QDialog.Accepted:
             print('ok')
@@ -522,7 +566,7 @@ class ExerciseWindow(QWidget):
                 money = 0
 
         ok_text = 'Invia comunque' if warning else 'Invia'
-        confirm = ConfirmWindow('Gamification - "' + self.exercise.title + '" by ' + self.exercise.creator,
+        confirm = ConfirmWindow('Esercizio - "' + self.exercise.title + '" by ' + self.exercise.creator,
                                 confermation_text, parent=self, ok=ok_text, cancel='Annulla')
 
         if confirm.exec_() == QDialog.Accepted:
@@ -565,7 +609,7 @@ class ExerciseWindow(QWidget):
                     if self.data.visible:
                         self.watch_button_on_click(None, None)
             except requests.exceptions.RequestException as e:
-                confirm2 = ConfirmWindow('Gamification - Errore di connessione',
+                confirm2 = ConfirmWindow('Errore di connessione',
                                          "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
                                          "connessione<br>Controllare la propria connessione internet e riprovare</span>",
                                          ok="Ok", cancel=None)
@@ -575,7 +619,7 @@ class ExerciseWindow(QWidget):
         confirm.deleteLater()
 
     def restart_button_on_click(self, event):
-        confirm = ConfirmWindow("Gamification - Ricominciare l'esercizio",
+        confirm = ConfirmWindow("Ricominciare l'esercizio",
                                  "<span style=\" color: red;\"> Attenzione, confermi di voler ricominciare "
                                  "l'esercizio?<br>Tutto ciò che non e stato salvato non sarà più recuperabile</span>",
                                  ok="Conferma", cancel="Annulla")
@@ -600,12 +644,12 @@ class ExerciseWindow(QWidget):
                     if r.text != "":
                         class_solutions = json.loads(r.text[1: len(r.text)])
                         confirm = ClassExerciseComparisonWindow(
-                            'Gamification - "' + self.exercise.title + '" soluzioni dei compagni',
+                            'Soluzioni - "' + self.exercise.title + '"',
                             class_solutions, r.text[0:1], self.exercise.limits, self, parent=self)
                         confirm.exec_()
                         confirm.deleteLater()
                 except requests.exceptions.RequestException as e:
-                    confirm = ConfirmWindow('Gamification - Errore di connessione',
+                    confirm = ConfirmWindow('Errore di connessione',
                                             "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
                                             "connessione<br>Controllare la connessione internet e riprovare</span>",
                                             ok="Ok", cancel=None)
@@ -613,7 +657,7 @@ class ExerciseWindow(QWidget):
                         print('ok')
                     confirm.deleteLater()
         except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Gamification - Errore di connessione',
+            confirm = ConfirmWindow('Errore di connessione',
                                     "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
                                     "connessione<br>Controllare la propria connessione internet e riprovare</span>",
                                     ok="Ok", cancel=None)
