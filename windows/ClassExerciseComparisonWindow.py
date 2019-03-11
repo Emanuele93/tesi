@@ -3,12 +3,14 @@ import io
 import re
 from functools import partial
 
+import requests
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QPixmap, QIcon
 from PyQt5.QtWidgets import QDialog, QWidget, QVBoxLayout, QLabel, QHBoxLayout, QScrollArea, QTextEdit, \
-    QPlainTextEdit, QSplitter
+    QPlainTextEdit, QSplitter, QCheckBox, QButtonGroup, QPushButton, QLineEdit, QAbstractButton
 
 from Data import DefaultColorStyles
+from windows.ConfirmWindow import ConfirmWindow
 
 
 class ClassExerciseComparisonWindow(QDialog):
@@ -17,12 +19,12 @@ class ClassExerciseComparisonWindow(QDialog):
         self.setWindowTitle(title)
         self.setWindowIcon(QIcon("img/logo.png"))
         self.setMinimumWidth(1200)
-        self.setFixedHeight(530)
         self.exercise_window = exercise_window
         self.parent = parent
         self.limits = exercise_limit
         self.color_styles = None
         self.code_widgets = []
+        self.evaluation_buttons = []
 
         if self.exercise_window.data.my_name not in self.exercise_window.data.my_proff:
             for i in class_solutions:
@@ -72,6 +74,24 @@ class ClassExerciseComparisonWindow(QDialog):
                         class_solutions.append(temp)
                     else:
                         pos += 1
+            for j in range(0, 10):
+                pos = 0
+                for i in range(0, len(class_solutions)):
+                    if class_solutions[pos]['evaluation'] is not None and \
+                            int(class_solutions[pos]['evaluation']) == 10 - j:
+                        temp = class_solutions[pos]
+                        class_solutions.pop(pos)
+                        class_solutions.append(temp)
+                    else:
+                        pos += 1
+            pos = 0
+            for i in range(0, len(class_solutions)):
+                if class_solutions[pos]['evaluation'] is None:
+                    temp = class_solutions[pos]
+                    class_solutions.pop(pos)
+                    class_solutions.append(temp)
+                else:
+                    pos += 1
 
         students_widgets = []
         pos = 1
@@ -93,13 +113,14 @@ class ClassExerciseComparisonWindow(QDialog):
         widget = QWidget(self, flags=Qt.Widget)
         widget.setLayout(box)
 
-        print('1')
         font = QFont()
         font.setPixelSize(20)
-        print('1')
+        validator = "" if self.exercise_window.exercise.validation_type == 0 \
+            else (" corretto da " + self.exercise_window.exercise.creator
+                  if self.exercise_window.exercise.self_validation else " corretto dal prof")
         log_line = QLabel('Soluzioni della classe: "' + self.exercise_window.data.my_class + '" all' + "'" +
-                          'esercizio "' + self.exercise_window.exercise.title + '"', self)
-        print('1')
+                          'esercizio "' + self.exercise_window.exercise.title + '"' + validator)
+
         log_line.setFont(font)
         box = QHBoxLayout(self)
         box.addWidget(log_line)
@@ -111,7 +132,6 @@ class ClassExerciseComparisonWindow(QDialog):
                                "border-left: 0px solid grey; background-color: #ffff55}")
         log_line.setFixedHeight(50)
 
-        print('1')
         scroll = QScrollArea(self)
         scroll.setWidget(widget)
         scroll.setObjectName("scroll")
@@ -124,22 +144,24 @@ class ClassExerciseComparisonWindow(QDialog):
         for i in self.code_widgets:
             i.hide()
 
+        self.setFixedHeight(scroll.sizeHint().height() +
+                            (145 if self.exercise_window.exercise.validation_type == 0 else 200))
+
     def make_student_widget(self, solution, pos, order):
         font = QFont()
         font.setPixelSize(20)
 
-        pos = QLabel(str(pos) + "°", self)
+        pos = QLabel(str(pos) + "°" if solution['visible'] == '1' else "(" + str(pos) + "°", self)
         pos.setFont(font)
-        pos.setContentsMargins(0, 10, 0, 0)
-        pos.setFixedWidth(20)
+        pos.setFixedWidth(30)
 
         if order:
             pos.hide()
 
-        title_str = solution['username'] if solution['visible'] == '1' else "(" + solution['username'] + ")"
+        title_str = solution['username'] if solution['visible'] == '1' else ("(" + solution['username'] + ")" if order
+                                                                             else solution['username'] + ")")
         title = QLabel(title_str, self)
         title.setFont(font)
-        title.setContentsMargins(0, 10, 10, 0)
         title.setFixedWidth(130)
         title.setWordWrap(True)
 
@@ -152,15 +174,40 @@ class ClassExerciseComparisonWindow(QDialog):
         img.setObjectName('img/' + solution['current_image'])
 
         box = QHBoxLayout(self)
-        box.setSpacing(0)
-        box.setContentsMargins(10, 1, 10, 1)
-        box.setAlignment(Qt.AlignLeft)
-        box.addWidget(pos, alignment=Qt.AlignTop)
-        box.addWidget(title, alignment=Qt.AlignLeft)
-        box.addWidget(img, alignment=Qt.AlignRight)
+        box.setContentsMargins(0, 0, 0, 0)
+        box.addWidget(pos)
+        box.addWidget(title)
         who = QWidget(self, flags=Qt.Widget)
         who.setLayout(box)
-        who.setFixedHeight(90)
+        if solution['visible'] == '1':
+            box = QHBoxLayout(self)
+            box.setSpacing(0)
+            box.setContentsMargins(15, 0, 15, 0)
+            box.setAlignment(Qt.AlignLeft)
+            box.addWidget(who)
+            box.addWidget(img, alignment=Qt.AlignRight)
+            who = QWidget(self, flags=Qt.Widget)
+            who.setLayout(box)
+            who.setFixedHeight(90)
+        else:
+            description = QLabel('Modalità riservata')
+            description.setFont(font)
+            box = QVBoxLayout(self)
+            box.setAlignment(Qt.AlignVCenter)
+            box.setContentsMargins(0, 0, 0, 0)
+            box.setSpacing(5)
+            box.addWidget(who)
+            box.addWidget(description)
+            who = QWidget(self, flags=Qt.Widget)
+            who.setLayout(box)
+            box = QHBoxLayout(self)
+            box.setSpacing(0)
+            box.setContentsMargins(15, 0, 15, 0)
+            box.addWidget(who)
+            box.addWidget(img, alignment=Qt.AlignRight)
+            who = QWidget(self, flags=Qt.Widget)
+            who.setLayout(box)
+            who.setFixedHeight(90)
 
         date = solution['delivery_date'].split(' ')
         date_day = QLabel(date[0].split('-')[2] + '/' + date[0].split('-')[1] + '/' + date[0].split('-')[0], self)
@@ -176,6 +223,50 @@ class ClassExerciseComparisonWindow(QDialog):
         date.setObjectName("date")
         date.setStyleSheet("QWidget#date {border: 0px solid grey; "
                            "border-bottom: 1px solid grey; border-top: 1px solid grey;}")
+
+        evaluation_txet = "In attesa di valutazione" if solution['evaluation'] is None else \
+            ("Soluzione convalidata" if self.exercise_window.exercise.validation_type in [1, 3]
+                                   and int(solution['evaluation']) >= 6 else
+             ("Soluzione non valida" if self.exercise_window.exercise.validation_type in [1, 3]
+              else "Valutazione:  " + str(int(float(solution['evaluation'])) if float(solution['evaluation']) % 1 == 0
+                                          else round(float(solution['evaluation']), 2)) + "/10"))
+
+        evaluation_txet = QLabel(evaluation_txet, self)
+        font.setBold(True)
+        evaluation_txet.setFont(font)
+        font.setBold(False)
+        pixmap = QPixmap('img/notify.png')
+        pixmap = pixmap.scaled(25, 25)
+        notify = QLabel(self)
+        notify.setPixmap(pixmap)
+        notify.setObjectName('img/notify.png')
+        if solution['evaluation'] is not None:
+            notify.hide()
+            if float(solution['evaluation']) >= 6:
+                evaluation_txet.setStyleSheet('color: #44bb55')
+            else:
+                evaluation_txet.setStyleSheet('color: #bb4455')
+        else:
+            if (self.exercise_window.exercise.self_validation
+                and self.exercise_window.exercise.creator == self.exercise_window.data.my_name) \
+                    or (not self.exercise_window.exercise.self_validation
+                        and self.exercise_window.data.my_name in self.exercise_window.data.my_proff):
+                evaluation_txet.setStyleSheet('color: #bb4455')
+            else:
+                notify.hide()
+
+        box = QHBoxLayout(self)
+        box.setAlignment(Qt.AlignLeft)
+        box.setContentsMargins(25, 10, 25, 10)
+        box.addWidget(notify)
+        box.addWidget(evaluation_txet)
+        evaluation = QWidget(self, flags=Qt.Widget)
+        evaluation.setLayout(box)
+        evaluation.setObjectName("evaluation")
+        evaluation.setStyleSheet("QWidget#evaluation {border: 0px solid grey; border-bottom: 1px solid grey}")
+
+        if self.exercise_window.exercise.validation_type == 0:
+            evaluation.hide()
 
         resources = {
             'lines': int(solution['resources_used'].split(',')[0]),
@@ -258,13 +349,16 @@ class ClassExerciseComparisonWindow(QDialog):
         box.setContentsMargins(0, 0, 0, 0)
         box.addWidget(who)
         box.addWidget(date)
+        if self.exercise_window.exercise.validation_type > 0:
+            box.addWidget(evaluation)
         box.addWidget(counter)
         widget = QWidget(self, flags=Qt.Widget)
         widget.setLayout(box)
         widget.setObjectName("w")
         widget.setStyleSheet("QWidget#w {background-color: white; border: 1px solid grey}")
 
-        code_widget = self.make_code_widget(code_solution)
+        code_widget = self.make_code_widget(code_solution, solution['evaluation'] is None, notify, evaluation_txet,
+                                            solution['username'])
         code_widget.setFixedWidth(400)
         widget.mousePressEvent = partial(self.show_code, code_widget)
         self.code_widgets.append(code_widget)
@@ -302,7 +396,7 @@ class ClassExerciseComparisonWindow(QDialog):
             widget.setStyleSheet("QWidget#widget {border: 0px solid grey; border-bottom: 1px solid grey}")
         return widget
 
-    def make_code_widget(self, code_solution):
+    def make_code_widget(self, code_solution, evaluation, correction_img, correction_text, user):
         code_editor = QTextEdit(self)
         code_editor.setReadOnly(True)
         code_editor.setLineWrapMode(code_editor.NoWrap)
@@ -373,11 +467,146 @@ class ClassExerciseComparisonWindow(QDialog):
         coding_widget.addWidget(results)
         coding_widget.setSizes([150, 100])
         coding_widget.setChildrenCollapsible(True)
-        coding_widget.setObjectName("coding_widget")
-        coding_widget.setStyleSheet("QWidget#coding_widget {background-color: white; border: 1px solid grey; "
-                                    "border-left: 0px solid grey;}")
         coding_widget.setOrientation(Qt.Vertical)
+
+        if evaluation and ((self.exercise_window.exercise.self_validation
+                            and self.exercise_window.exercise.creator == self.exercise_window.data.my_name)
+                           or (not self.exercise_window.exercise.self_validation
+                               and self.exercise_window.data.my_name in self.exercise_window.data.my_proff)):
+            font = QFont()
+            font.setPixelSize(15)
+            intro = QLabel("Valuta la soluzione:", self)
+            intro.setContentsMargins(20, 0, 0, 0)
+            intro.setFont(font)
+
+            send_button = QPushButton("Invia", self)
+            send_button.setFixedSize(80, 50)
+            send_button.setEnabled(False)
+
+            temp_form = None
+            temp_bg = None
+
+            if self.exercise_window.exercise.validation_type in [1, 3]:
+                check_1 = QCheckBox("Valida")
+                check_1.setFont(font)
+                check_2 = QCheckBox("Non valida")
+                check_2.setFont(font)
+
+                bg = QButtonGroup()
+                bg.addButton(check_1, 1)
+                bg.addButton(check_2, 2)
+                bg.buttonClicked[QAbstractButton].connect(partial(self.correction_check_changed, send_button))
+                temp_bg = bg
+                self.evaluation_buttons.append(bg)
+
+                box = QHBoxLayout(self)
+                box.setAlignment(Qt.AlignLeft)
+                box.setSpacing(20)
+                box.addWidget(check_1)
+                box.addWidget(check_2)
+                correction = QWidget(self, flags=Qt.Widget)
+                correction.setLayout(box)
+            else:
+                correction = QLineEdit(self)
+                correction.setPlaceholderText(" Valore compreso tra 0 e 10 ")
+                correction.textChanged.connect(partial(self.correction_form_changed, correction, send_button))
+                correction.setFont(font)
+                correction.setFixedWidth(225)
+                correction.setContentsMargins(10, 5, 0, 5)
+                temp_form = correction
+
+            box = QVBoxLayout(self)
+            box.addWidget(intro)
+            box.addWidget(correction)
+            correction = QWidget(self, flags=Qt.Widget)
+            correction.setLayout(box)
+
+            box = QHBoxLayout(self)
+            box.setContentsMargins(0, 0, 40, 0)
+            box.addWidget(correction)
+            box.addWidget(send_button, alignment=Qt.AlignRight)
+            correction = QWidget(self, flags=Qt.Widget)
+            correction.setLayout(box)
+            correction.setObjectName("correction")
+            correction.setStyleSheet("QWidget#correction {background-color: white; border: 1px solid grey}")
+
+            send_button.clicked.connect(partial(self.send_button_onclick, correction, correction_img, correction_text,
+                                                temp_form, temp_bg, user))
+
+            if self.exercise_window.exercise.validation_type == 0:
+                correction.hide()
+
+            box = QVBoxLayout(self)
+            box.setContentsMargins(0, 0, 0, 0)
+            box.addWidget(coding_widget)
+            box.addWidget(correction)
+            coding_widget = QWidget(self, flags=Qt.Widget)
+            coding_widget.setLayout(box)
+
+
+        coding_widget.setObjectName("coding_widget")
+        coding_widget.setStyleSheet("QWidget#coding_widget {border: 1px solid grey; border-right: 0px solid grey;"
+                                    "border-left: 0px solid grey}")
         return coding_widget
+
+    @staticmethod
+    def correction_check_changed(button, btn):
+        button.setEnabled(True)
+
+    @staticmethod
+    def correction_form_changed(input_form, button):
+        try:
+            if 0 <= float(input_form.text()) <= 10:
+                input_form.setStyleSheet('color: black')
+                button.setEnabled(True)
+            else:
+                input_form.setStyleSheet('color: #bb4455')
+                button.setEnabled(False)
+        except ValueError:
+            input_form.setStyleSheet('color: #bb4455')
+            button.setEnabled(False)
+
+    def send_button_onclick(self, widget, img, text, form, bg, user):
+        if form is None:
+            ris = 10 if bg.checkedId() == 1 else 0
+        else:
+            ris = round(float(form.text()), 2)
+
+        try:
+            r = requests.post("http://programmingisagame.netsons.org/evaluate_exercise.php",
+                              data={'username': self.exercise_window.data.my_name,
+                                    'password': self.exercise_window.data.my_psw,
+                                    'class': self.exercise_window.data.my_class,
+                                    'id': self.exercise_window.exercise.id, 'vote': ris, 'username2': user})
+            if r.text != "":
+                print(r.text)
+                if ris % 1 == 0:
+                    ris = int(ris)
+                widget.hide()
+                img.hide()
+                if form is None:
+                    if ris >= 6:
+                        text.setText("Soluzione convalidata")
+                    else:
+                        text.setText("Soluzione non valida")
+                else:
+                    text.setText("Valutazione:  " + str(ris) + "/10")
+                if ris >= 6:
+                    text.setStyleSheet('color: #44bb55')
+                else:
+                    text.setStyleSheet('color: #bb4455')
+                if user == self.exercise_window.data.my_name:
+                    self.exercise_window.new_evaluation(ris)
+                else:
+                    self.exercise_window.new_evaluation()
+        except requests.exceptions.RequestException as e:
+            confirm = ConfirmWindow('Errore di connessione',
+                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
+                                    "connessione<br>Controllare la connessione internet e riprovare</span>",
+                                    ok="Ok", cancel=None)
+            if confirm.exec_() == QDialog.Accepted:
+                print('ok')
+            confirm.deleteLater()
 
     def color_strings(self, text):
         texts = []

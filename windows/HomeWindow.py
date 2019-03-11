@@ -43,12 +43,12 @@ class HomeWindow(QWidget):
         level_number = QLabel('Liv. ' + str(l), self)
         level_number.setFont(font)
         level_number.setStyleSheet('background-color: #9999FF; border: 1px solid grey')
-        level_number.setFixedSize(85, 42)
+        level_number.setFixedSize(90, 42)
         level_number.setContentsMargins(20, 10, 20, 10)
 
         level_bar = QLabel(self)
         level_bar.setStyleSheet('background-color: #4040FF')
-        level_bar.setFixedSize(int(85*(self.data.level-old)/(self.data.level_progression[l-1]-old)), 8)
+        level_bar.setFixedSize(int(90*(self.data.level-old)/(self.data.level_progression[l-1]-old)), 8)
 
         box = QVBoxLayout(self)
         box.setSpacing(0)

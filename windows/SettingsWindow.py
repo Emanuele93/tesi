@@ -209,9 +209,11 @@ class SettingsWindow(QDialog):
         visible = QWidget(self, flags=Qt.Widget)
         visible.setLayout(box)
 
+        font.setPixelSize(13)
         intro_visible = QLabel("I tuoi compiti e progressi non saranno visibili dagli studenti", self)
         intro_visible.setFont(font)
         intro_visible.setWordWrap(True)
+        font.setPixelSize(15)
 
         box = QVBoxLayout(self)
         box.setSpacing(0)
@@ -219,6 +221,59 @@ class SettingsWindow(QDialog):
         box.addWidget(intro_visible)
         visible = QWidget(self, flags=Qt.Widget)
         visible.setLayout(box)
+
+        intro_correction_type = QLabel("Soggetto incaricato della correzione dei compiti:", self)
+        intro_correction_type.setFont(font)
+        font.setPixelSize(14)
+        check_1 = QCheckBox("Nessuno, ricompensa fornita automaticamente")
+        check_1.setFont(font)
+        check_1.setChecked(self.data.correction_type == 0)
+        check_2 = QCheckBox("Il creatore dell'esercizio")
+        check_2.setFont(font)
+        check_2.setChecked(self.data.correction_type == 1)
+        check_3 = QCheckBox("Il docente")
+        check_3.setFont(font)
+        check_3.setChecked(self.data.correction_type == 2)
+
+        self.bg6 = QButtonGroup()
+        self.bg6.addButton(check_1, 1)
+        self.bg6.addButton(check_2, 2)
+        self.bg6.addButton(check_3, 3)
+        self.bg6.buttonClicked[QAbstractButton].connect(self.set_correction_type)
+
+        font.setPixelSize(15)
+        box = QVBoxLayout(self)
+        box.setAlignment(Qt.AlignLeft)
+        box.addWidget(intro_correction_type)
+        box.addWidget(check_1)
+        box.addWidget(check_2)
+        box.addWidget(check_3)
+        correction_type = QWidget(self, flags=Qt.Widget)
+        correction_type.setLayout(box)
+        correction_type.setVisible(self.data.my_name in self.data.my_proff)
+
+        intro_approving_type = QLabel("Approvazione degli esercizi: ", self)
+        intro_approving_type.setFont(font)
+        check_1 = QCheckBox("Automatica")
+        check_1.setFont(font)
+        check_1.setChecked(self.data.approving_type == 0)
+        check_2 = QCheckBox("Manuale")
+        check_2.setFont(font)
+        check_2.setChecked(self.data.approving_type == 1)
+
+        self.bg5 = QButtonGroup()
+        self.bg5.addButton(check_1, 1)
+        self.bg5.addButton(check_2, 2)
+        self.bg5.buttonClicked[QAbstractButton].connect(self.set_approving_type)
+
+        box = QHBoxLayout(self)
+        box.setAlignment(Qt.AlignLeft)
+        box.addWidget(intro_approving_type)
+        box.addWidget(check_1)
+        box.addWidget(check_2)
+        approving_type = QWidget(self, flags=Qt.Widget)
+        approving_type.setLayout(box)
+        approving_type.setVisible(self.data.my_name in self.data.my_proff)
 
         intro_student_exercises_visible = QLabel("Compiti non approvati: ", self)
         intro_student_exercises_visible.setFont(font)
@@ -255,7 +310,7 @@ class SettingsWindow(QDialog):
 
         box = QHBoxLayout(self)
         if self.data.my_name in self.data.my_proff:
-            box. setContentsMargins(0, 80, 20, 0)
+            box. setContentsMargins(0, 0, 20, 0)
         else:
             box. setContentsMargins(0, 130, 20, 0)
         box.addWidget(logout)
@@ -269,7 +324,9 @@ class SettingsWindow(QDialog):
         box.addWidget(code_result_orientation)
         box.addWidget(font_dimesion)
         box.addWidget(visible)
+        box.addWidget(approving_type)
         box.addWidget(student_exercises_visible)
+        box.addWidget(correction_type)
         box.addWidget(logout)
         widget = QWidget(self, flags=Qt.Widget)
         widget.setLayout(box)
@@ -530,6 +587,40 @@ class SettingsWindow(QDialog):
                 if self.exercise_window is not None and self.exercise_window.exercise.id is not None:
                     self.exercise_window.watch_button.setEnabled(self.data.visible
                                                                  or self.data.my_name in self.data.my_proff)
+        except requests.exceptions.RequestException as e:
+            confirm = ConfirmWindow('Errore di connessione',
+                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
+                                    "connessione<br>Controllare la connessione internet e riprovare</span>",
+                                    ok="Ok", cancel=None)
+            if confirm.exec_() == QDialog.Accepted:
+                print('ok')
+            confirm.deleteLater()
+
+    def set_correction_type(self, btn):
+        try:
+            mode = 1 if btn.text() == "Il creatore dell'esercizio" else (2 if btn.text() == "Il docente" else 0)
+            r = requests.post("http://programmingisagame.netsons.org/set_correction_type.php",
+                              data={'username': self.data.my_name, 'password': self.data.my_psw,
+                                    'class': self.data.my_class, 'mode': mode})
+            if r.text != "":
+                self.data.correction_type = mode
+        except requests.exceptions.RequestException as e:
+            confirm = ConfirmWindow('Errore di connessione',
+                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
+                                    "connessione<br>Controllare la connessione internet e riprovare</span>",
+                                    ok="Ok", cancel=None)
+            if confirm.exec_() == QDialog.Accepted:
+                print('ok')
+            confirm.deleteLater()
+
+    def set_approving_type(self, btn):
+        try:
+            mode = 0 if btn.text() == "Automatica" else 1
+            r = requests.post("http://programmingisagame.netsons.org/set_approving_type.php",
+                              data={'username': self.data.my_name, 'password': self.data.my_psw,
+                                    'class': self.data.my_class, 'mode': mode})
+            if r.text != "":
+                self.data.approving_type = mode
         except requests.exceptions.RequestException as e:
             confirm = ConfirmWindow('Errore di connessione',
                                     "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "

@@ -256,6 +256,26 @@ class CreateHomeworkWindow(QWidget):
         self.order_by.addItem("Classifica per numero di condizioni")
         self.order_by.addItem("Classifica per numero di cicli")
 
+        self.validation_type = QComboBox(self)
+        self.validation_type.addItem("Nessuna correzione  (ricompensa automatica)")
+        self.validation_type.addItem("Correzione binaria  (valido o non valido)")
+        self.validation_type.addItem("Correzione graduata (valutazione da 0 a 10)")
+
+        validation_information = QLabel("(Attenzione, sarai responsabile delle valutzioni)", self)
+        if self.data.correction_type == 0:
+            validation_information.hide()
+            self.validation_type.setEnabled(False)
+        elif self.data.correction_type == 2 and self.data.my_name not in self.data.my_proff:
+            if self.data.approving_type == 0:
+                validation_information.setText("(La correzione è a carico del docente)")
+                self.validation_type.setCurrentIndex(2)
+                self.validation_type.setEnabled(False)
+            else:
+                validation_information.hide()
+                self.validation_type.addItem("La correzione è a carico del docente")
+                self.validation_type.setCurrentIndex(3)
+                self.validation_type.setEnabled(False)
+
         lookable_intro = QLabel(self)
         lookable_intro.setStyleSheet("border: 0px solid grey; border-bottom: 1px solid grey")
         lookable_intro.setText("Esercizio sbirciabile: ")
@@ -306,9 +326,28 @@ class CreateHomeworkWindow(QWidget):
         tit.setFont(font)
         tit.setText('Creazione Compito')
 
+        w = tit.sizeHint().width() + 40
+        if self.data.approving_type == 1 and self.data.my_name not in self.data.my_proff:
+            font.setPixelSize(12)
+            warning = QLabel("Attenzione, il compito dovrà essere approvato per poter fornire la ricompensa"
+                             if self.data.student_exercises_visible else
+                             "Attenzione, il compito dovrà essere approvato per essere visibile dagli studenti", self)
+            self.send_button.setFixedHeight(40)
+            warning.setWordWrap(True)
+            warning.setFixedHeight(30)
+            warning.setFont(font)
+
+            box = QVBoxLayout(self)
+            box.setSpacing(5)
+            box.setContentsMargins(0, 0, 0, 0)
+            box.addWidget(tit)
+            box.addWidget(warning)
+            tit = QWidget(self, flags=Qt.Widget)
+            tit.setLayout(box)
+        tit.setFixedWidth(w)
+
         box = QHBoxLayout(self)
         box.setAlignment(Qt.AlignCenter)
-        box.setSpacing(50)
         box.addWidget(tit)
         box.addWidget(self.send_button)
         widget0 = QWidget(self, flags=Qt.Widget)
@@ -445,6 +484,14 @@ class CreateHomeworkWindow(QWidget):
         order_by_widget = QWidget(self, flags=Qt.Widget)
         order_by_widget.setLayout(box)
 
+        box = QVBoxLayout(self)
+        box.setSpacing(5)
+        box.addWidget(self.validation_type)
+        box.addWidget(validation_information)
+        box.setContentsMargins(10, 10, 50, 10)
+        validation_type_widget = QWidget(self, flags=Qt.Widget)
+        validation_type_widget.setLayout(box)
+
         box = QHBoxLayout(self)
         box.addWidget(lookable_intro)
         box.addWidget(self.lookable_check)
@@ -466,6 +513,7 @@ class CreateHomeworkWindow(QWidget):
         settings_box.addWidget(widget4)
         settings_box.addWidget(widget_look)
         settings_box.addWidget(order_by_widget)
+        settings_box.addWidget(validation_type_widget)
         settings = QWidget(self)
         settings.setLayout(settings_box)
 
@@ -708,6 +756,10 @@ class CreateHomeworkWindow(QWidget):
                      + ',' + str(cycles_limit) + ',' + str(functions_limit)
             executable = '1' if self.executable_check.isChecked() else '0'
             lookable = '1' if self.lookable_check.isChecked() else '0'
+            validation_type = 0 if self.validation_type.currentIndex() in [0, 3] \
+                else (self.validation_type.currentIndex() if self.data.correction_type < 2
+                      else self.validation_type.currentIndex() + 2)
+            self_validation = 1 if self.data.correction_type < 2 else 0
 
             try:
                 r = requests.post("http://programmingisagame.netsons.org/add_exercise.php",
@@ -715,7 +767,8 @@ class CreateHomeworkWindow(QWidget):
                                         'class': self.data.my_class, 'date': date, 'title': title, 'text': text,
                                         'level': level, 'white_paper_mode': white_paper_mode, 'start_code': start_code,
                                         'limits': limits, 'executable': executable,
-                                        'order': self.order_by.currentIndex(), 'lookable': lookable})
+                                        'order': self.order_by.currentIndex(), 'lookable': lookable,
+                                        'validation_type': validation_type, 'self_validation': self_validation})
                 if r.text != "":
                     self.closer_controller.close_CreateHomeworkWindow()
             except requests.exceptions.RequestException as e:

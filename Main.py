@@ -68,6 +68,7 @@ class WindowsController(QWidget):
     def open_AchievementsWindow(self, pos):
         self.open_window(AchievementsWindow(self, self.data, pos))
 
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     win = WindowsController()

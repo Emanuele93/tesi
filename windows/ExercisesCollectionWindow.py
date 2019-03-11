@@ -77,12 +77,12 @@ class ExercisesCollectionWindow(QWidget):
         level_number = QLabel('Liv. ' + str(l), self)
         level_number.setFont(font)
         level_number.setStyleSheet('background-color: #9999FF; border: 1px solid grey')
-        level_number.setFixedSize(85, 40)
+        level_number.setFixedSize(90, 40)
         level_number.setContentsMargins(20, 10, 20, 10)
 
         level_bar = QLabel(self)
         level_bar.setStyleSheet('background-color: #4040FF')
-        level_bar.setFixedSize(int(85*(self.data.level-old)/(self.data.level_progression[l-1]-old)), 5)
+        level_bar.setFixedSize(int(90*(self.data.level-old)/(self.data.level_progression[l-1]-old)), 5)
 
         box = QVBoxLayout(self)
         box.setSpacing(0)
@@ -265,7 +265,7 @@ class ExercisesCollectionWindow(QWidget):
 
     def open_void_page(self):
         if self.pages['0'] is None:
-            self.pages['0'] = BookExerciseWindow(Exercise(None, None, None, "Pagina vuota", None, 'Facile', False, "", {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, True, False, False), self.data, None)
+            self.pages['0'] = BookExerciseWindow(Exercise(None, None, None, "Pagina vuota", None, 'Facile', False, "", {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, True, False, False, 0, False), self.data, None)
             self.pages['0'].show()
         else:
             self.pages['0'].show()

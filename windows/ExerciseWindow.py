@@ -11,7 +11,7 @@ from os import path
 import requests
 from PyQt5.QtGui import QTextCursor, QFont, QPixmap, QFontMetricsF, QIcon
 from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QSplitter, QHBoxLayout, QVBoxLayout, \
-    QLabel, QDialog
+    QLabel, QDialog, QPushButton, QComboBox
 from PyQt5.QtCore import *
 
 from windows.ClassExerciseComparisonWindow import ClassExerciseComparisonWindow
@@ -167,14 +167,18 @@ class ExerciseWindow(QWidget):
         widget.move(self.width()-80, 10)
 
     def approved_button_on_click(self, widget, event):
-        confirm = ConfirmWindow('Conferma approvazione',
-                                "Sei sicuro di voler approvare l'esercizio?<br>L'approvazione non può essere revocata!",
-                                parent=self, ok='Conferma', cancel='Annulla')
+        confirm = ApprovingConfirmWindow(self.exercise)
         if confirm.exec_() == QDialog.Accepted:
+            if not self.exercise.self_validation:
+                validation_type = confirm.validation_type.currentIndex()
+            else:
+                validation_type = self.exercise.validation_type
+            print("approvazione, da - a", self.exercise.validation_type, validation_type)
             try:
                 r = requests.post("http://programmingisagame.netsons.org/approve_exercise.php",
                                   data={'username': self.data.my_name, 'password': self.data.my_psw,
-                                        'class': self.data.my_class, 'id': self.exercise.id})
+                                        'class': self.data.my_class, 'id': self.exercise.id,
+                                        'validation_type': validation_type})
                 if r.text != "":
                     confirm.deleteLater()
                     pixmap = QPixmap('img/approved.png')
@@ -183,8 +187,15 @@ class ExerciseWindow(QWidget):
                     widget.setPixmap(pixmap)
                     widget.enterEvent = partial(self.show_text, "Compito approvato", 151, widget)
                     self.exercise.approved = True
+                    self.exercise.validation_type = validation_type
                     self.exercise.delivery_date = None
                     self.data.get_user_data()
+                    self.save_button.show()
+                    self.more_options_is_visible = False
+                    self.more_options.hide()
+                    self.more_button.show()
+                    self.watch_button2.hide()
+                    self.code_editor.setReadOnly(False)
                     self.closer_controller.update()
             except requests.exceptions.RequestException as e:
                 confirm2 = ConfirmWindow('Errore di connessione',
@@ -479,14 +490,11 @@ class ExerciseWindow(QWidget):
     def send_button_on_click(self, event):
         if self.exercise.executable:
             self.play_button_on_click(None)
-        warning = False
         impurity = 0
-        money = 150 if self.exercise.level == 'Difficile' else 100
 
         confermation_text = "Sei sicuro di voler inviare l'esercizio?<br>" \
                             "La tua soluzione non potrà più essere modificata!"
 
-        owned = True
         if self.data.owned_variables['lines'] is not None \
                 and self.resources_used['lines'] > self.data.owned_variables['lines'] \
                 or self.data.owned_variables['variables'] is not None \
@@ -506,9 +514,7 @@ class ExerciseWindow(QWidget):
             confermation_text += "<br><br><span style=\" color: #ff5500;\">" \
                                  "Attenzione, hai usato più risorse di quelle che possiedi!<br>" \
                                  "In questo modo non guadagnerai neanche un soldo!</span>"
-            warning = True
-            owned = False
-            money = 0
+            impurity = 3
 
         if (self.exercise.limits['lines'] is not None
             and self.resources_used['lines'] > self.exercise.limits['lines']) \
@@ -534,38 +540,25 @@ class ExerciseWindow(QWidget):
             confermation_text += "<br><br><span style=\" color: red;\">" \
                                  "Attenzione, hai usato più risorse rispetto al limite assegnato!<br>" \
                                  "In questo modo l'esercizio potrebbe esser valutato sbagliato!</span>"
-            warning = True
-            impurity = 1
-            if money > 0:
-                money -= 50
+            impurity += 1
 
         if not self.code_compile:
             confermation_text += "<br><br><span style=\" color: red;\">" \
                                  "Attenzione, il tuo codice ha degli errori e non viene eseguito interamente!<br>" \
                                  "In questo modo l'esercizio potrebbe esser valutato sbagliato!</span>"
-            if money > 0 and (self.exercise.creator not in self.data.my_proff
-                              or not (self.exercise.level == 'Medio' and warning)):
-                money -= 50
-            warning = True
-            impurity += 2
+            impurity += 1
 
-        if owned and warning:
-            if money > 0:
-                confermation_text += "<br><br><span style=\" color: #ff5500;\"> " \
-                                     "Consegnando così guadagnerai meno soldi!</span>"
-            else:
-                confermation_text += "<br><br><span style=\" color: #ff5500;\"> " \
-                                     "Consegnando così non guadagnerai neanche un soldo!</span>"
+        if impurity == 2 and self.exercise.level == 'Facile':
+            confermation_text += "<br><br><span style=\" color: #ff5500;\"> " \
+                                 "Consegnando così non guadagnerai neanche un soldo!</span>"
+        elif 0 < impurity < 3:
+            confermation_text += "<br><br><span style=\" color: #ff5500;\"> " \
+                                 "Consegnando così guadagnerai meno soldi!</span>"
 
-        if not self.exercise.approved:
-            if impurity == 0:
-                money = 10
-            elif impurity < 3:
-                money = 5
-            else:
-                money = 0
+        if impurity > 3:
+            impurity = 3
 
-        ok_text = 'Invia comunque' if warning else 'Invia'
+        ok_text = 'Invia comunque' if impurity > 0 else 'Invia'
         confirm = ConfirmWindow('Esercizio - "' + self.exercise.title + '" by ' + self.exercise.creator,
                                 confermation_text, parent=self, ok=ok_text, cancel='Annulla')
 
@@ -592,14 +585,19 @@ class ExerciseWindow(QWidget):
                                   data={'username': self.data.my_name, 'password': self.data.my_psw,
                                         'class': self.data.my_class, 'id': self.exercise.id, 'color_style': cs,
                                         'delivery_date': data, 'solution': self.code_editor.toPlainText(),
-                                        'resources_used': resources, 'money': str(money), 'impurity': str(impurity)})
+                                        'resources_used': resources, 'impurity': impurity})
                 if r.text != "":
+                    print(r.text)
                     self.exercise.solution = self.code_editor.toPlainText()
                     self.exercise.delivery_date = datetime.datetime.now()
                     self.exercise.resources_used = self.resources_used
-                    self.data.money += money
-                    self.data.level += 0 if money == 0 else \
-                        (1 if money == 50 or money == 5 else (2 if money == 10 or money == 100 else 3))
+                    if self.exercise.validation_type > 0 and \
+                            ((self.exercise.self_validation and self.exercise.creator == self.data.my_name) or
+                             (not self.exercise.self_validation and self.data.my_name in self.data.my_proff)):
+                        self.exercise.missing_votes += 1
+                    if r.text != 'ok':
+                        self.data.money += int(r.text.split(',')[0])
+                        self.data.level += int(r.text.split(',')[1])
                     self.closer_controller.close_ExerciseWindow(self.exercise)
                     self.save_button.hide()
                     self.more_options.hide()
@@ -1277,3 +1275,62 @@ class ExerciseWindow(QWidget):
         self.results.setStyleSheet("QWidget#results {background-color: " + self.color_styles.results_background_color
                                    + "; color: " + self.color_styles.results_text_color + ";}")
         self.format_text()
+
+    def new_evaluation(self, vote=None):
+        self.exercise.missing_votes -= 1
+        print(self.exercise.missing_votes)
+        if vote is not None:
+            self.exercise.vote = vote
+        self.closer_controller.update()
+
+
+class ApprovingConfirmWindow(QDialog):
+    def __init__(self, exercise, parent=None):
+        QDialog.__init__(self, parent)
+        self.setWindowTitle('Conferma approvazione')
+        self.setWindowIcon(QIcon("img/logo.png"))
+
+        font = QFont()
+        font.setPixelSize(15)
+        text_widget = QLabel("Confermi di voler approvare l'esercizio?<br>Ti verrà richiesto di valutare le soluzioni"
+                             "<br>Attenzione, l'approvazione non può essere revocata!", self)
+        text_widget.setFont(font)
+        text_widget.setTextFormat(Qt.RichText)
+
+        self.validation_type = QComboBox(self)
+        self.validation_type.addItem("Nessuna correzione  (ricompensa automatica)")
+        self.validation_type.addItem("Correzione binaria  (valido o non valido)")
+        self.validation_type.addItem("Correzione graduata (valutazione da 0 a 10)")
+
+        if exercise.self_validation:
+            if exercise.validation_type == 0:
+                text_widget.setText("Confermi di voler approvare l'esercizio?<br>"
+                                    "La ricompensa è automatica e non verrà fatta alcuna correzione"
+                                    "<br>Attenzione, l'approvazione non può essere revocata!")
+            else:
+                text_widget.setText("Confermi di voler approvare l'esercizio?<br>Lo studente valuterà le soluzioni!"
+                                    "<br>Attenzione, l'approvazione non può essere revocata!")
+            self.validation_type.hide()
+
+        buttonOk = QPushButton("Conferma", self)
+        buttonOk.clicked.connect(self.accept)
+        buttonOk.setFixedWidth(100)
+        buttonOk.setFont(font)
+        buttonCancel = QPushButton("Annulla", self)
+        buttonCancel.clicked.connect(self.reject)
+        buttonCancel.setFixedWidth(100)
+        buttonCancel.setFont(font)
+
+        box = QHBoxLayout(self)
+        box.setContentsMargins(0, 0, 0, 0)
+        box.addWidget(buttonOk)
+        box.addWidget(buttonCancel)
+        widget = QWidget(self, flags=Qt.Widget)
+        widget.setLayout(box)
+
+        box = QVBoxLayout(self)
+        box.setContentsMargins(20, 20, 20, 20)
+        box.setSpacing(20)
+        box.addWidget(text_widget)
+        box.addWidget(self.validation_type)
+        box.addWidget(widget)

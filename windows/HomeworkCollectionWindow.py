@@ -94,12 +94,12 @@ class HomeworkCollectionWindow(QWidget):
         level_number = QLabel('Liv. ' + str(l), self)
         level_number.setFont(font)
         level_number.setStyleSheet('background-color: #9999FF; border: 1px solid grey')
-        level_number.setFixedSize(85, 40)
+        level_number.setFixedSize(90, 40)
         level_number.setContentsMargins(20, 10, 20, 10)
 
         level_bar = QLabel(self)
         level_bar.setStyleSheet('background-color: #4040FF')
-        level_bar.setFixedSize(int(85*(self.data.level-old)/(self.data.level_progression[l-1]-old)), 5)
+        level_bar.setFixedSize(int(90*(self.data.level-old)/(self.data.level_progression[l-1]-old)), 5)
 
         box = QVBoxLayout(self)
         box.setSpacing(0)
@@ -259,12 +259,56 @@ class HomeworkCollectionWindow(QWidget):
                     exercise = QWidget(self, flags=Qt.Widget)
                     exercise.setLayout(box)
 
+                    f.setPixelSize(12)
+                    vote_intro = QLabel("voto", self)
+                    vote_intro.setFont(f)
+                    f.setPixelSize(18)
+                    vote_value = QLabel('?' if i.vote is None else(str(i.vote) if i.validation_type in [2, 4] else
+                                                                   ('ok' if float(i.vote) >= 6 else ' no ')), self)
+                    vote_value.setFont(f)
+                    f.setPixelSize(10)
+
+                    box = QVBoxLayout(self)
+                    box.setAlignment(Qt.AlignTop)
+                    box.setSpacing(3)
+                    box.setContentsMargins(10, 7, 10, 5)
+                    box.addWidget(vote_intro, alignment=Qt.AlignHCenter)
+                    box.addWidget(vote_value, alignment=Qt.AlignHCenter)
+                    vote = QWidget(self, flags=Qt.Widget)
+                    vote.setLayout(box)
+                    vote.setObjectName("vote")
+                    vote.setStyleSheet("QWidget#vote {background-color: #dfe366; border: 1px solid grey}")
+
+                    s = "Un compito da correggere" if i.missing_votes == 1 else \
+                        str(i.missing_votes) + " compiti da correggere"
+                    pixmap = QPixmap('img/notify.png')
+                    pixmap = pixmap.scaled(35, 35)
+                    notify = QLabel(self)
+                    notify.setPixmap(pixmap)
+                    notify.setObjectName('img/notify.png')
+                    notify.enterEvent = partial(self.show_text, s, 165, notify)
+                    notify.leaveEvent = self.hide_text
+                    box = QHBoxLayout(self)
+                    box.setContentsMargins(5, 0, 5, 0)
+                    box.addWidget(notify, alignment=Qt.AlignVCenter)
+                    notify_w = QWidget(self, flags=Qt.Widget)
+                    notify_w.setLayout(box)
+                    notify_w.setObjectName("vote")
+                    notify_w.setStyleSheet("QWidget#vote {background-color: #dfe366; border: 1px solid grey}")
+
+                    if i.missing_votes == 0:
+                        notify_w.hide()
+                    else:
+                        vote.hide()
+
                     box = QHBoxLayout(self)
                     box.setContentsMargins(0, 0, 0, 0)
                     box.setSpacing(0)
                     box.addWidget(approved_icon)
                     box.addWidget(exercise)
                     box.addWidget(difficulty)
+                    box.addWidget(vote)
+                    box.addWidget(notify_w)
                     exercise = QWidget(self, flags=Qt.Widget)
                     exercise.setLayout(box)
                     exercise.setObjectName("exercise")
@@ -272,10 +316,14 @@ class HomeworkCollectionWindow(QWidget):
 
                     if (i.solution is None or i.solution == i.start_code) and i.delivery_date is None:
                         exercise.setStyleSheet('QWidget#exercise {background-color: #dd6666; border: 1px solid grey;}')
+                        vote.hide()
                     elif i.solution is not None and i.delivery_date is None:
                         exercise.setStyleSheet('QWidget#exercise {background-color: #ffff33; border: 1px solid grey};')
+                        vote.hide()
                     else:
                         exercise.setStyleSheet('QWidget#exercise {background-color: #66ee66; border: 1px solid grey;}')
+                        if i.validation_type == 0:
+                            vote.hide()
 
                     if i.creator in self.data.my_proff:
                         width += exercise.sizeHint().width()

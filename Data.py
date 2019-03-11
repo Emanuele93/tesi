@@ -22,7 +22,8 @@ class KeyWord:
 
 class Exercise:
     def __init__(self, ex_id, creator, date, title, text, level, white_paper_mode, start_code, limits, executable,
-                 lookable, approved, color_styles=None, delivery_date=None, solution=None, resources_used=None):
+                 lookable, approved, validation_type, self_validation, color_styles=None, delivery_date=None,
+                 solution=None, resources_used=None, vote=None, missing_votes=0):
         self.id = ex_id
         self.creator = creator
         self.date = date
@@ -34,12 +35,16 @@ class Exercise:
         self.limits = limits
         self.executable = executable
         self.lookable = lookable
-        self.approved =approved
+        self.approved = approved
+        self.validation_type = validation_type
+        self.self_validation = self_validation
 
         self.color_styles = color_styles
         self.delivery_date = delivery_date
         self.solution = solution
         self.resources_used = resources_used
+        self.vote = vote
+        self.missing_votes = missing_votes
 
     def set_solution(self, solution):
         self.solution = solution
@@ -70,13 +75,13 @@ class Data:
 
     level_progression = [10, 20, 40, 60, 90, 120, 160, 200, 250, 300, 360, 420, 490, 560, 640, 720, 810, 900]
 
-    variables_exercises = [Exercise(None, None, None, "Cos'è una variabile", "Una variabile, in informatica, è un contenitore di dati.\nScrivi, sotto forma di commento, il risultato atteso. ", 'Facile', True, "x = 5\ny = 'cinque'\ntemp = x\nx = y\ny = temp\nprint(x, y)\n# Secondo me il risultato risultato è: ...  ...", {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, False, True, True),
-                           Exercise(None, None, None, "Cambio di tipo", "Somma x ed y e stampa il risultato.", 'Medio', False, "x,y = 5,'3'\nprint(\"La somma tra \" + x + \" e \" + y + \" è \" + (x + y)) ", {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, True, False, False)]
-    conditions_exercises = [Exercise(None, None, None, "Cos'è l'if", "L'if serve a eseguire operazioni diverse a seconda che una condizione sia vera o falsa\n\nCambia la condizione dell'if e la sua stampa:\nVisualizza \"Numero alto\" nel caso in cui x sia maggiore di 7", 'Facile', False, "import random\n\nx = random.randint(1,10)\nprint (x)\n\nif x < 3:\n\tprint('Numero basso')", {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, True, False, False),
-                            Exercise(None, None, None, "Cosa sono l'elif e l'else", "nScrivi, sotto forma di commento, il risultato atteso.", 'Medio', False, "x, y, z = 8, 3, 7\n\nif z < x < y:\n\tprint('x è al centro')\nelif x < z:\n\tprint('z è maggiore di x')\nelif y > z:\n\tprint(\"3 è minore di 7\")\nif x - z > y:\n\tprint(\"3 è maggiore di 1\")\nelse:\n\tprint(str(x) + str(y) + str(z) + ' = ' + str(x + y + z) + \" ?\")\n\n'''\nIl risultato è:\n.........\n'''", {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, False, False, False)]
-    cycles_exercises = [Exercise(None, None, None, "Cos'è il for", "Stampa la tabellina del 9.", 'Facile', False, "print(' La tabellina del 9:')\nfor i in range(1,11):\n\tprint('  9 * ' + str(i) + ' = ...')", {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, True, False, False),
-                        Exercise(None, None, None, "Cos'è il while", "Stampa un quadrato di 25 ' X '\nCancella la prima riga ma ottieni lo stesso risultato.\nNon creare stringhe come \" X X X X X \" ma usa i cicli.", 'Facile', False, "var = ' X X X X X '\ni = 5\nwhile i > 0:\n\tprint(var)\n\ti -= 1 ", {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, True, False, False)]
-    functions_exercises = [Exercise(None, None, None, "Cos'è una funzione", "Ciama la funzione più volte per ottenre la tabellina del 9", 'Facile', False, "def moltiplicatore(num1, num2):\n\tprint('  ' + str(num1) + ' * ' + str(num2) + ' = ' + str(num1 * num2))\n\nprint(' La tabellina del 9:')\nmoltiplicatore(9, 3) ", {'lines': 6, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, True, False, False)]
+    variables_exercises = [Exercise(None, None, None, "Cos'è una variabile", "Una variabile, in informatica, è un contenitore di dati.\nScrivi, sotto forma di commento, il risultato atteso. ", 'Facile', True, "x = 5\ny = 'cinque'\ntemp = x\nx = y\ny = temp\nprint(x, y)\n# Secondo me il risultato risultato è: ...  ...", {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, False, True, True, 0, False),
+                           Exercise(None, None, None, "Cambio di tipo", "Somma x ed y e stampa il risultato.", 'Medio', False, "x,y = 5,'3'\nprint(\"La somma tra \" + x + \" e \" + y + \" è \" + (x + y)) ", {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, True, False, False, 0, False)]
+    conditions_exercises = [Exercise(None, None, None, "Cos'è l'if", "L'if serve a eseguire operazioni diverse a seconda che una condizione sia vera o falsa\n\nCambia la condizione dell'if e la sua stampa:\nVisualizza \"Numero alto\" nel caso in cui x sia maggiore di 7", 'Facile', False, "import random\n\nx = random.randint(1,10)\nprint (x)\n\nif x < 3:\n\tprint('Numero basso')", {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, True, False, False, 0, False),
+                            Exercise(None, None, None, "Cosa sono l'elif e l'else", "nScrivi, sotto forma di commento, il risultato atteso.", 'Medio', False, "x, y, z = 8, 3, 7\n\nif z < x < y:\n\tprint('x è al centro')\nelif x < z:\n\tprint('z è maggiore di x')\nelif y > z:\n\tprint(\"3 è minore di 7\")\nif x - z > y:\n\tprint(\"3 è maggiore di 1\")\nelse:\n\tprint(str(x) + str(y) + str(z) + ' = ' + str(x + y + z) + \" ?\")\n\n'''\nIl risultato è:\n.........\n'''", {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, False, False, False, 0, False)]
+    cycles_exercises = [Exercise(None, None, None, "Cos'è il for", "Stampa la tabellina del 9.", 'Facile', False, "print(' La tabellina del 9:')\nfor i in range(1,11):\n\tprint('  9 * ' + str(i) + ' = ...')", {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, True, False, False, 0, False),
+                        Exercise(None, None, None, "Cos'è il while", "Stampa un quadrato di 25 ' X '\nCancella la prima riga ma ottieni lo stesso risultato.\nNon creare stringhe come \" X X X X X \" ma usa i cicli.", 'Facile', False, "var = ' X X X X X '\ni = 5\nwhile i > 0:\n\tprint(var)\n\ti -= 1 ", {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, True, False, False, 0, False)]
+    functions_exercises = [Exercise(None, None, None, "Cos'è una funzione", "Ciama la funzione più volte per ottenre la tabellina del 9", 'Facile', False, "def moltiplicatore(num1, num2):\n\tprint('  ' + str(num1) + ' * ' + str(num2) + ' = ' + str(num1 * num2))\n\nprint(' La tabellina del 9:')\nmoltiplicatore(9, 3) ", {'lines': 6, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, True, False, False, 0, False)]
 
     def __init__(self):
         f = open("user_info.txt", "r")
@@ -85,6 +90,8 @@ class Data:
         self.my_class = f.readline()[0:-1]
         self.my_proff = []
         self.mates = []
+        self.approving_type = 0
+        self.correction_type = 0
         self.student_exercises_visible = True
         self.get_class_components()
 
@@ -203,13 +210,12 @@ class Data:
                         self.mates.append(i['username'])
                     else:
                         self.my_proff.append(i['username'])
-            r = requests.post("http://programmingisagame.netsons.org/get_class_student_exercises_visible.php",
+            r = requests.post("http://programmingisagame.netsons.org/get_class_parameters.php",
                               data={'username': self.my_name, 'password': self.my_psw, 'class': self.my_class})
             if r.text != "":
                 self.student_exercises_visible = json.loads(r.text)[0]['student_ex_visible'] == '1'
-
-            if r.text == '0':
-                self.student_exercises_visible = False
+                self.correction_type = int(json.loads(r.text)[0]['correction_type'])
+                self.approving_type = int(json.loads(r.text)[0]['approving_type'])
         except requests.exceptions.RequestException as e:
             confirm = ConfirmWindow('Gamification - Errore di connessione',
                                     "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
@@ -247,9 +253,21 @@ class Data:
                 executable = False if int(i['executable']) == 0 else True
                 lookable = False if int(i['lookable']) == 0 else True
                 approved = False if int(i['approved']) == 0 else True
+                validation_type = int(i['validation_type'])
+                self_validation = False if int(i['self_validation']) == 0 else True
+
+                mv = 0
+                if validation_type > 0 and ((self_validation and i['creator'] == self.my_name) or
+                                            (not self_validation and self.my_name in self.my_proff)):
+                    num = requests.post("http://programmingisagame.netsons.org/get_count_missing_corrections.php",
+                                        data={'username': self.my_name, 'password': self.my_psw, 'class': self.my_class,
+                                              'exercise': i['exercise_id']})
+                    mv = int(num.text)
 
                 ex = Exercise(i['exercise_id'], i['creator'], date, i['title'], i['text'], level, white_paper_mode,
-                              i['start_code'], limits, executable, lookable, approved)
+                              i['start_code'], limits, executable, lookable, approved, validation_type, self_validation,
+                              missing_votes=mv)
+
 
                 find = False
                 for solution_k in k:
@@ -306,6 +324,7 @@ class Data:
                                              'conditions': int(lev[2]) + int(lev[3]) + int(lev[4]), 'for': int(lev[5]),
                                              'while': int(lev[6]), 'cycles': int(lev[5]) + int(lev[6]),
                                              'def': int(lev[7])}
+                        ex.vote = solution_k['evaluation']
 
                 if not find:
                     file = i['exercise_id']

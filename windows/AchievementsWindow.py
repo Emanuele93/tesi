@@ -84,12 +84,12 @@ class AchievementsWindow(QWidget):
         self.level_number = QLabel('Liv. ' + str(l), self)
         self.level_number.setFont(font)
         self.level_number.setStyleSheet('background-color: #9999FF; border: 1px solid grey')
-        self.level_number.setFixedSize(85, 40)
+        self.level_number.setFixedSize(90, 40)
         self.level_number.setContentsMargins(20, 10, 20, 10)
 
         self.level_bar = QLabel(self)
         self.level_bar.setStyleSheet('background-color: #4040FF')
-        self.level_bar.setFixedSize(int(85*(self.data.level-old)/(self.data.level_progression[l-1]-old)), 5)
+        self.level_bar.setFixedSize(int(90*(self.data.level-old)/(self.data.level_progression[l-1]-old)), 5)
 
         box = QVBoxLayout(self)
         box.setSpacing(0)
@@ -208,7 +208,7 @@ class AchievementsWindow(QWidget):
 
             if self.achievements[i]['level'] == '100':
                 level = QPushButton('Riscatta\nil premio')
-                level.setFixedSize(85,45)
+                level.setFixedSize(90,45)
                 level.setObjectName("level")
                 level.setStyleSheet("QWidget#level {background-color: #99FF99}")
                 level.clicked.connect(partial(self.get_award, i))
@@ -279,7 +279,7 @@ class AchievementsWindow(QWidget):
                         old = i
 
                 self.level_number.setText('Liv. ' + str(l))
-                self.level_bar.setFixedSize(int(85*(self.data.level-old)/(self.data.level_progression[l-1]-old)), 5)
+                self.level_bar.setFixedSize(int(90*(self.data.level-old)/(self.data.level_progression[l-1]-old)), 5)
                 self.controller.open_AchievementsWindow(self.scroll.verticalScrollBar().value())
         except requests.exceptions.RequestException as e:
             confirm = ConfirmWindow('Errore di connessione',
