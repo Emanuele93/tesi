@@ -83,4 +83,5 @@ if __name__ == "__main__":
             win.show()
     else:
         loginWin.show()
+        loginWin.open_register(None)
     sys.exit(app.exec_())

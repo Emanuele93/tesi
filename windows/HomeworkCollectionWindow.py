@@ -196,7 +196,7 @@ class HomeworkCollectionWindow(QWidget):
             exercises.append(i)
         while len(exercises) > 0:
             date = exercises[0].date
-            date_exercises = QLabel(date, self)
+            date_exercises = QLabel("Esercizi per il\n" + date, self)
             date_exercises.setFixedSize(100, 50)
             date_exercises.setFont(font)
 

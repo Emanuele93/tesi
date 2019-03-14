@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLineEdit, QDialo
 from PyQt5.QtCore import *
 from Data import Data
 from windows.ConfirmWindow import ConfirmWindow
+from windows.Signin import Signin
 
 
 class LoginWindow(QWidget):
@@ -57,14 +58,22 @@ class LoginWindow(QWidget):
         button.setFixedSize(100, 50)
         button.setEnabled(False)
 
+        font.setPixelSize(15)
+        font.setUnderline(True)
+        register = QLabel('Registrati', self)
+        register.setFont(font)
+        register.setStyleSheet("color: blue")
+        register.setContentsMargins(5, 5, 25, 5)
+        register.mousePressEvent = self.open_register
+
         user.textChanged.connect(partial(self.user_changed, user, button))
         password.textChanged.connect(partial(self.password_changed, password, button))
         classe.textChanged.connect(partial(self.classe_changed, classe, button))
         button.clicked.connect(partial(self.button_on_click, user, password, classe))
 
         box = QVBoxLayout(self)
-        box.setAlignment(Qt.AlignTop)
-        box.setSpacing(30)
+        box.setSpacing(27)
+        box.setContentsMargins(10, 20, 10, 0)
         box.addWidget(subtitle, alignment=Qt.AlignHCenter)
         box.addWidget(user, alignment=Qt.AlignHCenter)
         box.addWidget(password, alignment=Qt.AlignHCenter)
@@ -76,9 +85,10 @@ class LoginWindow(QWidget):
         box = QVBoxLayout(self)
         box.setContentsMargins(0, 0, 0, 0)
         box.setAlignment(Qt.AlignTop)
-        box.setSpacing(7)
+        box.setSpacing(0)
         box.addWidget(title, alignment=Qt.AlignHCenter)
         box.addWidget(form, alignment=Qt.AlignHCenter)
+        box.addWidget(register, alignment=Qt.AlignRight)
 
     def user_changed(self, user, button):
         if user.text().strip() != '':
@@ -154,3 +164,8 @@ class LoginWindow(QWidget):
                 print('ok')
             confirm.deleteLater()
             exit()
+
+    def open_register(self, event):
+        self.signin = Signin(self)
+        self.signin.show()
+        self.hide()

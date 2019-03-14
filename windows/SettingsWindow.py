@@ -1,3 +1,4 @@
+import json
 from functools import partial
 
 import requests
@@ -42,7 +43,16 @@ class SettingsWindow(QDialog):
 
         font = QFont()
         font.setPixelSize(17)
-        self.personal_settings_button = QPushButton('Impostazioni personali', self)
+
+        if self.data.my_name in self.data.my_proff:
+            self.advanced_settings_button = QPushButton('Impostazioni\navanzate', self)
+            self.advanced_settings_button.clicked.connect(self.advanced_settings_button_on_click)
+            self.advanced_settings_button.setFixedHeight(55)
+            self.advanced_settings_button.setFont(font)
+            text_temp = "Impostazioni\npersonali"
+        else:
+            text_temp = "Impostazioni personali"
+        self.personal_settings_button = QPushButton(text_temp, self)
         self.personal_settings_button.clicked.connect(self.personal_settings_button_on_click)
         self.personal_settings_button.setFixedHeight(55)
         self.personal_settings_button.setFont(font)
@@ -53,12 +63,22 @@ class SettingsWindow(QDialog):
         self.exercise_settings_button.clicked.connect(self.exercise_settings_button_on_click)
         self.exercise_settings_button.setFixedHeight(55)
         self.exercise_settings_button.setFont(font)
+        self.exercise_settings_button.setMinimumWidth(190)
 
+        if self.data.my_name in self.data.my_proff:
+            self.class_management_settings_widget = QScrollArea(self)
+            self.class_management_settings_widget.setWidget(self.get_users_widget())
+            self.class_management_settings_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+            self.advanced_settings_widget = QScrollArea(self)
+            self.advanced_settings_widget.setWidget(self.get_advanced_settings_widget())
+            self.advanced_settings_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.personal_settings_widget = QScrollArea(self)
         self.personal_settings_widget.setWidget(self.get_personal_settings_widget())
         self.personal_settings_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.exercise_settings_widget = QScrollArea(self)
         self.exercise_settings_widget.setWidget(self.get_exercise_settings_widget())
+        self.exercise_settings_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         self.selection_color_widget = self.get_selection_color_widget()
         self.selection_image_widget = self.get_selection_image_widget()
@@ -66,7 +86,9 @@ class SettingsWindow(QDialog):
         box = QHBoxLayout(self)
         box.setContentsMargins(0, 0, 0, 0)
         box.setSpacing(0)
-        box.addWidget(self.personal_settings_button, alignment=Qt.AlignTop)
+        if self.data.my_name in self.data.my_proff:
+            box.addWidget(self.advanced_settings_button)
+        box.addWidget(self.personal_settings_button)
         box.addWidget(self.exercise_settings_button)
         widget = QWidget(self, flags=Qt.Widget)
         widget.setLayout(box)
@@ -75,6 +97,9 @@ class SettingsWindow(QDialog):
         box.setContentsMargins(0, 0, 0, 0)
         box.setSpacing(0)
         box.addWidget(widget)
+        if self.data.my_name in self.data.my_proff:
+            box.addWidget(self.class_management_settings_widget)
+            box.addWidget(self.advanced_settings_widget)
         box.addWidget(self.personal_settings_widget)
         box.addWidget(self.exercise_settings_widget)
         box.addWidget(self.selection_color_widget)
@@ -85,7 +110,27 @@ class SettingsWindow(QDialog):
         else:
             self.exercise_settings_button_on_click()
 
+    def class_management_on_click(self):
+        self.advanced_settings_widget.hide()
+        self.class_management_settings_widget.show()
+        self.advanced_settings_button.setStyleSheet('background-color: #ffdd55')
+
+    def advanced_settings_button_on_click(self):
+        self.class_management_settings_widget.hide()
+        self.advanced_settings_widget.show()
+        self.personal_settings_widget.hide()
+        self.exercise_settings_widget.hide()
+        self.selection_color_widget.hide()
+        self.selection_image_widget.hide()
+        self.advanced_settings_button.setStyleSheet('background-color: #dd9933')
+        self.personal_settings_button.setStyleSheet('background-color: #ffdd55')
+        self.exercise_settings_button.setStyleSheet('background-color: #ffdd55')
+
     def personal_settings_button_on_click(self):
+        if self.data.my_name in self.data.my_proff:
+            self.class_management_settings_widget.hide()
+            self.advanced_settings_widget.hide()
+            self.advanced_settings_button.setStyleSheet('background-color: #ffdd55')
         self.personal_settings_widget.show()
         self.exercise_settings_widget.hide()
         self.selection_color_widget.hide()
@@ -94,6 +139,10 @@ class SettingsWindow(QDialog):
         self.exercise_settings_button.setStyleSheet('background-color: #ffdd55')
 
     def exercise_settings_button_on_click(self):
+        if self.data.my_name in self.data.my_proff:
+            self.class_management_settings_widget.hide()
+            self.advanced_settings_widget.hide()
+            self.advanced_settings_button.setStyleSheet('background-color: #ffdd55')
         self.personal_settings_widget.hide()
         self.exercise_settings_widget.show()
         self.selection_color_widget.hide()
@@ -109,6 +158,172 @@ class SettingsWindow(QDialog):
             self.current_button = button
             self.selection_color_title.setText(text)
             self.selection_color_widget.show()
+
+    def get_users_widget(self):
+        box = QVBoxLayout(self)
+        box.setAlignment(Qt.AlignTop)
+        try:
+            r = requests.post("http://programmingisagame.netsons.org/get_class_users.php",
+                              data={'username': self.data.my_name, 'password': self.data.my_psw,
+                                    'class': self.data.my_class})
+            users = json.loads(r.text)
+
+            for i in users:
+                box.addWidget(self.make_user_wait_widget(i['username'], i['name'], i['surname'],
+                                                         True if i['student_type'] == '1' else False,
+                                                         True if i['approved'] == '1' else False))
+        except requests.exceptions.RequestException as e:
+            confirm = ConfirmWindow('Errore di connessione',
+                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
+                                    "connessione<br>Controllare la connessione internet e riprovare</span>",
+                                    ok="Ok", cancel=None)
+            if confirm.exec_() == QDialog.Accepted:
+                print('ok')
+            confirm.deleteLater()
+        users = QWidget(self, flags=Qt.Widget)
+        users.setLayout(box)
+
+        font = QFont()
+        font.setPixelSize(17)
+        intro = QLabel("Componenti della classe " + self.data.my_class , self)
+        intro.setFont(font)
+        intro.setFixedHeight(20)
+        box = QVBoxLayout(self)
+        box.setContentsMargins(0, 20, 0, 0)
+        box.addWidget(intro, alignment=Qt.AlignHCenter)
+        box.addWidget(users)
+        users = QWidget(self, flags=Qt.Widget)
+        users.setLayout(box)
+
+        users.setFixedWidth(440)
+        return users
+
+    def get_advanced_settings_widget(self):
+        font = QFont()
+        font.setPixelSize(15)
+
+        intro_correction_type = QLabel("Soggetto incaricato della correzione dei compiti:", self)
+        intro_correction_type.setFont(font)
+        font.setPixelSize(14)
+        check_1 = QCheckBox("Nessuno, ricompensa fornita automaticamente")
+        check_1.setFont(font)
+        check_1.setChecked(self.data.correction_type == 0)
+        check_2 = QCheckBox("Il creatore dell'esercizio")
+        check_2.setFont(font)
+        check_2.setChecked(self.data.correction_type == 1)
+        check_3 = QCheckBox("Il docente")
+        check_3.setFont(font)
+        check_3.setChecked(self.data.correction_type == 2)
+
+        self.bg6 = QButtonGroup()
+        self.bg6.addButton(check_1, 1)
+        self.bg6.addButton(check_2, 2)
+        self.bg6.addButton(check_3, 3)
+        self.bg6.buttonClicked[QAbstractButton].connect(self.set_correction_type)
+
+        box = QVBoxLayout(self)
+        box.setAlignment(Qt.AlignLeft)
+        box.setContentsMargins(50, 0, 0, 0)
+        box.addWidget(check_1)
+        box.addWidget(check_2)
+        box.addWidget(check_3)
+        correction_type = QWidget(self, flags=Qt.Widget)
+        correction_type.setLayout(box)
+
+        box = QVBoxLayout(self)
+        box.setAlignment(Qt.AlignLeft)
+        box.setSpacing(15)
+        box.addWidget(intro_correction_type)
+        box.addWidget(correction_type)
+        correction_type = QWidget(self, flags=Qt.Widget)
+        correction_type.setLayout(box)
+
+        font.setPixelSize(15)
+        intro_approving_type = QLabel("Approvazione degli esercizi: ", self)
+        intro_approving_type.setFont(font)
+        check_1 = QCheckBox("Automatica")
+        check_1.setFont(font)
+        check_1.setChecked(self.data.approving_type == 0)
+        check_2 = QCheckBox("Manuale")
+        check_2.setFont(font)
+        check_2.setChecked(self.data.approving_type == 1)
+
+        self.bg5 = QButtonGroup()
+        self.bg5.addButton(check_1, 1)
+        self.bg5.addButton(check_2, 2)
+        self.bg5.buttonClicked[QAbstractButton].connect(self.set_approving_type)
+
+        box = QHBoxLayout(self)
+        box.setContentsMargins(50, 0, 0, 0)
+        box.setAlignment(Qt.AlignLeft)
+        box.setSpacing(35)
+        box.addWidget(check_1)
+        box.addWidget(check_2)
+        approving_type = QWidget(self, flags=Qt.Widget)
+        approving_type.setLayout(box)
+
+        box = QVBoxLayout(self)
+        box.setAlignment(Qt.AlignLeft)
+        box.addWidget(intro_approving_type)
+        box.addWidget(approving_type)
+        box.setSpacing(15)
+        approving_type = QWidget(self, flags=Qt.Widget)
+        approving_type.setLayout(box)
+
+        intro_student_exercises_visible = QLabel("Compiti non approvati: ", self)
+        intro_student_exercises_visible.setFont(font)
+        check_1 = QCheckBox("Visibili")
+        check_1.setFont(font)
+        check_1.setChecked(self.data.student_exercises_visible)
+        check_2 = QCheckBox("Non visibili")
+        check_2.setFont(font)
+        check_2.setChecked(not self.data.student_exercises_visible)
+
+        self.bg4 = QButtonGroup()
+        self.bg4.addButton(check_1, 1)
+        self.bg4.addButton(check_2, 2)
+        self.bg4.buttonClicked[QAbstractButton].connect(self.set_student_exercises_visible)
+
+        box = QHBoxLayout(self)
+        box.setContentsMargins(50, 0, 0, 0)
+        box.setAlignment(Qt.AlignLeft)
+        box.setSpacing(35)
+        box.addWidget(check_1)
+        box.addWidget(check_2)
+        student_exercises_visible = QWidget(self, flags=Qt.Widget)
+        student_exercises_visible.setLayout(box)
+
+        box = QVBoxLayout(self)
+        box.setAlignment(Qt.AlignLeft)
+        box.setSpacing(15)
+        box.addWidget(intro_student_exercises_visible)
+        box.addWidget(student_exercises_visible)
+        student_exercises_visible = QWidget(self, flags=Qt.Widget)
+        student_exercises_visible.setLayout(box)
+
+        class_management = QPushButton('Gestione classe', self)
+        class_management.setFont(font)
+        class_management.setFixedSize(120, 40)
+        class_management.clicked.connect(self.class_management_on_click)
+
+        box = QVBoxLayout(self)
+        box.setContentsMargins(10, 80, 0, 10)
+        box.addWidget(class_management, alignment=Qt.AlignRight)
+        class_management_w = QWidget(self, flags=Qt.Widget)
+        class_management_w.setLayout(box)
+
+        box = QVBoxLayout(self)
+        box.setSpacing(25)
+        box.setContentsMargins(10, 20, 10, 10)
+        box.addWidget(approving_type)
+        box.addWidget(student_exercises_visible)
+        box.addWidget(correction_type)
+        box.addWidget(class_management_w, alignment=Qt.AlignRight)
+        widget = QWidget(self, flags=Qt.Widget)
+        widget.setLayout(box)
+
+        widget.setFixedWidth(420)
+        return widget
 
     def get_personal_settings_widget(self):
         font = QFont()
@@ -222,83 +437,6 @@ class SettingsWindow(QDialog):
         visible = QWidget(self, flags=Qt.Widget)
         visible.setLayout(box)
 
-        intro_correction_type = QLabel("Soggetto incaricato della correzione dei compiti:", self)
-        intro_correction_type.setFont(font)
-        font.setPixelSize(14)
-        check_1 = QCheckBox("Nessuno, ricompensa fornita automaticamente")
-        check_1.setFont(font)
-        check_1.setChecked(self.data.correction_type == 0)
-        check_2 = QCheckBox("Il creatore dell'esercizio")
-        check_2.setFont(font)
-        check_2.setChecked(self.data.correction_type == 1)
-        check_3 = QCheckBox("Il docente")
-        check_3.setFont(font)
-        check_3.setChecked(self.data.correction_type == 2)
-
-        self.bg6 = QButtonGroup()
-        self.bg6.addButton(check_1, 1)
-        self.bg6.addButton(check_2, 2)
-        self.bg6.addButton(check_3, 3)
-        self.bg6.buttonClicked[QAbstractButton].connect(self.set_correction_type)
-
-        font.setPixelSize(15)
-        box = QVBoxLayout(self)
-        box.setAlignment(Qt.AlignLeft)
-        box.addWidget(intro_correction_type)
-        box.addWidget(check_1)
-        box.addWidget(check_2)
-        box.addWidget(check_3)
-        correction_type = QWidget(self, flags=Qt.Widget)
-        correction_type.setLayout(box)
-        correction_type.setVisible(self.data.my_name in self.data.my_proff)
-
-        intro_approving_type = QLabel("Approvazione degli esercizi: ", self)
-        intro_approving_type.setFont(font)
-        check_1 = QCheckBox("Automatica")
-        check_1.setFont(font)
-        check_1.setChecked(self.data.approving_type == 0)
-        check_2 = QCheckBox("Manuale")
-        check_2.setFont(font)
-        check_2.setChecked(self.data.approving_type == 1)
-
-        self.bg5 = QButtonGroup()
-        self.bg5.addButton(check_1, 1)
-        self.bg5.addButton(check_2, 2)
-        self.bg5.buttonClicked[QAbstractButton].connect(self.set_approving_type)
-
-        box = QHBoxLayout(self)
-        box.setAlignment(Qt.AlignLeft)
-        box.addWidget(intro_approving_type)
-        box.addWidget(check_1)
-        box.addWidget(check_2)
-        approving_type = QWidget(self, flags=Qt.Widget)
-        approving_type.setLayout(box)
-        approving_type.setVisible(self.data.my_name in self.data.my_proff)
-
-        intro_student_exercises_visible = QLabel("Compiti non approvati: ", self)
-        intro_student_exercises_visible.setFont(font)
-        check_1 = QCheckBox("Visibili")
-        check_1.setFont(font)
-        check_1.setChecked(self.data.student_exercises_visible)
-        check_2 = QCheckBox("Non visibili")
-        check_2.setFont(font)
-        check_2.setChecked(not self.data.student_exercises_visible)
-
-        self.bg4 = QButtonGroup()
-        self.bg4.addButton(check_1, 1)
-        self.bg4.addButton(check_2, 2)
-        self.bg4.buttonClicked[QAbstractButton].connect(self.set_student_exercises_visible)
-
-        box = QHBoxLayout(self)
-        box.setAlignment(Qt.AlignLeft)
-        box.setSpacing(15)
-        box.addWidget(intro_student_exercises_visible)
-        box.addWidget(check_1)
-        box.addWidget(check_2)
-        student_exercises_visible = QWidget(self, flags=Qt.Widget)
-        student_exercises_visible.setLayout(box)
-        student_exercises_visible.setVisible(self.data.my_name in self.data.my_proff)
-
         pixmap = QPixmap('img/logout.png')
         pixmap = pixmap.scaled(50, 50)
         logout = QLabel(self)
@@ -309,24 +447,18 @@ class SettingsWindow(QDialog):
             logout.hide()
 
         box = QHBoxLayout(self)
-        if self.data.my_name in self.data.my_proff:
-            box. setContentsMargins(0, 0, 20, 0)
-        else:
-            box. setContentsMargins(0, 130, 20, 0)
+        box. setContentsMargins(0, 90, 20, 0)
         box.addWidget(logout)
         box.setAlignment(Qt.AlignRight)
         logout = QWidget(self, flags=Qt.Widget)
         logout.setLayout(box)
 
         box = QVBoxLayout(self)
-        box.setSpacing(10)
+        box.setSpacing(20)
         box.addWidget(image_widget)
         box.addWidget(code_result_orientation)
         box.addWidget(font_dimesion)
         box.addWidget(visible)
-        box.addWidget(approving_type)
-        box.addWidget(student_exercises_visible)
-        box.addWidget(correction_type)
         box.addWidget(logout)
         widget = QWidget(self, flags=Qt.Widget)
         widget.setLayout(box)
@@ -654,9 +786,8 @@ class SettingsWindow(QDialog):
             self.selection_image_widget.show()
 
     def log_out_on_click(self, event):
-        text = "\n\n" + self.data.my_class + "\n"
-        text += str(self.data.code_result_horizontal_orientation) + "\n"
-        text += str(self.data.code_font_size)
+        text = "\n\n" + self.data.my_class + "\n" + str(self.data.code_result_horizontal_orientation) + "\n" \
+               + str(self.data.code_font_size)
         f = open('user_info.txt', "w")
         f.write(text)
         f.close()
@@ -734,3 +865,93 @@ class SettingsWindow(QDialog):
             self.exercise_window.set_color_styles(cs)
             self.data.write_file_color_styles('styles/' + self.exercise_window.exercise.id + '.txt', self.color_styles)
 
+    def make_user_wait_widget(self, username, name, surname, student_type, approved):
+        font = QFont()
+        font.setPixelSize(15)
+        w1 = QLabel(('Studente "' if student_type else 'Docente "') + username + '"', self)
+        w2 = QLabel("Nome: " + name + " " + surname, self)
+        w1.setFont(font)
+        w2.setFont(font)
+
+        box = QVBoxLayout(self)
+        box.addWidget(w1)
+        box.addWidget(w2)
+        user = QWidget(self, flags=Qt.Widget)
+        user.setLayout(box)
+
+        remove = QPushButton('Rimuovi', self)
+        remove.setFont(font)
+        w5 = QPushButton('Accetta', self)
+        w6 = QPushButton('Rifiuta', self)
+        w5.setFont(font)
+        w6.setFont(font)
+        box = QVBoxLayout(self)
+        box.setContentsMargins(0, 0, 0, 0)
+        box.addWidget(w5)
+        box.addWidget(w6)
+        accept_w = QWidget(self, flags=Qt.Widget)
+        accept_w.setLayout(box)
+
+        box = QHBoxLayout(self)
+        box.setContentsMargins(0, 0, 0, 0)
+        box.setSpacing(0)
+        box.addWidget(remove)
+        box.addWidget(accept_w)
+        accept = QWidget(self, flags=Qt.Widget)
+        accept.setLayout(box)
+
+        if username == self.data.my_name:
+            remove.hide()
+        if approved:
+            accept_w.hide()
+        else:
+            remove.hide()
+        accept.setFixedWidth(100)
+
+        box = QHBoxLayout(self)
+        box.setContentsMargins(10, 20, 10, 10)
+        box.addWidget(user)
+        box.addWidget(accept)
+        widget = QWidget(self, flags=Qt.Widget)
+        widget.setLayout(box)
+        widget.setObjectName("widget")
+        widget.setStyleSheet("QWidget#widget {border: 0px solid grey; border-top: 1px solid grey}")
+
+        w5.clicked.connect(partial(self.accept_user, True, remove, accept_w, username))
+        w6.clicked.connect(partial(self.accept_user, False, remove, widget, username))
+        remove.clicked.connect(partial(self.remove_user, widget, username))
+        return widget
+
+    def accept_user(self, accepted, w1, widget, username):
+        try:
+            r = requests.post("http://programmingisagame.netsons.org/solve_request_signin.php",
+                              data={'username': self.data.my_name, 'password': self.data.my_psw,
+                                    'class': self.data.my_class, 'user': username, 'type': 1 if accepted else 2})
+            if r.text == "ok":
+                if accepted:
+                    w1.show()
+                widget.hide()
+        except requests.exceptions.RequestException as e:
+            confirm = ConfirmWindow('Errore di connessione',
+                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
+                                    "connessione<br>Controllare la connessione internet e riprovare</span>",
+                                    ok="Ok", cancel=None)
+            if confirm.exec_() == QDialog.Accepted:
+                print('ok')
+            confirm.deleteLater()
+
+    def remove_user(self, widget, username):
+        try:
+            r = requests.post("http://programmingisagame.netsons.org/remove_user.php",
+                              data={'username': self.data.my_name, 'password': self.data.my_psw,
+                                    'class': self.data.my_class, 'user': username})
+            if r.text == "ok":
+                widget.hide()
+        except requests.exceptions.RequestException as e:
+            confirm = ConfirmWindow('Errore di connessione',
+                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
+                                    "connessione<br>Controllare la connessione internet e riprovare</span>",
+                                    ok="Ok", cancel=None)
+            if confirm.exec_() == QDialog.Accepted:
+                print('ok')
+            confirm.deleteLater()

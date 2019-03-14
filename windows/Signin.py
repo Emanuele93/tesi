@@ -1,19 +1,20 @@
-import sys
 from functools import partial
 
 import requests
 from PyQt5.QtGui import QFont, QIcon
-from PyQt5.QtWidgets import QWidget, QApplication, QLineEdit, QPushButton, QVBoxLayout, QDialog, QLabel
+from PyQt5.QtWidgets import QWidget, QLineEdit, QPushButton, QVBoxLayout, QDialog, QLabel, QCheckBox, QButtonGroup, \
+    QHBoxLayout
 from PyQt5.QtCore import *
 from windows.ConfirmWindow import ConfirmWindow
 
 
-class MyWindow(QWidget):
-    def __init__(self):
-        super(MyWindow, self).__init__(flags=Qt.Window)
+class Signin(QWidget):
+    def __init__(self, login):
+        super(Signin, self).__init__(flags=Qt.Window)
         self.setWindowTitle("Signin")
         self.setWindowIcon(QIcon("img/logo.png"))
-        self.setFixedSize(QSize(500, 400))
+        self.setFixedSize(QSize(500, 600))
+        self.login = login
         font = QFont()
         font.setPixelSize(20)
 
@@ -28,6 +29,20 @@ class MyWindow(QWidget):
         subtitle = QLabel('Inserire i dati di registrazione:', self)
         subtitle.setFont(font)
         subtitle.setAlignment(Qt.AlignCenter)
+
+        name = QLineEdit(self)
+        name.setPlaceholderText("Nome")
+        name.setFixedWidth(400)
+        name.setFont(font)
+        name.setTextMargins(10, 2, 10, 2)
+        self.name = False
+
+        surname = QLineEdit(self)
+        surname.setPlaceholderText("Cognome")
+        surname.setFixedWidth(400)
+        surname.setFont(font)
+        surname.setTextMargins(10, 2, 10, 2)
+        self.surname = False
 
         user = QLineEdit(self)
         user.setPlaceholderText("Username")
@@ -51,33 +66,102 @@ class MyWindow(QWidget):
         classe.setTextMargins(10, 2, 10, 2)
         self.classe = False
 
+        check_1 = QCheckBox("Studente")
+        check_1.setFont(font)
+        check_1.setChecked(True)
+        check_2 = QCheckBox("Docente")
+        check_2.setFont(font)
+        check_2.setChecked(False)
+
+        box = QHBoxLayout(self)
+        box.setContentsMargins(0, 0, 0, 0)
+        box.setSpacing(50)
+        box.addWidget(check_1, alignment=Qt.AlignVCenter)
+        box.addWidget(check_2, alignment=Qt.AlignVCenter)
+        user_type = QWidget(self, flags=Qt.Widget)
+        user_type.setLayout(box)
+
+        self.bg = QButtonGroup()
+        self.bg.addButton(check_1, 1)
+        self.bg.addButton(check_2, 2)
+
         button = QPushButton('Registra', self)
         button.setFont(font)
         button.setFixedSize(100, 50)
         button.setEnabled(False)
 
+        message = QLabel("Registrazione effettuata!\n\nPer accedere devi attendere la conferma del docente.")
+        message.setFont(font)
+        message.setWordWrap(True)
+        message.hide()
+        message.setFixedHeight(480)
+        message.setAlignment(Qt.AlignHCenter)
+        message.setContentsMargins(0, 50, 0, 0)
+
+        name.textChanged.connect(partial(self.name_changed, name, button))
+        surname.textChanged.connect(partial(self.surname_changed, surname, button))
         user.textChanged.connect(partial(self.user_changed, user, button))
         password.textChanged.connect(partial(self.password_changed, password, button))
         classe.textChanged.connect(partial(self.classe_changed, classe, button))
-        button.clicked.connect(partial(self.button_on_click, user, password, classe))
+        button.clicked.connect(partial(self.button_on_click, user, password, classe, name, surname, user_type, button,
+                                       message, subtitle))
+
+        font.setPixelSize(15)
+        font.setUnderline(True)
+        login_widget = QLabel('Accedi', self)
+        login_widget.setFont(font)
+        login_widget.setStyleSheet("color: blue")
+        login_widget.setContentsMargins(5, 5, 25, 5)
+        login_widget.mousePressEvent = self.open_login
 
         box = QVBoxLayout(self)
-        box.setAlignment(Qt.AlignTop)
         box.setSpacing(30)
+        box.setContentsMargins(10, 20, 10, 0)
         box.addWidget(subtitle, alignment=Qt.AlignHCenter)
+        box.addWidget(name, alignment=Qt.AlignHCenter)
+        box.addWidget(surname, alignment=Qt.AlignHCenter)
         box.addWidget(user, alignment=Qt.AlignHCenter)
         box.addWidget(password, alignment=Qt.AlignHCenter)
         box.addWidget(classe, alignment=Qt.AlignHCenter)
+        box.addWidget(user_type, alignment=Qt.AlignHCenter)
         box.addWidget(button, alignment=Qt.AlignHCenter)
+        box.addWidget(message, alignment=Qt.AlignHCenter)
         form = QWidget(self, flags=Qt.Widget)
         form.setLayout(box)
 
         box = QVBoxLayout(self)
         box.setContentsMargins(0, 0, 0, 0)
         box.setAlignment(Qt.AlignTop)
-        box.setSpacing(7)
+        box.setSpacing(0)
         box.addWidget(title, alignment=Qt.AlignHCenter)
         box.addWidget(form, alignment=Qt.AlignHCenter)
+        box.addWidget(login_widget, alignment=Qt.AlignRight)
+
+    def name_changed(self, name, button):
+        if name.text().strip() != '':
+            if len(name.text().strip()) > 20:
+                name.setStyleSheet('color: red')
+            else:
+                name.setStyleSheet('color: black')
+                self.name = True
+                if self.name and self.surname and self.user and self.password and self.classe:
+                    button.setEnabled(True)
+                return
+        self.name = False
+        button.setEnabled(False)
+
+    def surname_changed(self, surname, button):
+        if surname.text().strip() != '':
+            if len(surname.text().strip()) > 20:
+                surname.setStyleSheet('color: red')
+            else:
+                surname.setStyleSheet('color: black')
+                self.surname = True
+                if self.name and self.surname and self.user and self.password and self.classe:
+                    button.setEnabled(True)
+                return
+        self.surname = False
+        button.setEnabled(False)
 
     def user_changed(self, user, button):
         if user.text().strip() != '':
@@ -86,7 +170,7 @@ class MyWindow(QWidget):
             else:
                 user.setStyleSheet('color: black')
                 self.user = True
-                if self.user and self.password and self.classe:
+                if self.name and self.surname and self.user and self.password and self.classe:
                     button.setEnabled(True)
                 return
         self.user = False
@@ -99,7 +183,7 @@ class MyWindow(QWidget):
             else:
                 password.setStyleSheet('color: black')
                 self.password = True
-                if self.user and self.password and self.classe:
+                if self.name and self.surname and self.user and self.password and self.classe:
                     button.setEnabled(True)
                 return
         self.password = False
@@ -112,22 +196,34 @@ class MyWindow(QWidget):
             else:
                 classe.setStyleSheet('color: black')
                 self.classe = True
-                if self.user and self.password and self.classe:
+                if self.name and self.surname and self.user and self.password and self.classe:
                     button.setEnabled(True)
                 return
         self.classe = False
         button.setEnabled(False)
 
-    @staticmethod
-    def button_on_click(user, password, classe):
+    def button_on_click(self, user, password, classe, name, surname, check, button, message, subtitle):
         try:
             r = requests.post("http://programmingisagame.netsons.org/singin.php",
                               data={'username': user.text().strip(), 'password': password.text().strip(),
-                                    'class': classe.text().strip()})
+                                    'class': classe.text().strip(), 'name': name.text().strip(),
+                                    'surname': surname.text().strip(), 'type': (self.bg.checkedId() - 1)})
             if r.text == 'ok':
-                user.setStyleSheet('color: green')
-                password.setStyleSheet('color: green')
-                classe.setStyleSheet('color: green')
+                name.hide()
+                subtitle.hide()
+                surname.hide()
+                user.hide()
+                password.hide()
+                classe.hide()
+                check.hide()
+                button.hide()
+                message.show()
+                f = open('user_info.txt', "w")
+                f.write("\n\n\nTrue\n20")
+                f.close()
+            elif r.text == 'ready':
+                self.login.button_on_click(user, password, classe)
+                self.hide()
             elif r.text == 'username':
                 user.setStyleSheet('color: red')
                 password.setStyleSheet('color: black')
@@ -146,9 +242,6 @@ class MyWindow(QWidget):
             confirm.deleteLater()
             exit()
 
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    win = MyWindow()
-    win.show()
-    sys.exit(app.exec_())
+    def open_login(self, event):
+        self.login.show()
+        self.hide()
