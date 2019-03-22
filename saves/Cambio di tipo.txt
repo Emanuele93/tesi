@@ -1,2 +1,0 @@
-x,y = 5,'3'
-print("La somma tra " + x + " e " + y + " è " + (x + y)) 

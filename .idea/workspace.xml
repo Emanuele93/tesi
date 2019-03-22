@@ -1,17 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="d46dabcd-8ea8-45fa-bcbd-12f39d40a546" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Signin.py" beforeDir="false" afterPath="$PROJECT_DIR$/windows/Signin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/prova.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/user_info.txt" beforeDir="false" afterPath="$PROJECT_DIR$/user_info.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/windows/HomeworkCollectionWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/windows/HomeworkCollectionWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/windows/LoginWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/windows/LoginWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/windows/SettingsWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/windows/SettingsWindow.py" afterDir="false" />
-    </list>
+    <list default="true" id="d46dabcd-8ea8-45fa-bcbd-12f39d40a546" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,7 +10,7 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Main.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="519">
@@ -44,11 +34,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/windows/SettingsWindow.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="71">
-              <caret line="924" column="51" lean-forward="true" selection-start-line="924" selection-start-column="51" selection-end-line="924" selection-end-column="51" />
+              <caret line="924" column="51" selection-start-line="924" selection-start-column="51" selection-end-line="924" selection-end-column="51" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -181,7 +171,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Course" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -198,6 +187,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Course" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -348,7 +338,7 @@
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.12888302" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.12888302" />
       <window_info id="Structure" order="1" weight="0.25" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -631,10 +621,30 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/windows/ExerciseWindow.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="103">
+          <caret line="736" column="29" lean-forward="true" selection-start-line="736" selection-start-column="29" selection-end-line="738" selection-end-column="102" />
+          <folding>
+            <element signature="e#0#28#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/Data.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="3859">
           <caret line="233" column="34" selection-start-line="230" selection-start-column="8" selection-end-line="233" selection-end-column="34" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/windows/SettingsWindow.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="71">
+          <caret line="924" column="51" selection-start-line="924" selection-start-column="51" selection-end-line="924" selection-end-column="51" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>
@@ -647,26 +657,6 @@
           <caret line="85" column="35" selection-start-line="85" selection-start-column="35" selection-end-line="85" selection-end-column="35" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/windows/ExerciseWindow.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="103">
-          <caret line="736" column="29" lean-forward="true" selection-start-line="736" selection-start-column="29" selection-end-line="738" selection-end-column="102" />
-          <folding>
-            <element signature="e#0#28#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/windows/SettingsWindow.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="71">
-          <caret line="924" column="51" lean-forward="true" selection-start-line="924" selection-start-column="51" selection-end-line="924" selection-end-column="51" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
           </folding>
         </state>
       </provider>

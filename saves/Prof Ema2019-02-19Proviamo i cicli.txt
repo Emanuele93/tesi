@@ -1,6 +1,0 @@
-var = '' 
-for i in range(0,5):
-	var += ' X '
-while i >= 0:
-	print(var)
-	i -= 1 
