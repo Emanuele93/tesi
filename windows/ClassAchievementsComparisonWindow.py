@@ -27,8 +27,8 @@ class ClassAchievementsComparisonWindow(QDialog):
                 mates = json.loads(r.text)
                 pos = 0
                 for i in range(0, len(mates)):
-                    if mates[i]['exp'] != mates[i-1]['exp'] and \
-                            (mates[i]['visible'] == '1' or self.data.my_name in self.data.my_proff):
+                    if i == 0 or (mates[i]['exp'] != mates[i-1]['exp'] and
+                                  (mates[i]['visible'] == '1' or self.data.my_name in self.data.my_proff)):
                         pos += 1
                     if mates[i]['visible'] == '1' or self.data.my_name in self.data.my_proff:
                         students_widgets.append(self.make_student_widget(mates[i], pos, mates[i]['visible'] == '1'))

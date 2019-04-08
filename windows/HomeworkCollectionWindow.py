@@ -423,12 +423,18 @@ class HomeworkCollectionWindow(QWidget):
         self.controller.open_HomeworkCollectionWindow(False, self.scroll.verticalScrollBar().value())
 
     def open_CreateHomeworkWindow(self):
+        self.data.get_class_components()
+        #  TODO rimetti le 6 righe sotto al posto di queste 2 ma aggiorna le impostazioni di valutazione
+        self.new_exercise = CreateHomeworkWindow(self.data, self)
+        self.new_exercise.show()
+        '''
         if self.new_exercise is None:
             self.new_exercise = CreateHomeworkWindow(self.data, self)
             self.new_exercise.show()
         else:
             self.new_exercise.hide()
             self.new_exercise.show()
+        '''
 
     def close_CreateHomeworkWindow(self):
         self.new_exercise.close()

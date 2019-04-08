@@ -99,6 +99,30 @@ class CreateHomeworkWindow(QWidget):
         box.addWidget(settings_widget)
         box.addWidget(splitter2)
 
+        self.code_line = QLabel('', self)
+        self.code_line.setStyleSheet("border: 0px solid grey; border-right: 1px solid #cccccc")
+        self.code_line.setFixedSize(1, 400)
+        self.code_editor.resizeEvent = partial(self.move_line, self.code_line, self.code_editor)
+
+        self.results_line = QLabel('', self)
+        self.results_line.setStyleSheet("border: 0px solid grey; border-right: 1px solid #cccccc")
+        self.results_line.setFixedSize(1, 400)
+        self.results.resizeEvent = partial(self.move_line, self.results_line, self.results)
+
+    def move_line(self, line, rif, event):
+        if rif.width() <= 390:
+            line.hide()
+        else:
+            line.show()
+            pos_x, pos_y = rif.pos().x(), rif.pos().y()
+            parent = rif.parent()
+            while parent and parent is not self:
+                pos_x += parent.pos().x()
+                pos_y += parent.pos().y()
+                parent = parent.parent()
+            line.move(pos_x + 390, pos_y)
+            line.setFixedHeight(rif.height())
+
     def get_settings_layout(self):
         self.play_button = QPushButton('Prova codice', self)
         self.play_button.setFixedSize(100, 50)
@@ -656,8 +680,10 @@ class CreateHomeworkWindow(QWidget):
         if self.executable_check.isChecked():
             self.play_button.setEnabled(True)
             self.results.show()
+            self.results_line.show()
         else:
             self.results.hide()
+            self.results_line.hide()
             self.play_button.setEnabled(False)
 
     def white_paper_mode_check_on_click(self, check):

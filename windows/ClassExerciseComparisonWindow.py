@@ -65,10 +65,10 @@ class ClassExerciseComparisonWindow(QDialog):
                         class_solutions[i] = class_solutions[j].copy()
                         class_solutions[j] = t.copy()
         if order_by > 0:
-            for j in range(1, 4):
+            for j in range(1, 3):
                 pos = 0
                 for i in range(0, len(class_solutions)):
-                    if int(class_solutions[pos]['impurity']) == j:
+                    if int(class_solutions[pos]['impurity']) == j or int(class_solutions[pos]['impurity']) - 3 == j:
                         temp = class_solutions[pos]
                         class_solutions.pop(pos)
                         class_solutions.append(temp)
@@ -283,8 +283,6 @@ class ClassExerciseComparisonWindow(QDialog):
             'variables': int(solution['resources_used'].split(',')[1])
         }
 
-        code_solution = solution['solution']
-
         color_styles = solution['color_styles'].split(',')
         cs = DefaultColorStyles()
         cs.code_background_color = color_styles[0]
@@ -357,7 +355,8 @@ class ClassExerciseComparisonWindow(QDialog):
         widget.setObjectName("w")
         widget.setStyleSheet("QWidget#w {background-color: white; border: 1px solid grey}")
 
-        code_widget = self.make_code_widget(code_solution, solution['evaluation'] is None, notify, evaluation_txet,
+        code_widget = self.make_code_widget(solution['solution'], solution['result'], solution['code_compile'] == '1',
+                                            solution['evaluation'] is None, notify, evaluation_txet,
                                             solution['username'])
         code_widget.setFixedWidth(400)
         widget.mousePressEvent = partial(self.show_code, code_widget)
@@ -396,7 +395,7 @@ class ClassExerciseComparisonWindow(QDialog):
             widget.setStyleSheet("QWidget#widget {border: 0px solid grey; border-bottom: 1px solid grey}")
         return widget
 
-    def make_code_widget(self, code_solution, evaluation, correction_img, correction_text, user):
+    def make_code_widget(self, code_solution, result, code_compile, evaluation, correction_img, correction_text, user):
         code_editor = QTextEdit(self)
         code_editor.setReadOnly(True)
         code_editor.setLineWrapMode(code_editor.NoWrap)
@@ -417,35 +416,6 @@ class ClassExerciseComparisonWindow(QDialog):
         if not self.exercise_window.exercise.executable:
             results.hide()
         else:
-            temp_vars = {}
-            try:
-                stream = io.StringIO()
-                with contextlib.redirect_stdout(stream):
-                    exec(code_editor.toPlainText(), globals(), temp_vars)
-                result = stream.getvalue()
-                code_compile = True
-            except Exception as E:
-                result = str(E)
-                code_compile = False
-
-                i = 0
-                temp_result = ''
-                texts = code_editor.toPlainText().split('\n')
-                text = texts[i]
-                while i < len(texts):
-                    try:
-                        stream = io.StringIO()
-                        with contextlib.redirect_stdout(stream):
-                            exec(text, globals(), temp_vars)
-                        temp_result = stream.getvalue()
-                    except Exception as E:
-                        temp_result = temp_result
-                    i += 1
-                    if i < len(texts):
-                        text += '\n' + texts[i]
-                if temp_result != '':
-                    result = temp_result + '\n' + result
-
             results.setPlainText(result)
             if code_compile:
                 results.setStyleSheet(

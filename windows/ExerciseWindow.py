@@ -11,7 +11,7 @@ from os import path
 import requests
 from PyQt5.QtGui import QTextCursor, QFont, QPixmap, QFontMetricsF, QIcon
 from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QSplitter, QHBoxLayout, QVBoxLayout, \
-    QLabel, QDialog, QPushButton, QComboBox
+    QLabel, QDialog, QPushButton, QComboBox, QFrame
 from PyQt5.QtCore import *
 
 from windows.ClassExerciseComparisonWindow import ClassExerciseComparisonWindow
@@ -144,9 +144,34 @@ class ExerciseWindow(QWidget):
         self.resizeEvent = partial(self.resize_window, approved_button)
 
         self.info = QLabel('', self)
-        self.info.setStyleSheet("border: 1px solid grey; background-color: #ffdd99}")
+        self.info.setStyleSheet("border: 1px solid grey; background-color: #ffdd99")
         self.info.setAlignment(Qt.AlignCenter)
         self.info.hide()
+
+        self.code_line = QLabel('', self)
+        self.code_line.setStyleSheet("border: 0px solid grey; border-right: 1px solid #cccccc")
+        self.code_line.setFixedSize(1, 400)
+        self.code_editor.resizeEvent = partial(self.move_line, self.code_line, self.code_editor)
+
+        if self.results.isVisible():
+            self.results_line = QLabel('', self)
+            self.results_line.setStyleSheet("border: 0px solid grey; border-right: 1px solid #cccccc")
+            self.results_line.setFixedSize(1, 400)
+            self.results.resizeEvent = partial(self.move_line, self.results_line, self.results)
+
+    def move_line(self, line, rif, event):
+        if rif.width() <= 390:
+            line.hide()
+        else:
+            line.show()
+            pos_x, pos_y = rif.pos().x(), rif.pos().y()
+            parent = rif.parent()
+            while parent and parent is not self:
+                pos_x += parent.pos().x()
+                pos_y += parent.pos().y()
+                parent = parent.parent()
+            line.move(pos_x + 390, pos_y)
+            line.setFixedHeight(rif.height())
 
     def show_text(self, text, dim, rif, event):
         self.info.setText(text)
@@ -511,9 +536,6 @@ class ExerciseWindow(QWidget):
                 and self.resources_used['while'] > self.data.owned_variables['while'] \
                 or self.data.owned_variables['functions'] is not None \
                 and self.resources_used['def'] > self.data.owned_variables['functions']:
-            confermation_text += "<br><br><span style=\" color: #ff5500;\">" \
-                                 "Attenzione, hai usato più risorse di quelle che possiedi!<br>" \
-                                 "In questo modo non guadagnerai neanche un soldo!</span>"
             impurity = 3
 
         if (self.exercise.limits['lines'] is not None
@@ -548,15 +570,16 @@ class ExerciseWindow(QWidget):
                                  "In questo modo l'esercizio potrebbe esser valutato sbagliato!</span>"
             impurity += 1
 
-        if impurity == 2 and self.exercise.level == 'Facile':
+        if (impurity == 2 or impurity == 5) and self.exercise.level == 'Facile':
             confermation_text += "<br><br><span style=\" color: #ff5500;\"> " \
                                  "Consegnando così non guadagnerai neanche un soldo!</span>"
         elif 0 < impurity < 3:
             confermation_text += "<br><br><span style=\" color: #ff5500;\"> " \
                                  "Consegnando così guadagnerai meno soldi!</span>"
-
-        if impurity > 3:
-            impurity = 3
+        elif impurity >= 3:
+            confermation_text += "<br><br><span style=\" color: #ff5500;\">" \
+                                 "Attenzione, hai usato più risorse di quelle che possiedi!<br>" \
+                                 "In questo modo guadagnerai pochissimi soldi!</span>"
 
         ok_text = 'Invia comunque' if impurity > 0 else 'Invia'
         confirm = ConfirmWindow('Esercizio - "' + self.exercise.title + '" by ' + self.exercise.creator,
@@ -585,7 +608,8 @@ class ExerciseWindow(QWidget):
                                   data={'username': self.data.my_name, 'password': self.data.my_psw,
                                         'class': self.data.my_class, 'id': self.exercise.id, 'color_style': cs,
                                         'delivery_date': data, 'solution': self.code_editor.toPlainText(),
-                                        'resources_used': resources, 'impurity': impurity})
+                                        'result': self.results.toPlainText(), 'resources_used': resources,
+                                        'code_compile': 1 if self.code_compile else 0, 'impurity': impurity})
                 if r.text != "":
                     print(r.text)
                     self.exercise.solution = self.code_editor.toPlainText()

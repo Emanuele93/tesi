@@ -43,16 +43,9 @@ class SettingsWindow(QDialog):
 
         font = QFont()
         font.setPixelSize(17)
+        self.data.get_class_components()
 
-        if self.data.my_name in self.data.my_proff:
-            self.advanced_settings_button = QPushButton('Impostazioni\navanzate', self)
-            self.advanced_settings_button.clicked.connect(self.advanced_settings_button_on_click)
-            self.advanced_settings_button.setFixedHeight(55)
-            self.advanced_settings_button.setFont(font)
-            text_temp = "Impostazioni\npersonali"
-        else:
-            text_temp = "Impostazioni personali"
-        self.personal_settings_button = QPushButton(text_temp, self)
+        self.personal_settings_button = QPushButton("Impostazioni personali", self)
         self.personal_settings_button.clicked.connect(self.personal_settings_button_on_click)
         self.personal_settings_button.setFixedHeight(55)
         self.personal_settings_button.setFont(font)
@@ -86,8 +79,6 @@ class SettingsWindow(QDialog):
         box = QHBoxLayout(self)
         box.setContentsMargins(0, 0, 0, 0)
         box.setSpacing(0)
-        if self.data.my_name in self.data.my_proff:
-            box.addWidget(self.advanced_settings_button)
         box.addWidget(self.personal_settings_button)
         box.addWidget(self.exercise_settings_button)
         widget = QWidget(self, flags=Qt.Widget)
@@ -113,7 +104,6 @@ class SettingsWindow(QDialog):
     def class_management_on_click(self):
         self.advanced_settings_widget.hide()
         self.class_management_settings_widget.show()
-        self.advanced_settings_button.setStyleSheet('background-color: #ffdd55')
 
     def advanced_settings_button_on_click(self):
         self.class_management_settings_widget.hide()
@@ -122,7 +112,6 @@ class SettingsWindow(QDialog):
         self.exercise_settings_widget.hide()
         self.selection_color_widget.hide()
         self.selection_image_widget.hide()
-        self.advanced_settings_button.setStyleSheet('background-color: #dd9933')
         self.personal_settings_button.setStyleSheet('background-color: #ffdd55')
         self.exercise_settings_button.setStyleSheet('background-color: #ffdd55')
 
@@ -130,7 +119,6 @@ class SettingsWindow(QDialog):
         if self.data.my_name in self.data.my_proff:
             self.class_management_settings_widget.hide()
             self.advanced_settings_widget.hide()
-            self.advanced_settings_button.setStyleSheet('background-color: #ffdd55')
         self.personal_settings_widget.show()
         self.exercise_settings_widget.hide()
         self.selection_color_widget.hide()
@@ -142,7 +130,6 @@ class SettingsWindow(QDialog):
         if self.data.my_name in self.data.my_proff:
             self.class_management_settings_widget.hide()
             self.advanced_settings_widget.hide()
-            self.advanced_settings_button.setStyleSheet('background-color: #ffdd55')
         self.personal_settings_widget.hide()
         self.exercise_settings_widget.show()
         self.selection_color_widget.hide()
@@ -447,9 +434,14 @@ class SettingsWindow(QDialog):
             logout.hide()
 
         box = QHBoxLayout(self)
-        box. setContentsMargins(0, 90, 20, 0)
-        box.addWidget(logout)
-        box.setAlignment(Qt.AlignRight)
+        box. setContentsMargins(20, 90, 20, 0)
+        if self.data.my_name in self.data.my_proff:
+            advanced_settings_button = QPushButton('Impostazioni\navanzate', self)
+            advanced_settings_button.clicked.connect(self.advanced_settings_button_on_click)
+            advanced_settings_button.setFixedHeight(55)
+            advanced_settings_button.setFont(font)
+            box.addWidget(advanced_settings_button)
+        box.addWidget(logout, alignment=Qt.AlignRight)
         logout = QWidget(self, flags=Qt.Widget)
         logout.setLayout(box)
 
