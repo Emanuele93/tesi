@@ -1,4 +1,4 @@
-Secondo studente
+Studente 1
 1234
 Classe di Prova
 True

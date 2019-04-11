@@ -4,50 +4,8 @@
     <list default="true" id="d46dabcd-8ea8-45fa-bcbd-12f39d40a546" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/Eseguibile.exe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/favorite_style.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/1.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/10.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/11.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/12.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/13.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/14.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/15.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/2.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/3.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/4.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/5.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/6.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/7.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/8.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/9.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/approved.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/compiti.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/esercizi.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/logo.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/logout.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/more.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/negozio.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/not_approved.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/not_watch.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/notify.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/obiettivi.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/play.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/reset.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/saved.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/settings.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/unsaved.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/upload.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/waiting.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/img/watch.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/saves/_lib.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/styles/_lib.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/windows/ClassAchievementsComparisonWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/windows/ClassAchievementsComparisonWindow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user_info.txt" beforeDir="false" afterPath="$PROJECT_DIR$/user_info.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/windows/ClassExerciseComparisonWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/windows/ClassExerciseComparisonWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/windows/CreateHomeworkWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/windows/CreateHomeworkWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/windows/ExerciseWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/windows/ExerciseWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/windows/HomeworkCollectionWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/windows/HomeworkCollectionWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/windows/SettingsWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/windows/SettingsWindow.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -70,10 +28,25 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/windows/ClassAchievementsComparisonWindow.py">
+        <entry file="file://$PROJECT_DIR$/windows/ClassExerciseComparisonWindow.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="162">
-              <caret line="30" column="34" selection-start-line="30" selection-start-column="34" selection-end-line="30" selection-end-column="34" />
+            <state relative-caret-position="256">
+              <caret line="478" column="38" selection-start-line="478" selection-start-column="38" selection-end-line="478" selection-end-column="38" />
+              <folding>
+                <element signature="e#0#9#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/windows/ExerciseWindow.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="11016">
+              <caret line="666" column="38" selection-start-line="666" selection-start-column="38" selection-end-line="666" selection-end-column="38" />
+              <folding>
+                <element signature="e#0#28#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -101,16 +74,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>qLab</find>
-      <find>logout</find>
-      <find>bg6</find>
-      <find>bg</find>
-      <find>password.setStyleShe</find>
-      <find>print</find>
-      <find>except</find>
-      <find>advanced</find>
-      <find>chec</find>
-      <find>butt</find>
       <find>font</find>
       <find>box</find>
       <find>users</find>
@@ -131,13 +94,18 @@
       <find>self.code_line</find>
       <find>self.results.sh</find>
       <find>send</find>
+      <find>play_b</find>
+      <find>watch</find>
+      <find>like_number</find>
+      <find>19, 19</find>
+      <find>like</find>
+      <find>dislike</find>
+      <find>print</find>
+      <find>setFixedH</find>
+      <find>solution['username']</find>
+      <find>comments_a</find>
     </findStrings>
     <replaceStrings>
-      <replace>color_styles</replace>
-      <replace>user</replace>
-      <replace>styles</replace>
-      <replace>f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False</replace>
-      <replace>password</replace>
       <replace>classe</replace>
       <replace>button</replace>
       <replace>other</replace>
@@ -163,6 +131,11 @@
       <replace>self.users</replace>
       <replace>rif</replace>
       <replace>line</replace>
+      <replace>comments</replace>
+      <replace>18, 18</replace>
+      <replace>dislike</replace>
+      <replace>like</replace>
+      <replace>self.exercise_window.data.my_name</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -197,9 +170,9 @@
         <option value="$PROJECT_DIR$/Data.py" />
         <option value="$PROJECT_DIR$/windows/SettingsWindow.py" />
         <option value="$PROJECT_DIR$/windows/CreateHomeworkWindow.py" />
-        <option value="$PROJECT_DIR$/windows/ClassExerciseComparisonWindow.py" />
         <option value="$PROJECT_DIR$/windows/ExerciseWindow.py" />
         <option value="$PROJECT_DIR$/windows/ClassAchievementsComparisonWindow.py" />
+        <option value="$PROJECT_DIR$/windows/ClassExerciseComparisonWindow.py" />
       </list>
     </option>
   </component>
@@ -655,16 +628,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Data.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3400">
-          <caret line="206" selection-start-line="206" selection-end-line="206" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/windows/ExercisesCollectionWindow.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2615">
@@ -675,22 +638,29 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/windows/ClassExerciseComparisonWindow.py">
+    <entry file="file://$PROJECT_DIR$/windows/ClassAchievementsComparisonWindow.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="156">
-          <caret line="65" column="53" lean-forward="true" selection-start-line="65" selection-start-column="53" selection-end-line="65" selection-end-column="53" />
-          <folding>
-            <element signature="e#0#17#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="162">
+          <caret line="30" column="34" selection-start-line="30" selection-start-column="34" selection-end-line="30" selection-end-column="34" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/windows/ExerciseWindow.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="207">
-          <caret line="572" column="42" selection-start-line="572" selection-start-column="42" selection-end-line="572" selection-end-column="42" />
+        <state relative-caret-position="11016">
+          <caret line="666" column="38" selection-start-line="666" selection-start-column="38" selection-end-line="666" selection-end-column="38" />
           <folding>
             <element signature="e#0#28#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Data.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3400">
+          <caret line="206" selection-start-line="206" selection-end-line="206" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -705,10 +675,13 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/windows/ClassAchievementsComparisonWindow.py">
+    <entry file="file://$PROJECT_DIR$/windows/ClassExerciseComparisonWindow.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="162">
-          <caret line="30" column="34" selection-start-line="30" selection-start-column="34" selection-end-line="30" selection-end-column="34" />
+        <state relative-caret-position="256">
+          <caret line="478" column="38" selection-start-line="478" selection-start-column="38" selection-end-line="478" selection-end-column="38" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
