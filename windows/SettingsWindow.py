@@ -288,23 +288,55 @@ class SettingsWindow(QDialog):
         student_exercises_visible = QWidget(self, flags=Qt.Widget)
         student_exercises_visible.setLayout(box)
 
+        intro_comments_visible = QLabel("Commenti alle soluzioni degli esercizi: ", self)
+        intro_comments_visible.setFont(font)
+        check_1 = QCheckBox("Abilitati")
+        check_1.setFont(font)
+        check_1.setChecked(self.data.comments_visible)
+        check_2 = QCheckBox("Disabilitati")
+        check_2.setFont(font)
+        check_2.setChecked(not self.data.comments_visible)
+
+        self.bg7 = QButtonGroup()
+        self.bg7.addButton(check_1, 1)
+        self.bg7.addButton(check_2, 2)
+        self.bg7.buttonClicked[QAbstractButton].connect(self.set_comments_visible)
+
+        box = QHBoxLayout(self)
+        box.setContentsMargins(50, 0, 0, 0)
+        box.setAlignment(Qt.AlignLeft)
+        box.setSpacing(15)
+        box.addWidget(check_1)
+        box.addWidget(check_2)
+        comments_visible = QWidget(self, flags=Qt.Widget)
+        comments_visible.setLayout(box)
+
+        box = QVBoxLayout(self)
+        box.setAlignment(Qt.AlignLeft)
+        box.setSpacing(15)
+        box.addWidget(intro_comments_visible)
+        box.addWidget(comments_visible)
+        comments_visible = QWidget(self, flags=Qt.Widget)
+        comments_visible.setLayout(box)
+
         class_management = QPushButton('Gestione classe', self)
         class_management.setFont(font)
         class_management.setFixedSize(120, 40)
         class_management.clicked.connect(self.class_management_on_click)
 
         box = QVBoxLayout(self)
-        box.setContentsMargins(10, 80, 0, 10)
+        box.setContentsMargins(10, 10, 0, 20)
         box.addWidget(class_management, alignment=Qt.AlignRight)
         class_management_w = QWidget(self, flags=Qt.Widget)
         class_management_w.setLayout(box)
 
         box = QVBoxLayout(self)
-        box.setSpacing(25)
+        box.setSpacing(20)
         box.setContentsMargins(10, 20, 10, 10)
         box.addWidget(approving_type)
         box.addWidget(student_exercises_visible)
         box.addWidget(correction_type)
+        box.addWidget(comments_visible)
         box.addWidget(class_management_w, alignment=Qt.AlignRight)
         widget = QWidget(self, flags=Qt.Widget)
         widget.setLayout(box)
@@ -762,6 +794,23 @@ class SettingsWindow(QDialog):
                                     'class': self.data.my_class, 'visible': visible})
             if r.text != "":
                 self.data.student_exercises_visible = True if btn.text() == "Visibili" else False
+        except requests.exceptions.RequestException as e:
+            confirm = ConfirmWindow('Errore di connessione',
+                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
+                                    "connessione<br>Controllare la connessione internet e riprovare</span>",
+                                    ok="Ok", cancel=None)
+            if confirm.exec_() == QDialog.Accepted:
+                print('ok')
+            confirm.deleteLater()
+
+    def set_comments_visible(self, btn):
+        try:
+            visible = 1 if btn.text() == "Abilitati" else 0
+            r = requests.post("http://programmingisagame.netsons.org/set_comments_visible.php",
+                              data={'username': self.data.my_name, 'password': self.data.my_psw,
+                                    'class': self.data.my_class, 'visible': visible})
+            if r.text != "":
+                self.data.comments_visible = btn.text() == "Abilitati"
         except requests.exceptions.RequestException as e:
             confirm = ConfirmWindow('Errore di connessione',
                                     "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "

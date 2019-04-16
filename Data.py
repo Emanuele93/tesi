@@ -92,6 +92,7 @@ class Data:
         self.mates = []
         self.approving_type = 0
         self.correction_type = 0
+        self.comments_visible = True
         self.student_exercises_visible = True
         self.get_class_components()
 
@@ -216,6 +217,7 @@ class Data:
                 self.student_exercises_visible = json.loads(r.text)[0]['student_ex_visible'] == '1'
                 self.correction_type = int(json.loads(r.text)[0]['correction_type'])
                 self.approving_type = int(json.loads(r.text)[0]['approving_type'])
+                self.comments_visible = int(json.loads(r.text)[0]['comments_visible']) == 1
         except requests.exceptions.RequestException as e:
             confirm = ConfirmWindow('Gamification - Errore di connessione',
                                     "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "

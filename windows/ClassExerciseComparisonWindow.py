@@ -23,6 +23,7 @@ class ClassExerciseComparisonWindow(QDialog):
         self.color_styles = None
         self.code_widgets = []
         self.evaluation_buttons = []
+        self.comments_text = {}
 
         if self.exercise_window.data.my_name not in self.exercise_window.data.my_proff:
             for i in class_solutions:
@@ -340,115 +341,127 @@ class ClassExerciseComparisonWindow(QDialog):
         counter = QWidget(self, flags=Qt.Widget)
         counter.setLayout(box)
 
-        pixmap = QPixmap('img/like.png')
-        pixmap = pixmap.scaled(18, 18)
-        like = QLabel(self)
-        like.setPixmap(pixmap)
-        like.setObjectName('img/like.png')
+        if self.exercise_window.data.comments_visible:
+            pixmap = QPixmap('img/like.png')
+            pixmap = pixmap.scaled(18, 18)
+            like = QLabel(self)
+            like.setPixmap(pixmap)
+            like.setObjectName('img/like.png')
 
-        pixmap = QPixmap('img/user_like.png')
-        pixmap = pixmap.scaled(18, 18)
-        user_like = QLabel(self)
-        user_like.setPixmap(pixmap)
-        user_like.setObjectName('img/user_like.png')
+            pixmap = QPixmap('img/user_like.png')
+            pixmap = pixmap.scaled(18, 18)
+            user_like = QLabel(self)
+            user_like.setPixmap(pixmap)
+            user_like.setObjectName('img/user_like.png')
 
-        like_number = QLabel("0", self)
-        like_number.setFont(font)
-        if solution['users_like'] is not None:
-            like_number.setText(str(len(solution['users_like'].split(","))))
-            if solution['users_like'] == self.exercise_window.data.my_name or \
-                    solution['users_like'].__contains__(self.exercise_window.data.my_name + ",") or \
-                    solution['users_like'].__contains__("," + self.exercise_window.data.my_name):
-                like.hide()
+            like_number = QLabel("0", self)
+            like_number.setFont(font)
+            if solution['users_like'] is not None:
+                like_number.setText(str(len(solution['users_like'].split(","))))
+                if solution['users_like'] == self.exercise_window.data.my_name or \
+                        solution['users_like'].__contains__(self.exercise_window.data.my_name + ",") or \
+                        solution['users_like'].__contains__("," + self.exercise_window.data.my_name):
+                    like.hide()
+                else:
+                    user_like.hide()
             else:
                 user_like.hide()
-        else:
-            user_like.hide()
 
-        box = QHBoxLayout(self)
-        box.setAlignment(Qt.AlignLeft)
-        box.setContentsMargins(0, 0, 0, 0)
-        box.addWidget(like)
-        box.addWidget(user_like)
-        box.addWidget(like_number)
-        like_w = QWidget(self, flags=Qt.Widget)
-        like_w.setLayout(box)
+            box = QHBoxLayout(self)
+            box.setAlignment(Qt.AlignLeft)
+            box.setContentsMargins(0, 0, 0, 0)
+            box.addWidget(like)
+            box.addWidget(user_like)
+            box.addWidget(like_number)
+            like_w = QWidget(self, flags=Qt.Widget)
+            like_w.setLayout(box)
 
-        pixmap = QPixmap('img/dislike.png')
-        pixmap = pixmap.scaled(18, 18)
-        dislike = QLabel(self)
-        dislike.setPixmap(pixmap)
-        dislike.setObjectName('img/dislike.png')
+            pixmap = QPixmap('img/dislike.png')
+            pixmap = pixmap.scaled(18, 18)
+            dislike = QLabel(self)
+            dislike.setPixmap(pixmap)
+            dislike.setObjectName('img/dislike.png')
 
-        pixmap = QPixmap('img/user_dislike.png')
-        pixmap = pixmap.scaled(18, 18)
-        user_dislike = QLabel(self)
-        user_dislike.setPixmap(pixmap)
-        user_dislike.setObjectName('img/user_dislike.png')
+            pixmap = QPixmap('img/user_dislike.png')
+            pixmap = pixmap.scaled(18, 18)
+            user_dislike = QLabel(self)
+            user_dislike.setPixmap(pixmap)
+            user_dislike.setObjectName('img/user_dislike.png')
 
-        dislike_number = QLabel("0", self)
-        dislike_number.setFont(font)
-        if solution['users_dislike'] is not None:
-            dislike_number.setText(str(len(solution['users_dislike'].split(","))))
-            if solution['users_dislike'] == self.exercise_window.data.my_name or \
-                    solution['users_dislike'].__contains__(self.exercise_window.data.my_name + ",") or \
-                    solution['users_dislike'].__contains__("," + self.exercise_window.data.my_name):
-                dislike.hide()
+            dislike_number = QLabel("0", self)
+            dislike_number.setFont(font)
+            if solution['users_dislike'] is not None:
+                dislike_number.setText(str(len(solution['users_dislike'].split(","))))
+                if solution['users_dislike'] == self.exercise_window.data.my_name or \
+                        solution['users_dislike'].__contains__(self.exercise_window.data.my_name + ",") or \
+                        solution['users_dislike'].__contains__("," + self.exercise_window.data.my_name):
+                    dislike.hide()
+                else:
+                    user_dislike.hide()
             else:
                 user_dislike.hide()
-        else:
-            user_dislike.hide()
 
-        box = QHBoxLayout(self)
-        box.setAlignment(Qt.AlignLeft)
-        box.setContentsMargins(0, 0, 0, 0)
-        box.addWidget(dislike)
-        box.addWidget(user_dislike)
-        box.addWidget(dislike_number)
-        dislike_w = QWidget(self, flags=Qt.Widget)
-        dislike_w.setLayout(box)
+            box = QHBoxLayout(self)
+            box.setAlignment(Qt.AlignLeft)
+            box.setContentsMargins(0, 0, 0, 0)
+            box.addWidget(dislike)
+            box.addWidget(user_dislike)
+            box.addWidget(dislike_number)
+            dislike_w = QWidget(self, flags=Qt.Widget)
+            dislike_w.setLayout(box)
 
-        if solution['username'] == self.exercise_window.data.my_name:
-            like.setEnabled(False)
-            dislike.setEnabled(False)
-        else:
-            like.mousePressEvent = partial(self.like_on_click, like, user_like, like_number, dislike, user_dislike,
-                                           dislike_number, solution)
-            dislike.mousePressEvent = partial(self.dislike_on_click, like, user_like, like_number, dislike,
-                                              user_dislike, dislike_number, solution)
-            user_like.mousePressEvent = partial(self.like_on_click, like, user_like, like_number, dislike, user_dislike,
-                                                dislike_number, solution)
-            user_dislike.mousePressEvent = partial(self.dislike_on_click, like, user_like, like_number, dislike,
-                                                   user_dislike, dislike_number, solution)
+            if solution['username'] == self.exercise_window.data.my_name:
+                like.setEnabled(False)
+                dislike.setEnabled(False)
+            else:
+                like_w.mousePressEvent = partial(self.like_on_click, like, user_like, like_number, dislike, user_dislike,
+                                               dislike_number, solution)
+                dislike_w.mousePressEvent = partial(self.dislike_on_click, like, user_like, like_number, dislike,
+                                                  user_dislike, dislike_number, solution)
 
-        pixmap = QPixmap('img/comments.png')
-        pixmap = pixmap.scaled(18, 18)
-        comments = QLabel(self)
-        comments.setPixmap(pixmap)
-        comments.setObjectName('img/comments.png')
+            pixmap = QPixmap('img/comments.png')
+            pixmap = pixmap.scaled(18, 18)
+            comments = QLabel(self)
+            comments.setPixmap(pixmap)
+            comments.setObjectName('img/comments.png')
 
-        comments_number = QLabel("0", self)
-        comments_number.setFont(font)
-        if solution['users_comments'] is not None:
-            comments_number.setText(str(len(solution['users_comments'].split(","))))
+            pixmap = QPixmap('img/user_comments.png')
+            pixmap = pixmap.scaled(18, 18)
+            user_comments = QLabel(self)
+            user_comments.setPixmap(pixmap)
+            user_comments.setObjectName('img/user_comments.png')
 
-        box = QHBoxLayout(self)
-        box.setAlignment(Qt.AlignLeft)
-        box.setContentsMargins(0, 0, 0, 0)
-        box.addWidget(comments)
-        box.addWidget(comments_number)
-        comments_w = QWidget(self, flags=Qt.Widget)
-        comments_w.setLayout(box)
+            comments_number = QLabel("0", self)
+            comments_number.setFont(font)
+            if solution['users_comments'] is not None:
+                comments_number.setText(str(len(solution['users_comments'].split("<b>"))-1))
+                self.comments_text[solution['username']] = solution['users_comments']
+                if solution['users_comments'].__contains__("<b>" + self.exercise_window.data.my_name + "</b>"):
+                    comments.hide()
+                else:
+                    user_comments.hide()
+            else:
+                user_comments.hide()
+                self.comments_text[solution['username']] = ""
 
-        box = QHBoxLayout(self)
-        box.setContentsMargins(35, 10, 35, 10)
-        box.addWidget(like_w)
-        box.addWidget(dislike_w)
-        box.addWidget(comments_w)
-        social = QWidget(self, flags=Qt.Widget)
-        social.setLayout(box)
-        social.setObjectName("social")
-        social.setStyleSheet("QWidget#social {border: 0px solid grey; border-top: 1px solid grey}")
+            box = QHBoxLayout(self)
+            box.setAlignment(Qt.AlignLeft)
+            box.setContentsMargins(0, 0, 0, 0)
+            box.addWidget(comments)
+            box.addWidget(user_comments)
+            box.addWidget(comments_number)
+            comments_w = QWidget(self, flags=Qt.Widget)
+            comments_w.setLayout(box)
+
+            box = QHBoxLayout(self)
+            box.setContentsMargins(35, 10, 35, 10)
+            box.addWidget(like_w)
+            box.addWidget(dislike_w)
+            box.addWidget(comments_w)
+            social = QWidget(self, flags=Qt.Widget)
+            social.setLayout(box)
+            social.setObjectName("social")
+            social.setStyleSheet("QWidget#social {border: 0px solid grey; border-top: 1px solid grey}")
 
         box = QVBoxLayout(self)
         box.setSpacing(0)
@@ -458,32 +471,42 @@ class ClassExerciseComparisonWindow(QDialog):
         if self.exercise_window.exercise.validation_type > 0:
             box.addWidget(evaluation)
         box.addWidget(counter)
-        box.addWidget(social)
+        if self.exercise_window.data.comments_visible:
+            box.addWidget(social)
         widget = QWidget(self, flags=Qt.Widget)
         widget.setLayout(box)
         widget.setObjectName("w")
         widget.setStyleSheet("QWidget#w {background-color: white; border: 1px solid grey}")
 
-        comment_example = QLabel("ciao", self)
-        box = QVBoxLayout(self)
-        box.addWidget(comment_example)
-        comments_area = QWidget(self, flags=Qt.Widget)
-        comments_area.setLayout(box)
-        comments_scroll = QScrollArea(self)
-        comments_scroll.setWidget(comments_area)
-        comments_scroll.setObjectName("scroll")
-        comments_scroll.setStyleSheet("QWidget#scroll {border: 1px solid grey}")
-        comment_editor = QTextEdit(self)
-        comment_editor.setFixedHeight(150)
-        box = QVBoxLayout(self)
-        box.setContentsMargins(5, 0, 5, 0)
-        box.addWidget(comments_scroll)
-        box.addWidget(comment_editor)
-        comments_area = QWidget(self, flags=Qt.Widget)
-        comments_area.setLayout(box)
-        comments_area.hide()
+        if self.exercise_window.data.comments_visible:
+            comment_text = QTextEdit(self)
+            comment_text.setReadOnly(True)
+            comment_text.setFont(font)
+            comment_text.setText(self.comments_text[solution['username']])
+            comment_editor = QTextEdit(self)
+            comment_editor.setFixedHeight(100)
+            comment_editor.setFont(font)
+            comment_send_button = QPushButton("Invia", self)
+            comment_send_button.setFixedHeight(40)
+            comment_send_button.setEnabled(False)
+            comment_send_button.setFont(font)
+            comment_editor.textChanged.connect(partial(self.comment_edit, comment_editor, comment_send_button))
+            comment_send_button.clicked.connect(partial(self.comment_send, comment_text, self.exercise_window.data.my_name,
+                                                        comment_editor, comments_number, comments, user_comments,
+                                                        solution['username']))
+            box = QVBoxLayout(self)
+            box.setContentsMargins(0, 1, 0, 1)
+            box.setSpacing(0)
+            box.addWidget(comment_text)
+            box.addWidget(comment_editor)
+            box.addWidget(comment_send_button)
+            comments_area = QWidget(self, flags=Qt.Widget)
+            comments_area.setLayout(box)
+            comments_area.hide()
+            comments_area.setObjectName("comments_area")
+            comments_area.setStyleSheet("QWidget#comments_area {border: 1px solid grey}")
 
-        comments.mousePressEvent = partial(self.comments_on_click, comments_area)
+            comments_w.mousePressEvent = partial(self.comments_on_click, comments_area)
 
         code_widget = self.make_code_widget(solution['solution'], solution['result'], solution['code_compile'] == '1',
                                             solution['evaluation'] is None, notify, evaluation_txet,
@@ -496,7 +519,8 @@ class ClassExerciseComparisonWindow(QDialog):
         box.setSpacing(0)
         box.setContentsMargins(0, 0, 0, 0)
         box.addWidget(widget)
-        box.addWidget(comments_area)
+        if self.exercise_window.data.comments_visible:
+            box.addWidget(comments_area)
         box.addWidget(code_widget)
         widget_final = QWidget(self, flags=Qt.Widget)
         widget_final.setLayout(box)
@@ -934,3 +958,38 @@ class ClassExerciseComparisonWindow(QDialog):
             comments_area.hide()
         else:
             comments_area.show()
+
+    def comment_edit(self, text, button):
+        if text.toPlainText() != "":
+            button.setEnabled(True)
+        else:
+            button.setEnabled(False)
+
+    def comment_send(self, area, name, text, number, comments, user_comments, user):
+        s = text.toPlainText().strip()
+        s = s.replace("<", "&#60;")
+        s = s.replace("<", "&#62;")
+        s = s.replace("\n", "<br>")
+
+        try:
+            r = requests.post("http://programmingisagame.netsons.org/exercise_add_comment.php",
+                              data={'username': self.exercise_window.data.my_name,
+                                    'password': self.exercise_window.data.my_psw,
+                                    'class': self.exercise_window.data.my_class,
+                                    'id': self.exercise_window.exercise.id, 'username2': user,
+                                    'comment': ("<b>" + name + "</b><br>" + s + "<br><br>")})
+            if r.text != "":
+                self.comments_text[user] = r.text
+                area.setText(self.comments_text[user])
+                text.setText("")
+                number.setText(str(int(number.text())+1))
+                comments.hide()
+                user_comments.show()
+        except requests.exceptions.RequestException as e:
+            confirm = ConfirmWindow('Errore di connessione',
+                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
+                                    "connessione<br>Controllare la connessione internet e riprovare</span>",
+                                    ok="Ok", cancel=None)
+            if confirm.exec_() == QDialog.Accepted:
+                print('ok')
+            confirm.deleteLater()
