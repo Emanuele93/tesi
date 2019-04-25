@@ -1,5 +1,6 @@
+import json
 from functools import partial
-from os import path
+from os import path, listdir
 
 from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel, QDialog
@@ -156,10 +157,14 @@ class ExercisesCollectionWindow(QWidget):
     def make_bottom_widget(self):
         box = QVBoxLayout(self)
         box.setContentsMargins(20, 10, 20, 10)
-        box.addWidget(self.make_group_of_exercises('Le variabili', self.data.variables_exercises))
-        box.addWidget(self.make_group_of_exercises('Le selezioni', self.data.conditions_exercises))
-        box.addWidget(self.make_group_of_exercises('I cicli', self.data.cycles_exercises))
-        box.addWidget(self.make_group_of_exercises('Le funzioni', self.data.functions_exercises))
+        for f in listdir("exercises"):
+            ex = []
+            i = open("exercises/" + f, "r")
+            for x in i:
+                y = json.loads(x)
+                ex. append(Exercise(None, None, None, y["title"], y["text"], y["level"], y["white_paper_mode"],
+                                    y["start_code"], y["limits"], y["executable"], True, True, 0, False))
+            box.addWidget(self.make_group_of_exercises(f.title()[2:-4], ex))
         bottom_widget = QWidget(self, flags=Qt.Widget)
         bottom_widget.setLayout(box)
 
@@ -271,7 +276,7 @@ class ExercisesCollectionWindow(QWidget):
             self.pages['0'].show()
 
     def send_button_on_click(self, exercise, event):
-        if self.new_exercise is None:
+        if self.new_exercise is None or self.new_exercise.exercise.title != exercise.title:
             self.new_exercise = CreateHomeworkWindow(self.data, self, exercise=exercise)
             self.new_exercise.show()
         else:

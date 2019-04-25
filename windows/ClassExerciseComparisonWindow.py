@@ -502,9 +502,10 @@ class ClassExerciseComparisonWindow(QDialog):
             box.addWidget(comment_send_button)
             comments_area = QWidget(self, flags=Qt.Widget)
             comments_area.setLayout(box)
-            comments_area.hide()
+            comments_area.setFixedWidth(250)
             comments_area.setObjectName("comments_area")
             comments_area.setStyleSheet("QWidget#comments_area {border: 1px solid grey}")
+            self.code_widgets.append(comments_area)
 
             comments_w.mousePressEvent = partial(self.comments_on_click, comments_area)
 

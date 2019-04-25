@@ -139,7 +139,8 @@ class Signin(QWidget):
 
     def name_changed(self, name, button):
         if name.text().strip() != '':
-            if len(name.text().strip()) > 20:
+            if len(name.text().strip()) > 20 or '"' in name.text() or "'" in name.text() or "\\" in name.text() \
+                    or "," in name.text():
                 name.setStyleSheet('color: red')
             else:
                 name.setStyleSheet('color: black')
@@ -147,12 +148,15 @@ class Signin(QWidget):
                 if self.name and self.surname and self.user and self.password and self.classe:
                     button.setEnabled(True)
                 return
+        else:
+            name.setStyleSheet('color: black')
         self.name = False
         button.setEnabled(False)
 
     def surname_changed(self, surname, button):
         if surname.text().strip() != '':
-            if len(surname.text().strip()) > 20:
+            if len(surname.text().strip()) > 20 or '"' in surname.text() or "'" in surname.text() \
+                    or "\\" in surname.text() or "," in surname.text():
                 surname.setStyleSheet('color: red')
             else:
                 surname.setStyleSheet('color: black')
@@ -160,12 +164,15 @@ class Signin(QWidget):
                 if self.name and self.surname and self.user and self.password and self.classe:
                     button.setEnabled(True)
                 return
+        else:
+            surname.setStyleSheet('color: black')
         self.surname = False
         button.setEnabled(False)
 
     def user_changed(self, user, button):
         if user.text().strip() != '':
-            if len(user.text().strip()) > 20:
+            if len(user.text().strip()) > 20 or '"' in user.text() or "'" in user.text() \
+                    or "\\" in user.text() or "," in user.text():
                 user.setStyleSheet('color: red')
             else:
                 user.setStyleSheet('color: black')
@@ -173,12 +180,15 @@ class Signin(QWidget):
                 if self.name and self.surname and self.user and self.password and self.classe:
                     button.setEnabled(True)
                 return
+        else:
+            user.setStyleSheet('color: black')
         self.user = False
         button.setEnabled(False)
 
     def password_changed(self, password, button):
         if password.text().strip() != '':
-            if len(password.text().strip()) > 20:
+            if len(password.text().strip()) > 20 or '"' in password.text() or "'" in password.text() \
+                    or "\\" in password.text() or "," in password.text():
                 password.setStyleSheet('color: red')
             else:
                 password.setStyleSheet('color: black')
@@ -186,12 +196,15 @@ class Signin(QWidget):
                 if self.name and self.surname and self.user and self.password and self.classe:
                     button.setEnabled(True)
                 return
+        else:
+            password.setStyleSheet('color: black')
         self.password = False
         button.setEnabled(False)
 
     def classe_changed(self, classe, button):
         if classe.text().strip() != '':
-            if len(classe.text().strip()) > 20:
+            if len(classe.text().strip()) > 20 or '"' in classe.text() or "'" in classe.text() \
+                    or "\\" in classe.text() or "," in classe.text():
                 classe.setStyleSheet('color: red')
             else:
                 classe.setStyleSheet('color: black')
@@ -199,6 +212,8 @@ class Signin(QWidget):
                 if self.name and self.surname and self.user and self.password and self.classe:
                     button.setEnabled(True)
                 return
+        else:
+            classe.setStyleSheet('color: black')
         self.classe = False
         button.setEnabled(False)
 

@@ -1,4 +1,4 @@
-#ffffff
+white
 black
 white
 black

@@ -60,6 +60,9 @@ class CreateHomeworkWindow(QWidget):
         self.results.setReadOnly(True)
         self.results.setLineWrapMode(self.results.NoWrap)
 
+        self.code_line = None
+        self.results_line = None
+
         settings_widget = QWidget(self, flags=Qt.Widget)
         settings_widget.setLayout(self.get_settings_layout())
         settings_widget.setFixedWidth(400)
@@ -680,10 +683,12 @@ class CreateHomeworkWindow(QWidget):
         if self.executable_check.isChecked():
             self.play_button.setEnabled(True)
             self.results.show()
-            self.results_line.show()
+            if self.results_line is not None:
+                self.results_line.show()
         else:
             self.results.hide()
-            self.results_line.hide()
+            if self.results_line is not None:
+                self.results_line.hide()
             self.play_button.setEnabled(False)
 
     def white_paper_mode_check_on_click(self, check):
