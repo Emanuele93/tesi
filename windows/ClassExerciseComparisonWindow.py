@@ -115,9 +115,9 @@ class ClassExerciseComparisonWindow(QDialog):
         font = QFont()
         font.setPixelSize(20)
         validator = "" if self.exercise_window.exercise.validation_type == 0 \
-            else (" corretto da " + self.exercise_window.exercise.creator
+            else (", corretto da " + self.exercise_window.exercise.creator
                   if self.exercise_window.exercise.self_validation else " corretto dal prof")
-        log_line = QLabel('Soluzioni della classe: "' + self.exercise_window.data.my_class + '" all' + "'" +
+        log_line = QLabel('Soluzioni della classe "' + self.exercise_window.data.my_class + '" all' + "'" +
                           'esercizio "' + self.exercise_window.exercise.title + '"' + validator)
 
         log_line.setFont(font)
@@ -143,8 +143,8 @@ class ClassExerciseComparisonWindow(QDialog):
         for i in self.code_widgets:
             i.hide()
 
-        self.setFixedHeight(scroll.sizeHint().height() +
-                            (180 if self.exercise_window.exercise.validation_type == 0 else 235))
+        self.setMinimumHeight(scroll.sizeHint().height() +
+                              (180 if self.exercise_window.exercise.validation_type == 0 else 235))
 
     def make_student_widget(self, solution, pos, order):
         font = QFont()
@@ -828,6 +828,8 @@ class ClassExerciseComparisonWindow(QDialog):
                     texts[i] = self.my_find_and_replace(texts[i], word.word, word.tagged_word(), True)
             text += texts[i]
         if self.exercise_window.exercise.white_paper_mode:
+            temp_text = temp_text.replace('<', '&#60;')
+            temp_text = temp_text.replace('>', '&#62;')
             text = temp_text
         if text[0] == '\n':
             text = ' ' + text

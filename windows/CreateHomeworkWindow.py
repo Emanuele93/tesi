@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QPushButton, QSp
 from PyQt5.QtCore import *
 
 from windows.ConfirmWindow import ConfirmWindow
+from windows.ExerciseWindow import MyThread, MyTimer
 
 
 class CreateHomeworkWindow(QWidget):
@@ -215,7 +216,7 @@ class CreateHomeworkWindow(QWidget):
 
         else_limit_intro = QLabel(self)
         else_limit_intro.setStyleSheet("border: 0px solid grey; border-bottom: 1px solid grey")
-        else_limit_intro.setText("Limite di elif: ")
+        else_limit_intro.setText("Limite di else: ")
 
         self.else_limit_form = QLineEdit(self)
         self.else_limit_form.setPlaceholderText(" (Non Obbligatorio)")
@@ -569,83 +570,29 @@ class CreateHomeworkWindow(QWidget):
         box.addWidget(scroll_area)
         return box
 
-    @staticmethod
-    def timeout(timeout):
-        def deco(func):
-            @functools.wraps(func)
-            def wrapper(*args, **kwargs):
-                res = [Exception('function [%s] timeout [%s seconds] exceeded!' % (func.__name__, timeout))]
-
-                def newFunc():
-                    try:
-                        res[0] = func(*args, **kwargs)
-                    except Exception as e:
-                        res[0] = e
-
-                t = Thread(target=newFunc)
-                t.daemon = True
-                try:
-                    t.start()
-                    t.join(timeout)
-                except Exception as je:
-                    print('error starting thread')
-                    raise je
-                ret = res[0]
-                if isinstance(ret, BaseException):
-                    raise ret
-                return ret
-
-            return wrapper
-
-        return deco
-
-    def execution(self):
-        try:
-            stream = io.StringIO()
-            with contextlib.redirect_stdout(stream):
-                exec(self.code_editor.toPlainText(), globals(), self.temp_vars)
-            self.execution_result = stream.getvalue()
-            self.execution_errors = False
-        except Exception as E:
-            self.execution_result = str(E)
-            self.execution_errors = True
-
-            i = 0
-            self.execution_temp_result = ''
-            texts = self.code_editor.toPlainText().split('\n')
-            text = texts[i]
-            while i < len(texts):
-                try:
-                    stream = io.StringIO()
-                    with contextlib.redirect_stdout(stream):
-                        exec(text, globals(), self.temp_vars)
-                    self.execution_temp_result = stream.getvalue()
-                except Exception as E:
-                    self.execution_temp_result = self.execution_temp_result
-                i += 1
-                if i < len(texts):
-                    text += '\n' + texts[i]
-
     def play_button_on_click(self):
         self.temp_vars = {}
-        self.execution_result = ''
-        self.execution_temp_result = ''
 
-        func = self.timeout(timeout=5)(self.execution)
-        try:
-            func()
-        except Exception as E:
-            self.execution_result = E
-        if self.execution_temp_result != '':
-            self.execution_result = self.execution_temp_result + '\n' + self.execution_result
+        t1 = MyThread('Thread 1', self.code_editor, self.temp_vars)
+        t2 = MyTimer(t1)
+        t1.start()
+        t2.start()
+        t1.join()
 
-        self.results.setPlainText(self.execution_result)
-        if self.execution_errors:
-            self.results.setStyleSheet('color: red')
-        else:
+        code_compile = t1.code_compile
+        execution_result = t1.execution_result
+        execution_temp_result = t1.execution_temp_result
+
+        if execution_temp_result != '':
+            execution_result = execution_temp_result + '\n' + execution_result
+
+        self.results.setPlainText(execution_result)
+        if code_compile:
             self.results.setStyleSheet('color: black')
+        else:
+            self.results.setStyleSheet('color: red')
         self.update_function_counters()
-        return self.execution_errors
+        return code_compile
 
     def text_exercise_changed(self):
         if self.text_exercise.toPlainText().strip() == '':
@@ -1169,6 +1116,8 @@ class CreateHomeworkWindow(QWidget):
                             self.functions[word.word] = self.functions[word.word] + num
                 text += texts[i]
             if self.white_paper_mode:
+                temp_text = temp_text.replace('<', '&#60;')
+                temp_text = temp_text.replace('>', '&#62;')
                 text = temp_text
             if text[0] == '\n':
                 text = ' ' + text

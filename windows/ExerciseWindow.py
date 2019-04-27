@@ -1,17 +1,20 @@
-from threading import Thread
 import functools
 import datetime
 import json
 import re
 import contextlib
 import io
+import threading
+import ctypes
+import time
 from functools import partial
 from os import path
+from subprocess import STDOUT, check_output
 
 import requests
-from PyQt5.QtGui import QTextCursor, QFont, QPixmap, QFontMetricsF, QIcon
+from PyQt5.QtGui import QTextCursor, QFont, QPixmap, QFontMetricsF, QIcon, QKeySequence
 from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QSplitter, QHBoxLayout, QVBoxLayout, \
-    QLabel, QDialog, QPushButton, QComboBox, QFrame
+    QLabel, QDialog, QPushButton, QComboBox, QShortcut
 from PyQt5.QtCore import *
 
 from windows.ClassExerciseComparisonWindow import ClassExerciseComparisonWindow
@@ -72,6 +75,9 @@ class ExerciseWindow(QWidget):
                                        + self.color_styles.code_text_color + ";}")
         if self.exercise.delivery_date is not None:
             self.code_editor.setReadOnly(True)
+
+        shortcut = QShortcut(QKeySequence("Ctrl+s"), self)
+        shortcut.activated.connect(partial(self.save_button_on_click, None))
 
         self.results = QPlainTextEdit(self)
         self.results.setReadOnly(True)
@@ -366,78 +372,23 @@ class ExerciseWindow(QWidget):
         box.addWidget(self.more_options)
         return box
 
-    @staticmethod
-    def timeout(timeout):
-        def deco(func):
-            @functools.wraps(func)
-            def wrapper(*args, **kwargs):
-                res = [Exception('function [%s] timeout [%s seconds] exceeded!' % (func.__name__, timeout))]
-
-                def newFunc():
-                    try:
-                        res[0] = func(*args, **kwargs)
-                    except Exception as e:
-                        res[0] = e
-
-                t = Thread(target=newFunc)
-                t.daemon = True
-                try:
-                    t.start()
-                    t.join(timeout)
-                except Exception as je:
-                    print('error starting thread')
-                    raise je
-                ret = res[0]
-                if isinstance(ret, BaseException):
-                    raise ret
-                return ret
-
-            return wrapper
-
-        return deco
-
-    def execution(self):
-        try:
-            stream = io.StringIO()
-            with contextlib.redirect_stdout(stream):
-                exec(self.code_editor.toPlainText(), globals(), self.execution_temp_vars)
-            self.execution_result = stream.getvalue()
-            self.code_compile = True
-        except Exception as E:
-            self.execution_result = str(E)
-            self.code_compile = False
-
-            i = 0
-            self.execution_temp_result = ''
-            texts = self.code_editor.toPlainText().split('\n')
-            text = texts[i]
-            while i < len(texts):
-                try:
-                    stream = io.StringIO()
-                    with contextlib.redirect_stdout(stream):
-                        exec(text, globals(), self.execution_temp_vars)
-                    self.execution_temp_result = stream.getvalue()
-                except Exception as E:
-                    self.execution_temp_result = self.execution_temp_result
-                i += 1
-                if i < len(texts):
-                    text += '\n' + texts[i]
-
     def play_button_on_click(self, event):
-        self.execution_temp_vars = {}
-        self.execution_result = ''
-        self.execution_temp_result = ''
+        execution_temp_vars = {}
 
-        func = self.timeout(timeout=5)(self.execution)
-        try:
-            func()
-        except Exception as E:
-            self.execution_result = E
+        t1 = MyThread('Thread 1', self.code_editor, execution_temp_vars)
+        t2 = MyTimer(t1)
+        t1.start()
+        t2.start()
+        t1.join()
 
-        if self.execution_temp_result != '':
-            self.execution_result = self.execution_temp_result + '\n' + self.execution_result
+        execution_result = t1.execution_result
+        self.code_compile = t1.code_compile
+        execution_temp_result = t1.execution_temp_result
 
-        self.results.setPlainText(self.execution_result)
+        if execution_temp_result != '':
+            execution_result = execution_temp_result + '\n' + execution_result
+
+        self.results.setPlainText(execution_result)
         if self.code_compile:
             self.results.setStyleSheet(
                 "QWidget#results {background-color: " + self.color_styles.results_background_color
@@ -447,13 +398,13 @@ class ExerciseWindow(QWidget):
                                        + self.color_styles.error_results_background_color + "; color: "
                                        + self.color_styles.error_results_text_color + ";}")
 
-        self.variables_used_number.setText(str(len(self.execution_temp_vars)))
-        self.resources_used['variables'] = len(self.execution_temp_vars)
-        if self.exercise.limits['variables'] is not None and len(self.execution_temp_vars) > self.exercise.limits[
+        self.variables_used_number.setText(str(len(execution_temp_vars)))
+        self.resources_used['variables'] = len(execution_temp_vars)
+        if self.exercise.limits['variables'] is not None and len(execution_temp_vars) > self.exercise.limits[
             'variables']:
             color = 'red'
         elif self.data.owned_variables['variables'] is not None \
-                and len(self.execution_temp_vars) > self.data.owned_variables['variables']:
+                and len(execution_temp_vars) > self.data.owned_variables['variables']:
             color = '#ff5500'
         else:
             color = 'black'
@@ -1212,6 +1163,8 @@ class ExerciseWindow(QWidget):
                             self.resources_used[word.word] = self.resources_used[word.word] + num
                 text += texts[i]
             if self.exercise.white_paper_mode:
+                temp_text = temp_text.replace('<', '&#60;')
+                temp_text = temp_text.replace('>', '&#62;')
                 text = temp_text
             if text[0] == '\n':
                 text = ' ' + text
@@ -1358,3 +1311,68 @@ class ApprovingConfirmWindow(QDialog):
         box.addWidget(text_widget)
         box.addWidget(self.validation_type)
         box.addWidget(widget)
+
+
+class MyTimer(threading.Thread):
+    def __init__(self, thread):
+        super(MyTimer, self).__init__()
+        self.thread = thread
+
+    def run(self):
+        time.sleep(3)
+        self.thread.raise_exception()
+        self.thread.execution_result = "Ciclo infinito o codice troppo lento"
+        return
+
+
+class MyThread(threading.Thread):
+    def __init__(self, name, code_editor, execution_temp_vars):
+        threading.Thread.__init__(self)
+        self.name = name
+        self.code_editor = code_editor
+        self.execution_temp_vars = execution_temp_vars
+        self.execution_result = ""
+        self.code_compile = False
+        self.execution_temp_result = ""
+
+    def run(self):
+        try:
+            stream = io.StringIO()
+            with contextlib.redirect_stdout(stream):
+                exec(self.code_editor.toPlainText(), globals(), self.execution_temp_vars)
+            self.execution_result = stream.getvalue()
+            self.code_compile = True
+        except Exception as E:
+            self.execution_result = str(E)
+            self.code_compile = False
+
+            i = 0
+            self.execution_temp_result = ''
+            texts = self.code_editor.toPlainText().split('\n')
+            text = texts[i]
+            while i < len(texts):
+                try:
+                    stream = io.StringIO()
+                    with contextlib.redirect_stdout(stream):
+                        exec(text, globals(), self.execution_temp_vars)
+                    self.execution_temp_result = stream.getvalue()
+                except Exception as E:
+                    self.execution_temp_result = self.execution_temp_result
+                i += 1
+                if i < len(texts):
+                    text += '\n' + texts[i]
+
+    def get_id(self):
+        if hasattr(self, '_thread_id'):
+            return self._thread_id
+        for id, thread in threading._active.items():
+            if thread is self:
+                return id
+
+    def raise_exception(self):
+        thread_id = self.get_id()
+        res = ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id,
+              ctypes.py_object(SystemExit))
+        if res > 1:
+            ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
+            print('Exception raise failure')
