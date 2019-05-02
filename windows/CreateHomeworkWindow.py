@@ -1,18 +1,12 @@
-import functools
 import re
-import contextlib
-import io
 from functools import partial
-from threading import Thread
-
-import requests
 from PyQt5.QtGui import QTextCursor, QFont, QFontMetricsF, QIcon
 from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QPushButton, QSplitter, QHBoxLayout, QVBoxLayout, \
     QLineEdit, QCheckBox, QCalendarWidget, QLabel, QScrollArea, QDialog, QComboBox
 from PyQt5.QtCore import *
-
 from windows.ConfirmWindow import ConfirmWindow
 from windows.ExerciseWindow import MyThread, MyTimer
+import Server_call_master
 
 
 class CreateHomeworkWindow(QWidget):
@@ -592,7 +586,7 @@ class CreateHomeworkWindow(QWidget):
         else:
             self.results.setStyleSheet('color: red')
         self.update_function_counters()
-        return code_compile
+        return not code_compile
 
     def text_exercise_changed(self):
         if self.text_exercise.toPlainText().strip() == '':
@@ -739,24 +733,14 @@ class CreateHomeworkWindow(QWidget):
                       else self.validation_type.currentIndex() + 2)
             self_validation = 1 if self.data.correction_type < 2 else 0
 
-            try:
-                r = requests.post("http://programmingisagame.netsons.org/add_exercise.php",
-                                  data={'username': self.data.my_name, 'password': self.data.my_psw,
-                                        'class': self.data.my_class, 'date': date, 'title': title, 'text': text,
-                                        'level': level, 'white_paper_mode': white_paper_mode, 'start_code': start_code,
-                                        'limits': limits, 'executable': executable,
-                                        'order': self.order_by.currentIndex(), 'lookable': lookable,
-                                        'validation_type': validation_type, 'self_validation': self_validation})
-                if r.text != "":
-                    self.closer_controller.close_CreateHomeworkWindow()
-            except requests.exceptions.RequestException as e:
-                confirm2 = ConfirmWindow('Errore di connessione',
-                                        "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                        "connessione<br>Controllare la propria connessione internet e riprovare</span>",
-                                        ok="Ok", cancel=None)
-                if confirm2.exec_() == QDialog.Accepted:
-                    print('ok')
-                confirm2.deleteLater()
+            if Server_call_master.set_variable(
+                    "/add_exercise.php", {'username': self.data.my_name, 'password': self.data.my_psw,
+                                          'class': self.data.my_class, 'date': date, 'title': title, 'text': text,
+                                          'level': level, 'white_paper_mode': white_paper_mode,
+                                          'start_code': start_code, 'limits': limits, 'executable': executable,
+                                          'order': self.order_by.currentIndex(), 'lookable': lookable,
+                                          'validation_type': validation_type, 'self_validation': self_validation}):
+                self.closer_controller.close_CreateHomeworkWindow()
         confirm.deleteLater()
 
     def set_text_font_size(self, num):

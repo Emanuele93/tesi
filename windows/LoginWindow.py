@@ -1,12 +1,10 @@
 from functools import partial
-
-import requests
 from PyQt5.QtGui import QFont, QIcon
-from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLineEdit, QDialog, QLabel
+from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLineEdit, QLabel
 from PyQt5.QtCore import *
 from Data import Data
-from windows.ConfirmWindow import ConfirmWindow
 from windows.Signin import Signin
+import Server_call_master
 
 
 class LoginWindow(QWidget):
@@ -130,40 +128,30 @@ class LoginWindow(QWidget):
         button.setEnabled(False)
 
     def button_on_click(self, user, password, classe):
-        try:
-            r = requests.post("http://programmingisagame.netsons.org/login.php",
-                              data={'username': user.text().strip(), 'password': password.text().strip(),
-                                    'class': classe.text().strip()})
-            if r.text == 'ok':
-                f = open('user_info.txt', "w")
-                f.write(
-                    user.text().strip() + "\n" + password.text().strip() + "\n" + classe.text().strip() + "\nTrue\n20")
-                f.close()
-                self.home.data = Data()
-                self.home.open_MainWindow()
-                self.home.show()
-                self.close()
-            elif r.text == 'username':
-                user.setStyleSheet('color: red')
-                password.setStyleSheet('color: black')
-                classe.setStyleSheet('color: black')
-            elif r.text == 'password':
-                user.setStyleSheet('color: black')
-                password.setStyleSheet('color: red')
-                classe.setStyleSheet('color: black')
-            elif r.text == 'classe':
-                user.setStyleSheet('color: black')
-                password.setStyleSheet('color: black')
-                classe.setStyleSheet('color: red')
-        except requests.exceptions.RequestException:
-            confirm = ConfirmWindow('Errore di connessione',
-                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                    "connessione<br>Controllare la propria connessione internet</span>",
-                                    ok="Chiudi il programma", cancel=None)
-            if confirm.exec_() == QDialog.Accepted:
-                print('ok')
-            confirm.deleteLater()
-            exit()
+        r = Server_call_master.access("/login.php", ['ok', 'password', 'username', 'class'],
+                                      {'username': user.text().strip(), 'password': password.text().strip(),
+                                       'class': classe.text().strip()})
+        if r == 'ok':
+            f = open('user_info.txt', "w")
+            f.write(
+                user.text().strip() + "\n" + password.text().strip() + "\n" + classe.text().strip() + "\nTrue\n20")
+            f.close()
+            self.home.data = Data()
+            self.home.open_MainWindow()
+            self.home.show()
+            self.close()
+        elif r == 'username':
+            user.setStyleSheet('color: red')
+            password.setStyleSheet('color: black')
+            classe.setStyleSheet('color: black')
+        elif r == 'password':
+            user.setStyleSheet('color: black')
+            password.setStyleSheet('color: red')
+            classe.setStyleSheet('color: black')
+        elif r == 'classe':
+            user.setStyleSheet('color: black')
+            password.setStyleSheet('color: black')
+            classe.setStyleSheet('color: red')
 
     def open_register(self, event):
         self.signin = Signin(self)

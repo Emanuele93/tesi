@@ -1,0 +1,10 @@
+import random
+x = random.randint(1,9)
+print("x vale: " + str(x))
+
+s = "x è un numero alto"
+if x <= 3:
+	s = "x è un numero basso"
+elif x <= 6:
+	s = "x è un numero medio"
+print(s) 

@@ -1,11 +1,8 @@
 from functools import partial
-
-import requests
 from PyQt5.QtGui import QFont, QIcon
-from PyQt5.QtWidgets import QWidget, QLineEdit, QPushButton, QVBoxLayout, QDialog, QLabel, QCheckBox, QButtonGroup, \
-    QHBoxLayout
+from PyQt5.QtWidgets import QWidget, QLineEdit, QPushButton, QVBoxLayout, QLabel, QCheckBox, QButtonGroup, QHBoxLayout
 from PyQt5.QtCore import *
-from windows.ConfirmWindow import ConfirmWindow
+import Server_call_master
 
 
 class Signin(QWidget):
@@ -218,44 +215,34 @@ class Signin(QWidget):
         button.setEnabled(False)
 
     def button_on_click(self, user, password, classe, name, surname, check, button, message, subtitle):
-        try:
-            r = requests.post("http://programmingisagame.netsons.org/singin.php",
-                              data={'username': user.text().strip(), 'password': password.text().strip(),
-                                    'class': classe.text().strip(), 'name': name.text().strip(),
-                                    'surname': surname.text().strip(), 'type': (self.bg.checkedId() - 1)})
-            if r.text == 'ok':
-                name.hide()
-                subtitle.hide()
-                surname.hide()
-                user.hide()
-                password.hide()
-                classe.hide()
-                check.hide()
-                button.hide()
-                message.show()
-                f = open('user_info.txt', "w")
-                f.write("\n\n\nTrue\n20")
-                f.close()
-            elif r.text == 'ready':
-                self.login.button_on_click(user, password, classe)
-                self.hide()
-            elif r.text == 'username':
-                user.setStyleSheet('color: red')
-                password.setStyleSheet('color: black')
-                classe.setStyleSheet('color: black')
-            elif r.text == 'class':
-                user.setStyleSheet('color: black')
-                password.setStyleSheet('color: black')
-                classe.setStyleSheet('color: red')
-        except requests.exceptions.RequestException:
-            confirm = ConfirmWindow('Gamification - Errore di connessione',
-                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                    "connessione<br>Controllare la propria connessione internet</span>",
-                                    ok="Chiudi il programma", cancel=None)
-            if confirm.exec_() == QDialog.Accepted:
-                print('ok')
-            confirm.deleteLater()
-            exit()
+        r = Server_call_master.access("/singin.php", ['ok', 'ready', 'username', 'class'],
+                                      {'username': user.text().strip(), 'password': password.text().strip(),
+                                       'class': classe.text().strip(), 'name': name.text().strip(),
+                                       'surname': surname.text().strip(), 'type': (self.bg.checkedId() - 1)})
+        if r == 'ok':
+            name.hide()
+            subtitle.hide()
+            surname.hide()
+            user.hide()
+            password.hide()
+            classe.hide()
+            check.hide()
+            button.hide()
+            message.show()
+            f = open('user_info.txt', "w")
+            f.write("\n\n\nTrue\n20")
+            f.close()
+        elif r == 'ready':
+            self.login.button_on_click(user, password, classe)
+            self.hide()
+        elif r == 'username':
+            user.setStyleSheet('color: red')
+            password.setStyleSheet('color: black')
+            classe.setStyleSheet('color: black')
+        elif r == 'class':
+            user.setStyleSheet('color: black')
+            password.setStyleSheet('color: black')
+            classe.setStyleSheet('color: red')
 
     def open_login(self, event):
         self.login.show()

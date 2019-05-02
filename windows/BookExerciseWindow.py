@@ -1,15 +1,9 @@
-import functools
 from functools import partial
-from threading import Thread
 import re
-import contextlib
-import io
 from os import path
 from PyQt5.QtGui import QTextCursor, QFont, QPixmap, QFontMetricsF, QIcon
-from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QSplitter, QHBoxLayout, QVBoxLayout, QLabel, QDialog, \
-    QSizePolicy
+from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QSplitter, QHBoxLayout, QVBoxLayout, QLabel, QDialog
 from PyQt5.QtCore import *
-
 from windows.ConfirmWindow import ConfirmWindow
 from windows.ExerciseWindow import MyThread, MyTimer
 from windows.SettingsWindow import SettingsWindow

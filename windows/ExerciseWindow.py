@@ -1,6 +1,4 @@
-import functools
 import datetime
-import json
 import re
 import contextlib
 import io
@@ -9,17 +7,14 @@ import ctypes
 import time
 from functools import partial
 from os import path
-from subprocess import STDOUT, check_output
-
-import requests
 from PyQt5.QtGui import QTextCursor, QFont, QPixmap, QFontMetricsF, QIcon, QKeySequence
 from PyQt5.QtWidgets import QWidget, QTextEdit, QPlainTextEdit, QSplitter, QHBoxLayout, QVBoxLayout, \
     QLabel, QDialog, QPushButton, QComboBox, QShortcut
 from PyQt5.QtCore import *
-
 from windows.ClassExerciseComparisonWindow import ClassExerciseComparisonWindow
 from windows.ConfirmWindow import ConfirmWindow
 from windows.SettingsWindow import SettingsWindow
+import Server_call_master
 
 
 class ExerciseWindow(QWidget):
@@ -204,38 +199,27 @@ class ExerciseWindow(QWidget):
                 validation_type = confirm.validation_type.currentIndex()
             else:
                 validation_type = self.exercise.validation_type
-            print("approvazione, da - a", self.exercise.validation_type, validation_type)
-            try:
-                r = requests.post("http://programmingisagame.netsons.org/approve_exercise.php",
-                                  data={'username': self.data.my_name, 'password': self.data.my_psw,
-                                        'class': self.data.my_class, 'id': self.exercise.id,
-                                        'validation_type': validation_type})
-                if r.text != "":
-                    confirm.deleteLater()
-                    pixmap = QPixmap('img/approved.png')
-                    pixmap = pixmap.scaled(50, 50)
-                    widget.setObjectName('img/approved.png')
-                    widget.setPixmap(pixmap)
-                    widget.enterEvent = partial(self.show_text, "Compito approvato", 151, widget)
-                    self.exercise.approved = True
-                    self.exercise.validation_type = validation_type
-                    self.exercise.delivery_date = None
-                    self.data.get_user_data()
-                    self.save_button.show()
-                    self.more_options_is_visible = False
-                    self.more_options.hide()
-                    self.more_button.show()
-                    self.watch_button2.hide()
-                    self.code_editor.setReadOnly(False)
-                    self.closer_controller.update()
-            except requests.exceptions.RequestException as e:
-                confirm2 = ConfirmWindow('Errore di connessione',
-                                         "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                         "connessione<br>Controllare la propria connessione internet e riprovare</span>",
-                                         ok="Ok", cancel=None)
-                if confirm2.exec_() == QDialog.Accepted:
-                    print('ok')
-                confirm2.deleteLater()
+            if Server_call_master.set_variable("/approve_exercise.php",
+                                               {'username': self.data.my_name, 'password': self.data.my_psw,
+                                                'class': self.data.my_class, 'id': self.exercise.id,
+                                                'validation_type': validation_type}):
+                confirm.deleteLater()
+                pixmap = QPixmap('img/approved.png')
+                pixmap = pixmap.scaled(50, 50)
+                widget.setObjectName('img/approved.png')
+                widget.setPixmap(pixmap)
+                widget.enterEvent = partial(self.show_text, "Compito approvato", 151, widget)
+                self.exercise.approved = True
+                self.exercise.validation_type = validation_type
+                self.exercise.delivery_date = None
+                self.data.get_user_data()
+                self.save_button.show()
+                self.more_options_is_visible = False
+                self.more_options.hide()
+                self.more_button.show()
+                self.watch_button2.hide()
+                self.code_editor.setReadOnly(False)
+                self.closer_controller.update()
         confirm.deleteLater()
 
     def update_text_result_orientation(self):
@@ -328,17 +312,12 @@ class ExerciseWindow(QWidget):
             self.watch_button.enterEvent = partial(self.show_text, 'Non sbirciabile', 100, self.watch_button)
         self.watch_button.leaveEvent = self.hide_text
         self.watch_button.setEnabled(self.data.visible or self.data.my_name in self.data.my_proff)
-
-        if self.exercise.delivery_date is None and self.exercise.lookable:
-            try:
-                r = requests.post("http://programmingisagame.netsons.org/check_watch_homework_coin.php",
-                                  data={'username': self.data.my_name, 'password': self.data.my_psw,
-                                        'id': self.exercise.id})
-                if r.text == "":
-                    self.watch_button.hide()
-            except requests.exceptions.RequestException as e:
-                print('problemi di connessione')
-
+        self.watch_button.hide()
+        if self.exercise.delivery_date is None and self.exercise.lookable and \
+                Server_call_master.check_variable("/check_watch_homework_coin.php",
+                                                  {'username': self.data.my_name, 'password': self.data.my_psw,
+                                                   'id': self.exercise.id}):
+                self.watch_button.show()
         box1 = QHBoxLayout(self)
         box1.setAlignment(Qt.AlignHCenter)
         box1.setSpacing(20)
@@ -554,41 +533,31 @@ class ExerciseWindow(QWidget):
                  self.exercise.color_styles.multi_line_comment_color
             for i in self.exercise.color_styles.keyWords:
                 cs += "," + i.color + "," + ('T' if i.bold else 'F')
-            try:
-                r = requests.post("http://programmingisagame.netsons.org/add_solution.php",
-                                  data={'username': self.data.my_name, 'password': self.data.my_psw,
-                                        'class': self.data.my_class, 'id': self.exercise.id, 'color_style': cs,
-                                        'delivery_date': data, 'solution': self.code_editor.toPlainText(),
-                                        'result': self.results.toPlainText(), 'resources_used': resources,
-                                        'code_compile': 1 if self.code_compile else 0, 'impurity': impurity})
-                if r.text != "":
-                    print(r.text)
-                    self.exercise.solution = self.code_editor.toPlainText()
-                    self.exercise.delivery_date = datetime.datetime.now()
-                    self.exercise.resources_used = self.resources_used
-                    if self.exercise.validation_type > 0 and \
-                            ((self.exercise.self_validation and self.exercise.creator == self.data.my_name) or
-                             (not self.exercise.self_validation and self.data.my_name in self.data.my_proff)):
-                        self.exercise.missing_votes += 1
-                    if r.text != 'ok':
-                        self.data.money += int(r.text.split(',')[0])
-                        self.data.level += int(r.text.split(',')[1])
-                    self.closer_controller.close_ExerciseWindow(self.exercise)
-                    self.save_button.hide()
-                    self.more_options.hide()
-                    self.more_button.hide()
-                    self.watch_button2.show()
-                    self.code_editor.setReadOnly(True)
-                    if self.data.visible:
-                        self.watch_button_on_click(None, None)
-            except requests.exceptions.RequestException as e:
-                confirm2 = ConfirmWindow('Errore di connessione',
-                                         "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                         "connessione<br>Controllare la propria connessione internet e riprovare</span>",
-                                         ok="Ok", cancel=None)
-                if confirm2.exec_() == QDialog.Accepted:
-                    print('ok')
-                confirm2.deleteLater()
+
+            r = Server_call_master.add_solution(
+                {'username': self.data.my_name, 'password': self.data.my_psw, 'class': self.data.my_class,
+                 'id': self.exercise.id, 'color_style': cs, 'delivery_date': data,
+                 'solution': self.code_editor.toPlainText(), 'result': self.results.toPlainText(),
+                 'resources_used': resources, 'code_compile': 1 if self.code_compile else 0, 'impurity': impurity})
+            if r != "":
+                self.exercise.solution = self.code_editor.toPlainText()
+                self.exercise.delivery_date = datetime.datetime.now()
+                self.exercise.resources_used = self.resources_used
+                if self.exercise.validation_type > 0 and \
+                        ((self.exercise.self_validation and self.exercise.creator == self.data.my_name) or
+                         (not self.exercise.self_validation and self.data.my_name in self.data.my_proff)):
+                    self.exercise.missing_votes += 1
+                if r != 'ok':
+                    self.data.money += int(r.split(',')[0])
+                    self.data.level += int(r.split(',')[1])
+                self.closer_controller.close_ExerciseWindow(self.exercise)
+                self.save_button.hide()
+                self.more_options.hide()
+                self.more_button.hide()
+                self.watch_button2.show()
+                self.code_editor.setReadOnly(True)
+                if self.data.visible:
+                    self.watch_button_on_click(None, None)
         confirm.deleteLater()
 
     def restart_button_on_click(self, event):
@@ -602,41 +571,21 @@ class ExerciseWindow(QWidget):
         confirm.deleteLater()
 
     def watch_button_on_click(self, button, event):
-        try:
-            r = requests.post("http://programmingisagame.netsons.org/click_watch_homework_coin.php",
-                              data={'username': self.data.my_name, 'password': self.data.my_psw,
-                                    'class': self.data.my_class, 'id': self.exercise.id})
-            if r.text == "":
-                button.hide()
-            else:
-                self.data.watch_homework_coin = (r.text != "removed")
-                try:
-                    r = requests.post("http://programmingisagame.netsons.org/get_class_exercise_solutions.php",
-                                      data={'username': self.data.my_name, 'password': self.data.my_psw,
-                                            'exercise': self.exercise.id, 'class': self.data.my_class})
-                    if r.text != "":
-                        class_solutions = json.loads(r.text[1: len(r.text)])
-                        confirm = ClassExerciseComparisonWindow(
-                            'Soluzioni - "' + self.exercise.title + '"',
-                            class_solutions, r.text[0:1], self.exercise.limits, self, parent=self)
-                        confirm.exec_()
-                        confirm.deleteLater()
-                except requests.exceptions.RequestException as e:
-                    confirm = ConfirmWindow('Errore di connessione',
-                                            "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                            "connessione<br>Controllare la connessione internet e riprovare</span>",
-                                            ok="Ok", cancel=None)
-                    if confirm.exec_() == QDialog.Accepted:
-                        print('ok')
-                    confirm.deleteLater()
-        except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Errore di connessione',
-                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                    "connessione<br>Controllare la propria connessione internet e riprovare</span>",
-                                    ok="Ok", cancel=None)
-            if confirm.exec_() == QDialog.Accepted:
-                print('ok')
-            confirm.deleteLater()
+        r = Server_call_master.click_watch_homework_coin({'username': self.data.my_name, 'password': self.data.my_psw,
+                                                          'class': self.data.my_class, 'id': self.exercise.id})
+        if r == "":
+            button.hide()
+        else:
+            self.data.watch_homework_coin = (r != "removed")
+
+            a, b = Server_call_master.get_class_exercise_solutions(
+                {'username': self.data.my_name, 'password': self.data.my_psw,
+                 'exercise': self.exercise.id, 'class': self.data.my_class})
+            if a is not None:
+                confirm = ClassExerciseComparisonWindow(
+                    'Soluzioni - "' + self.exercise.title + '"',a, b, self.exercise.limits, self, parent=self)
+                confirm.exec_()
+                confirm.deleteLater()
 
     def create_label(self, text):
         font = QFont()

@@ -1,11 +1,9 @@
 import json
 from functools import partial
 from os import path, listdir
-
 from PyQt5.QtGui import QFont, QPixmap
-from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel, QDialog
+from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel
 from PyQt5.QtCore import *
-
 from Data import Exercise
 from windows.BookExerciseWindow import BookExerciseWindow
 from windows.CreateHomeworkWindow import CreateHomeworkWindow
@@ -83,7 +81,7 @@ class ExercisesCollectionWindow(QWidget):
 
         level_bar = QLabel(self)
         level_bar.setStyleSheet('background-color: #4040FF')
-        level_bar.setFixedSize(int(90*(self.data.level-old)/(self.data.level_progression[l-1]-old)), 5)
+        level_bar.setFixedSize(int(90 * (self.data.level - old) / (self.data.level_progression[l - 1] - old)), 5)
 
         box = QVBoxLayout(self)
         box.setSpacing(0)
@@ -162,8 +160,8 @@ class ExercisesCollectionWindow(QWidget):
             i = open("exercises/" + f, "r")
             for x in i:
                 y = json.loads(x)
-                ex. append(Exercise(None, None, None, y["title"], y["text"], y["level"], y["white_paper_mode"],
-                                    y["start_code"], y["limits"], y["executable"], True, True, 0, False))
+                ex.append(Exercise(None, None, None, y["title"], y["text"], y["level"], y["white_paper_mode"],
+                                   y["start_code"], y["limits"], y["executable"], True, True, 0, False))
             box.addWidget(self.make_group_of_exercises(f.title()[2:-4], ex))
         bottom_widget = QWidget(self, flags=Qt.Widget)
         bottom_widget.setLayout(box)
@@ -200,7 +198,7 @@ class ExercisesCollectionWindow(QWidget):
             ex.setTextFormat(Qt.RichText)
             self.pages[str(len(self.pages))] = None
             dif = QLabel('&#x25EF;' if i.level == 'Facile' else ('&#x25EF;<br>&#x25EF;' if i.level == 'Medio'
-                                                                        else '&#x25EF;<br>&#x25EF;<br>&#x25EF;'), self)
+                                                                 else '&#x25EF;<br>&#x25EF;<br>&#x25EF;'), self)
             dif.setContentsMargins(0, 5, 10, 5)
             dif.setTextFormat(Qt.RichText)
             dif.setFont(font2)
@@ -216,12 +214,12 @@ class ExercisesCollectionWindow(QWidget):
             ex.setLayout(ex_box)
             solution_file = 'saves/' + i.title + '.txt'
             if (i.title.__contains__('"') or i.title.__contains__("'") or i.title.__contains__('?')
-                    or i.title.__contains__('\\') or i.title.__contains__('/') or i.title.__contains__(":")
-                    or i.title.__contains__("*") or i.title.__contains__("<") or i.title.__contains__(">")
-                    or i.title.__contains__("|")) and path.isfile('saves/_lib.txt'):
+                or i.title.__contains__('\\') or i.title.__contains__('/') or i.title.__contains__(":")
+                or i.title.__contains__("*") or i.title.__contains__("<") or i.title.__contains__(">")
+                or i.title.__contains__("|")) and path.isfile('saves/_lib.txt'):
                 f = open('saves/_lib.txt', 'r')
                 for j in f:
-                    if j[len(j.split(':')[0])+1:-1] == i.title:
+                    if j[len(j.split(':')[0]) + 1:-1] == i.title:
                         solution_file = 'saves/' + j.split(':')[0] + '.txt'
                 f.close()
 
@@ -270,7 +268,11 @@ class ExercisesCollectionWindow(QWidget):
 
     def open_void_page(self):
         if self.pages['0'] is None:
-            self.pages['0'] = BookExerciseWindow(Exercise(None, None, None, "Pagina vuota", None, 'Facile', False, "", {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None, 'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None}, True, False, False, 0, False), self.data, None)
+            self.pages['0'] = BookExerciseWindow(Exercise(None, None, None, "Pagina vuota", None, 'Facile', False, "",
+                                                          {'lines': None, 'variables': None, 'if': None, 'elif': None,
+                                                           'else': None, 'conditions': None, 'for': None, 'while': None,
+                                                           'cycles': None, 'def': None}, True, False, False, 0, False),
+                                                 self.data, None)
             self.pages['0'].show()
         else:
             self.pages['0'].show()

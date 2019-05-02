@@ -1,11 +1,8 @@
-import json
 import random
-
-import requests
+import Server_call_master
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QPixmap, QIcon
 from PyQt5.QtWidgets import QDialog, QWidget, QVBoxLayout, QLabel, QHBoxLayout, QScrollArea
-from windows.ConfirmWindow import ConfirmWindow
 
 
 class ClassAchievementsComparisonWindow(QDialog):
@@ -17,69 +14,51 @@ class ClassAchievementsComparisonWindow(QDialog):
         self.achievements_titles = achievements_titles
         self.data = data
 
-        try:
-            r = requests.post("http://programmingisagame.netsons.org/get_class_achievement_progress.php",
-                              data={'username': data.my_name, 'password': data.my_psw, 'class': data.my_class})
-            if r.text != "":
-                students_widgets = []
-                not_visible_students_widget = []
-                #my_widget = None
-                mates = json.loads(r.text)
-                pos = 0
-                for i in range(0, len(mates)):
-                    if i == 0 or (mates[i]['exp'] != mates[i-1]['exp'] and
-                                  (mates[i]['visible'] == '1' or self.data.my_name in self.data.my_proff)):
-                        pos += 1
-                    if mates[i]['visible'] == '1' or self.data.my_name in self.data.my_proff:
-                        students_widgets.append(self.make_student_widget(mates[i], pos, mates[i]['visible'] == '1'))
-                    else:
-                        not_visible_students_widget.append(self.make_student_widget(mates[i], None, False))
-                    '''
-                    if mates[i]['username'] == data.my_name:
-                        my_widget = self.make_student_widget(mates[i], i)
-                    else:
-                        students_widgets.append(self.make_student_widget(mates[i], i))
-                    '''
-                font = QFont()
-                font.setPixelSize(20)
-                log_line = QLabel('Classifica della classe: "' + self.data.my_class + '" per esperieza raccolta', self)
-                log_line.setFont(font)
-                box = QHBoxLayout(self)
-                box.addWidget(log_line)
-                box.setContentsMargins(75, 0, 0, 0)
-                log_line = QWidget(self, flags=Qt.Widget)
-                log_line.setLayout(box)
-                log_line.setObjectName("log_line")
-                log_line.setStyleSheet("QWidget#log_line {border: 1px solid grey; border-right: 0px solid grey; "
-                                       "border-left: 0px solid grey; background-color: #88c5ff}")
-                log_line.setFixedHeight(50)
+        mates = Server_call_master.get_class_achievement_progress({'username': data.my_name, 'password': data.my_psw,
+                                                                   'class': data.my_class})
+        if mates != "":
+            students_widgets = []
+            not_visible_students_widget = []
+            pos = 0
+            for i in range(0, len(mates)):
+                if i == 0 or (mates[i]['exp'] != mates[i-1]['exp'] and
+                              (mates[i]['visible'] == '1' or self.data.my_name in self.data.my_proff)):
+                    pos += 1
+                if mates[i]['visible'] == '1' or self.data.my_name in self.data.my_proff:
+                    students_widgets.append(self.make_student_widget(mates[i], pos, mates[i]['visible'] == '1'))
+                else:
+                    not_visible_students_widget.append(self.make_student_widget(mates[i], None, False))
+            font = QFont()
+            font.setPixelSize(20)
+            log_line = QLabel('Classifica della classe: "' + self.data.my_class + '" per esperieza raccolta', self)
+            log_line.setFont(font)
+            box = QHBoxLayout(self)
+            box.addWidget(log_line)
+            box.setContentsMargins(75, 0, 0, 0)
+            log_line = QWidget(self, flags=Qt.Widget)
+            log_line.setLayout(box)
+            log_line.setObjectName("log_line")
+            log_line.setStyleSheet("QWidget#log_line {border: 1px solid grey; border-right: 0px solid grey; "
+                                   "border-left: 0px solid grey; background-color: #88c5ff}")
+            log_line.setFixedHeight(50)
 
-                box = QHBoxLayout(self)
-                box.setAlignment(Qt.AlignLeft)
-                random.shuffle(not_visible_students_widget)
-                for i in students_widgets:
-                    box.addWidget(i, alignment=Qt.AlignLeft)
-                for i in not_visible_students_widget:
-                    box.addWidget(i, alignment=Qt.AlignLeft)
-                widget = QWidget(self, flags=Qt.Widget)
-                widget.setLayout(box)
-                scroll = QScrollArea(self)
-                scroll.setWidget(widget)
-                scroll.setObjectName("scroll")
-                scroll.setStyleSheet("QWidget#scroll {border: 0px solid grey}")
-                box = QVBoxLayout(self)
-                box.setContentsMargins(0,0,0,0)
-                box.addWidget(log_line)
-                box.addWidget(scroll)
-
-        except requests.exceptions.RequestException as e:
-            c = ConfirmWindow('Errore di connessione',
-                                "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                "connessione<br>Controllare la connessione internet e riprovare</span>",
-                                ok="Ok", cancel=None)
-            if c.exec_() == QDialog.Accepted:
-                print('ok')
-            c.deleteLater()
+            box = QHBoxLayout(self)
+            box.setAlignment(Qt.AlignLeft)
+            random.shuffle(not_visible_students_widget)
+            for i in students_widgets:
+                box.addWidget(i, alignment=Qt.AlignLeft)
+            for i in not_visible_students_widget:
+                box.addWidget(i, alignment=Qt.AlignLeft)
+            widget = QWidget(self, flags=Qt.Widget)
+            widget.setLayout(box)
+            scroll = QScrollArea(self)
+            scroll.setWidget(widget)
+            scroll.setObjectName("scroll")
+            scroll.setStyleSheet("QWidget#scroll {border: 0px solid grey}")
+            box = QVBoxLayout(self)
+            box.setContentsMargins(0,0,0,0)
+            box.addWidget(log_line)
+            box.addWidget(scroll)
 
     def make_student_widget(self, user, position, visible):
         font = QFont()

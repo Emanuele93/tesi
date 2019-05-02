@@ -1,14 +1,10 @@
-import json
 from functools import partial
-
-import requests
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QFont, QPixmap, QIcon
 from PyQt5.QtWidgets import QDialog, QPushButton, QWidget, QVBoxLayout, QLabel, QHBoxLayout, QScrollArea, QCheckBox, \
     QButtonGroup, QAbstractButton
-
 from Data import DefaultColorStyles
-from windows.ConfirmWindow import ConfirmWindow
+import Server_call_master
 
 
 class SettingsWindow(QDialog):
@@ -149,30 +145,19 @@ class SettingsWindow(QDialog):
     def get_users_widget(self):
         box = QVBoxLayout(self)
         box.setAlignment(Qt.AlignTop)
-        try:
-            r = requests.post("http://programmingisagame.netsons.org/get_class_users.php",
-                              data={'username': self.data.my_name, 'password': self.data.my_psw,
-                                    'class': self.data.my_class})
-            users = json.loads(r.text)
+        r = Server_call_master.get_class_users({'username': self.data.my_name, 'password': self.data.my_psw,
+                                                'class': self.data.my_class})
+        for i in r:
+            box.addWidget(self.make_user_wait_widget(i['username'], i['name'], i['surname'],
+                                                     True if i['student_type'] == '1' else False,
+                                                     True if i['approved'] == '1' else False))
 
-            for i in users:
-                box.addWidget(self.make_user_wait_widget(i['username'], i['name'], i['surname'],
-                                                         True if i['student_type'] == '1' else False,
-                                                         True if i['approved'] == '1' else False))
-        except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Errore di connessione',
-                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                    "connessione<br>Controllare la connessione internet e riprovare</span>",
-                                    ok="Ok", cancel=None)
-            if confirm.exec_() == QDialog.Accepted:
-                print('ok')
-            confirm.deleteLater()
         users = QWidget(self, flags=Qt.Widget)
         users.setLayout(box)
 
         font = QFont()
         font.setPixelSize(17)
-        intro = QLabel("Componenti della classe " + self.data.my_class , self)
+        intro = QLabel("Componenti della classe " + self.data.my_class, self)
         intro.setFont(font)
         intro.setFixedHeight(20)
         box = QVBoxLayout(self)
@@ -466,7 +451,7 @@ class SettingsWindow(QDialog):
             logout.hide()
 
         box = QHBoxLayout(self)
-        box. setContentsMargins(20, 90, 20, 0)
+        box.setContentsMargins(20, 90, 20, 0)
         if self.data.my_name in self.data.my_proff:
             advanced_settings_button = QPushButton('Impostazioni\navanzate', self)
             advanced_settings_button.clicked.connect(self.advanced_settings_button_on_click)
@@ -540,7 +525,7 @@ class SettingsWindow(QDialog):
 
         self.color_buttons[text] = button
 
-        space=QWidget(self, flags=Qt.Widget)
+        space = QWidget(self, flags=Qt.Widget)
         space.setFixedWidth(100)
 
         box = QHBoxLayout(self)
@@ -591,7 +576,7 @@ class SettingsWindow(QDialog):
         self.selection_color_title.setContentsMargins(15, 0, 15, 0)
 
         box = QHBoxLayout(self)
-        box.setContentsMargins(0,0,0,0)
+        box.setContentsMargins(0, 0, 0, 0)
 
         for i in self.data.owned_colors:
             button = QPushButton('', self)
@@ -604,7 +589,7 @@ class SettingsWindow(QDialog):
         widget.setLayout(box)
 
         box = QVBoxLayout(self)
-        box.setContentsMargins(20,15,20,20)
+        box.setContentsMargins(20, 15, 20, 20)
         box.setSpacing(20)
         box.addWidget(self.selection_color_title)
         box.addWidget(widget)
@@ -621,7 +606,7 @@ class SettingsWindow(QDialog):
         selection_image_title = QLabel(self)
         selection_image_title.setText("Seleziona l'immagine che preferisci:")
         selection_image_title.setFont(font)
-        selection_image_title.setContentsMargins(20,0,0,0)
+        selection_image_title.setContentsMargins(20, 0, 0, 0)
 
         box = QHBoxLayout(self)
         box.setSpacing(20)
@@ -734,91 +719,42 @@ class SettingsWindow(QDialog):
             self.exercise_window.update_text_result_orientation()
 
     def set_visible(self, btn):
-        try:
-            visible = 1 if btn.text() == "No" else 0
-            r = requests.post("http://programmingisagame.netsons.org/set_user_visible.php",
-                              data={'username': self.data.my_name, 'password': self.data.my_psw, 'visible': visible})
-            if r.text != "":
-                self.data.visible = True if btn.text() == "No" else False
-                if self.exercise_window is not None and self.exercise_window.exercise.id is not None:
-                    self.exercise_window.watch_button.setEnabled(self.data.visible
-                                                                 or self.data.my_name in self.data.my_proff)
-        except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Errore di connessione',
-                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                    "connessione<br>Controllare la connessione internet e riprovare</span>",
-                                    ok="Ok", cancel=None)
-            if confirm.exec_() == QDialog.Accepted:
-                print('ok')
-            confirm.deleteLater()
+        visible = 1 if btn.text() == "No" else 0
+        if Server_call_master.set_variable("/set_user_visible.php",
+                                           {'username': self.data.my_name, 'password': self.data.my_psw,
+                                            'visible': visible}):
+            self.data.visible = True if btn.text() == "No" else False
+            if self.exercise_window is not None and self.exercise_window.exercise.id is not None:
+                self.exercise_window.watch_button.setEnabled(self.data.visible
+                                                             or self.data.my_name in self.data.my_proff)
 
     def set_correction_type(self, btn):
-        try:
-            mode = 1 if btn.text() == "Il creatore dell'esercizio" else (2 if btn.text() == "Il docente" else 0)
-            r = requests.post("http://programmingisagame.netsons.org/set_correction_type.php",
-                              data={'username': self.data.my_name, 'password': self.data.my_psw,
-                                    'class': self.data.my_class, 'mode': mode})
-            if r.text != "":
-                self.data.correction_type = mode
-        except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Errore di connessione',
-                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                    "connessione<br>Controllare la connessione internet e riprovare</span>",
-                                    ok="Ok", cancel=None)
-            if confirm.exec_() == QDialog.Accepted:
-                print('ok')
-            confirm.deleteLater()
+        mode = 1 if btn.text() == "Il creatore dell'esercizio" else (2 if btn.text() == "Il docente" else 0)
+        if Server_call_master.set_variable("/set_correction_type.php",
+                                           {'username': self.data.my_name, 'password': self.data.my_psw,
+                                            'class': self.data.my_class, 'mode': mode}):
+            self.data.correction_type = mode
 
     def set_approving_type(self, btn):
-        try:
-            mode = 0 if btn.text() == "Automatica" else 1
-            r = requests.post("http://programmingisagame.netsons.org/set_approving_type.php",
-                              data={'username': self.data.my_name, 'password': self.data.my_psw,
-                                    'class': self.data.my_class, 'mode': mode})
-            if r.text != "":
-                self.data.approving_type = mode
-        except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Errore di connessione',
-                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                    "connessione<br>Controllare la connessione internet e riprovare</span>",
-                                    ok="Ok", cancel=None)
-            if confirm.exec_() == QDialog.Accepted:
-                print('ok')
-            confirm.deleteLater()
+        mode = 0 if btn.text() == "Automatica" else 1
+        if Server_call_master.set_variable("/set_approving_type.php",
+                                           {'username': self.data.my_name, 'password': self.data.my_psw,
+                                            'class': self.data.my_class, 'mode': mode}):
+            self.data.approving_type = mode
 
     def set_student_exercises_visible(self, btn):
-        try:
-            visible = 1 if btn.text() == "Visibili" else 0
-            r = requests.post("http://programmingisagame.netsons.org/set_student_exercises_visible.php",
-                              data={'username': self.data.my_name, 'password': self.data.my_psw,
-                                    'class': self.data.my_class, 'visible': visible})
-            if r.text != "":
-                self.data.student_exercises_visible = True if btn.text() == "Visibili" else False
-        except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Errore di connessione',
-                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                    "connessione<br>Controllare la connessione internet e riprovare</span>",
-                                    ok="Ok", cancel=None)
-            if confirm.exec_() == QDialog.Accepted:
-                print('ok')
-            confirm.deleteLater()
+        visible = 1 if btn.text() == "Visibili" else 0
+        if Server_call_master.set_variable("/set_student_exercises_visible.php",
+                                           {'username': self.data.my_name, 'password': self.data.my_psw,
+                                            'class': self.data.my_class, 'visible': visible}):
+            self.data.student_exercises_visible = True if btn.text() == "Visibili" else False
 
     def set_comments_visible(self, btn):
-        try:
-            visible = 1 if btn.text() == "Abilitati" else 0
-            r = requests.post("http://programmingisagame.netsons.org/set_comments_visible.php",
-                              data={'username': self.data.my_name, 'password': self.data.my_psw,
-                                    'class': self.data.my_class, 'visible': visible})
-            if r.text != "":
-                self.data.comments_visible = btn.text() == "Abilitati"
-        except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Errore di connessione',
-                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                    "connessione<br>Controllare la connessione internet e riprovare</span>",
-                                    ok="Ok", cancel=None)
-            if confirm.exec_() == QDialog.Accepted:
-                print('ok')
-            confirm.deleteLater()
+        visible = 1 if btn.text() == "Abilitati" else 0
+        if Server_call_master.set_variable("/set_comments_visible.php",
+                                           {'username': self.data.my_name, 'password': self.data.my_psw,
+                                            'class': self.data.my_class, 'visible': visible}):
+            self.data.comments_visible = btn.text() == "Abilitati"
 
     def selection_image_on_click(self, event):
         if self.selection_image_widget.isVisible():
@@ -837,27 +773,17 @@ class SettingsWindow(QDialog):
         self.parent.open_LoginWindow()
 
     def image_on_click(self, name, label, event):
-        try:
-            r = requests.post("http://programmingisagame.netsons.org/select_user_image.php",
-                              data={'username': self.data.my_name, 'password': self.data.my_psw, 'img': name})
-            if r.text != "":
-                pixmap = QPixmap('img/' + name)
-                pixmap = pixmap.scaled(100,100)
-                self.current_img.setPixmap(pixmap)
-                self.data.current_image = name
-                if self.exercise_window is None:
-                    self.parent.set_image(name)
-                label.setStyleSheet('border: 3px solid #5555ee')
-                self.current_image_label.setStyleSheet('border: 0px solid #000000')
-                self.current_image_label = label
-        except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Errore di connessione',
-                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                    "connessione<br>Controllare la propria connessione internet e riprovare</span>",
-                                    ok="Ok", cancel=None)
-            if confirm.exec_() == QDialog.Accepted:
-                print('ok')
-            confirm.deleteLater()
+        if Server_call_master.set_variable("/select_user_image.php",
+                                           {'username': self.data.my_name, 'password': self.data.my_psw, 'img': name}):
+            pixmap = QPixmap('img/' + name)
+            pixmap = pixmap.scaled(100, 100)
+            self.current_img.setPixmap(pixmap)
+            self.data.current_image = name
+            if self.exercise_window is None:
+                self.parent.set_image(name)
+            label.setStyleSheet('border: 3px solid #5555ee')
+            self.current_image_label.setStyleSheet('border: 0px solid #000000')
+            self.current_image_label = label
 
     def set_preferences(self):
         self.data.color_styles = self.color_styles.__copy__()
@@ -872,23 +798,23 @@ class SettingsWindow(QDialog):
         self.color_style_changed(self.color_styles)
 
     def color_style_changed(self, cs):
-        self.color_buttons['Colore sfondo (codice): ']\
+        self.color_buttons['Colore sfondo (codice): '] \
             .setStyleSheet('background-color: ' + self.color_styles.code_background_color)
-        self.color_buttons['Colore sfondo (risultati): ']\
+        self.color_buttons['Colore sfondo (risultati): '] \
             .setStyleSheet('background-color: ' + self.color_styles.results_background_color)
-        self.color_buttons['Colore sfondo (risultati sbagliati): ']\
+        self.color_buttons['Colore sfondo (risultati sbagliati): '] \
             .setStyleSheet('background-color: ' + self.color_styles.error_results_background_color)
-        self.color_buttons['Colore testo (codice): ']\
+        self.color_buttons['Colore testo (codice): '] \
             .setStyleSheet('background-color: ' + self.color_styles.code_text_color)
-        self.color_buttons['Colore testo (risultati): ']\
+        self.color_buttons['Colore testo (risultati): '] \
             .setStyleSheet('background-color: ' + self.color_styles.results_text_color)
-        self.color_buttons['Colore testo (risultati sbagliati): ']\
+        self.color_buttons['Colore testo (risultati sbagliati): '] \
             .setStyleSheet('background-color: ' + self.color_styles.error_results_text_color)
-        self.color_buttons['Colore commenti (# linea unica): ']\
+        self.color_buttons['Colore commenti (# linea unica): '] \
             .setStyleSheet('background-color: ' + self.color_styles.comment_color)
-        self.color_buttons["Colore commenti (''' più linee): "]\
+        self.color_buttons["Colore commenti (''' più linee): "] \
             .setStyleSheet('background-color: ' + self.color_styles.multi_line_comment_color)
-        self.color_buttons['Colore stringhe: ']\
+        self.color_buttons['Colore stringhe: '] \
             .setStyleSheet('background-color: ' + self.color_styles.string_color)
 
         for i in self.color_styles.keyWords:
@@ -964,35 +890,16 @@ class SettingsWindow(QDialog):
         return widget
 
     def accept_user(self, accepted, w1, widget, username):
-        try:
-            r = requests.post("http://programmingisagame.netsons.org/solve_request_signin.php",
-                              data={'username': self.data.my_name, 'password': self.data.my_psw,
-                                    'class': self.data.my_class, 'user': username, 'type': 1 if accepted else 2})
-            if r.text == "ok":
-                if accepted:
-                    w1.show()
-                widget.hide()
-        except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Errore di connessione',
-                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                    "connessione<br>Controllare la connessione internet e riprovare</span>",
-                                    ok="Ok", cancel=None)
-            if confirm.exec_() == QDialog.Accepted:
-                print('ok')
-            confirm.deleteLater()
+        if Server_call_master.set_variable("/solve_request_signin.php",
+                                           {'username': self.data.my_name, 'password': self.data.my_psw,
+                                            'class': self.data.my_class, 'user': username,
+                                            'type': 1 if accepted else 2}):
+            if accepted:
+                w1.show()
+            widget.hide()
 
     def remove_user(self, widget, username):
-        try:
-            r = requests.post("http://programmingisagame.netsons.org/remove_user.php",
-                              data={'username': self.data.my_name, 'password': self.data.my_psw,
-                                    'class': self.data.my_class, 'user': username})
-            if r.text == "ok":
-                widget.hide()
-        except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Errore di connessione',
-                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                    "connessione<br>Controllare la connessione internet e riprovare</span>",
-                                    ok="Ok", cancel=None)
-            if confirm.exec_() == QDialog.Accepted:
-                print('ok')
-            confirm.deleteLater()
+        if Server_call_master.set_variable("/remove_user.php",
+                                           {'username': self.data.my_name, 'password': self.data.my_psw,
+                                            'class': self.data.my_class, 'user': username}):
+            widget.hide()

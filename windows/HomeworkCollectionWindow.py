@@ -1,10 +1,7 @@
-import threading
 from functools import partial
-
 from PyQt5.QtGui import QFont, QPixmap, QMovie
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel
 from PyQt5.QtCore import *
-
 from windows.CreateHomeworkWindow import CreateHomeworkWindow
 from windows.ExerciseWindow import ExerciseWindow
 

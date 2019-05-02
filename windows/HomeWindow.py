@@ -1,10 +1,7 @@
 from functools import partial
-
 from PyQt5.QtGui import QFont, QPixmap
-from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QFrame, QLabel
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel
 from PyQt5.QtCore import *
-
-from windows.LoginWindow import LoginWindow
 from windows.SettingsWindow import SettingsWindow
 
 
@@ -18,7 +15,7 @@ class HomeWindow(QWidget):
         self.controller = controller
 
         self.image = QLabel(self)
-        pixmap = QPixmap('img/'+data.current_image)
+        pixmap = QPixmap('img/' + data.current_image)
         pixmap = pixmap.scaled(130, 130)
         self.image.setPixmap(pixmap)
         self.image.setObjectName(data.current_image)
@@ -48,7 +45,7 @@ class HomeWindow(QWidget):
 
         level_bar = QLabel(self)
         level_bar.setStyleSheet('background-color: #4040FF')
-        level_bar.setFixedSize(int(90*(self.data.level-old)/(self.data.level_progression[l-1]-old)), 8)
+        level_bar.setFixedSize(int(90 * (self.data.level - old) / (self.data.level_progression[l - 1] - old)), 8)
 
         box = QVBoxLayout(self)
         box.setSpacing(0)
@@ -82,7 +79,7 @@ class HomeWindow(QWidget):
         soldi_widget.setLayout(box)
 
         box = QHBoxLayout(self)
-        box.setContentsMargins(20,10,20,10)
+        box.setContentsMargins(20, 10, 20, 10)
         box.addWidget(title, alignment=Qt.AlignLeft)
         box.addWidget(soldi_widget, alignment=Qt.AlignCenter)
         box.addWidget(settings_button, alignment=Qt.AlignRight)
@@ -170,7 +167,7 @@ class HomeWindow(QWidget):
 
     def set_image(self, name):
         pixmap = QPixmap('img/' + name)
-        pixmap = pixmap.scaled(130,130)
+        pixmap = pixmap.scaled(130, 130)
         self.image.setPixmap(pixmap)
 
     def my_open_HomeworkCollectionWindow(self, event):

@@ -1,10 +1,5 @@
-import json
 from os import path
-
-import requests
-from PyQt5.QtWidgets import QDialog
-
-from windows.ConfirmWindow import ConfirmWindow
+import Server_call_master
 
 
 class KeyWord:
@@ -124,44 +119,32 @@ class Data:
         self.make_homework_coin = False
         self.watch_homework_coin = False
         self.visible = True
-        try:
-            r = requests.post("http://programmingisagame.netsons.org/get_user.php",
-                              data={'username': self.my_name, 'password': self.my_psw})
-            j = json.loads(r.text)
-            if len(j) > 0:
-                self.money = int(j[0]['money'])
-                self.level = int(j[0]['exp'])
-                self.visible = j[0]['visible'] == '1'
-                lev = (j[0]['level_variables']).split(',')
-                self.level_variables = {'lines': int(lev[0]), 'variables': int(lev[1]), 'if': int(lev[2]), 'elif': int(lev[3]),
-                                        'else': int(lev[4]), 'for': int(lev[5]), 'while': int(lev[6]), 'functions': int(lev[7])}
-                self.owned_colors = (j[0]['owned_colors']).split(',')
-                self.current_image = j[0]['current_image']
-                self.owned_images = j[0]['owned_images'].split(',')
-                self.make_homework_coin = False if int(j[0]['make_homework_coin']) == 0 else True
-                self.watch_homework_coin = False if int(j[0]['watch_homework_coin']) == 0 else True
-
-            r = requests.post("http://programmingisagame.netsons.org/update_achievements.php",
-                              data={'username': self.my_name, 'password': self.my_psw})
-        except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Gamification - Errore di connessione',
-                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                    "connessione<br>Controllare la propria connessione internet</span>",
-                                    ok="Chiudi il programma", cancel=None)
-            if confirm.exec_() == QDialog.Accepted:
-                print('ok')
-            confirm.deleteLater()
-            exit()
+        j = Server_call_master.get_user({'username': self.my_name, 'password': self.my_psw})
+        if j is not None:
+            self.money = int(j[0]['money'])
+            self.level = int(j[0]['exp'])
+            self.visible = j[0]['visible'] == '1'
+            lev = (j[0]['level_variables']).split(',')
+            self.level_variables = {'lines': int(lev[0]), 'variables': int(lev[1]), 'if': int(lev[2]),
+                                    'elif': int(lev[3]),
+                                    'else': int(lev[4]), 'for': int(lev[5]), 'while': int(lev[6]),
+                                    'functions': int(lev[7])}
+            self.owned_colors = (j[0]['owned_colors']).split(',')
+            self.current_image = j[0]['current_image']
+            self.owned_images = j[0]['owned_images'].split(',')
+            self.make_homework_coin = False if int(j[0]['make_homework_coin']) == 0 else True
+            self.watch_homework_coin = False if int(j[0]['watch_homework_coin']) == 0 else True
 
     def get_colors(self):
-        col = ['#ffffff', '#ff0000', '#00ff00', '#0000ff', '#990099'
-            , '#000000', '#964218', '#85ff74', '#126597', '#337744'
-            , '#974631', '#712893', '#256947', '#256914', '#367469']
+        col = ['#ffffff', '#ff0000', '#00ff00', '#0000ff', '#ff0080',
+               '#000000', '#964218', '#85ff74', '#126597', '#ff8080',
+               '#ff8000', '#712893', '#256947', '#fffa80', '#367469']
         if len(self.owned_colors) == len(col):
             return self.owned_colors.copy()
         return col
 
-    def get_images(self):
+    @staticmethod
+    def get_images():
         return {'1.png': 100, '2.png': 100, '3.png': 100, '4.png': 100, '5.png': 100,
                 '6.png': 500, '7.png': 500, '8.png': 500, '9.png': 500, '10.png': 500,
                 '11.png': 1000, '12.png': 1000, '13.png': 1000, '14.png': 1000, '15.png': 1000}
@@ -193,42 +176,25 @@ class Data:
     def get_class_components(self):
         self.my_proff = []
         self.mates = []
-        try:
-            r = requests.post("http://programmingisagame.netsons.org/get_class_components.php",
-                              data={'username': self.my_name, 'password': self.my_psw, 'class': self.my_class})
-            if r.text != "":
-                j = json.loads(r.text)
-                for i in j:
-                    if int(i['student_type']) > 0:
-                        self.mates.append(i['username'])
-                    else:
-                        self.my_proff.append(i['username'])
-            r = requests.post("http://programmingisagame.netsons.org/get_class_parameters.php",
-                              data={'username': self.my_name, 'password': self.my_psw, 'class': self.my_class})
-            if r.text != "":
-                self.student_exercises_visible = json.loads(r.text)[0]['student_ex_visible'] == '1'
-                self.correction_type = int(json.loads(r.text)[0]['correction_type'])
-                self.approving_type = int(json.loads(r.text)[0]['approving_type'])
-                self.comments_visible = int(json.loads(r.text)[0]['comments_visible']) == 1
-        except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Gamification - Errore di connessione',
-                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                    "connessione<br>Controllare la propria connessione internet</span>",
-                                    ok="Chiudi il programma", cancel=None)
-            if confirm.exec_() == QDialog.Accepted:
-                print('ok')
-            confirm.deleteLater()
-            exit()
+        j, k = Server_call_master.get_class_components({'username': self.my_name, 'password': self.my_psw,
+                                                        'class': self.my_class})
+        if j is not None:
+            for i in j:
+                if int(i['student_type']) > 0:
+                    self.mates.append(i['username'])
+                else:
+                    self.my_proff.append(i['username'])
+
+            self.student_exercises_visible = k['student_ex_visible'] == '1'
+            self.correction_type = int(k['correction_type'])
+            self.approving_type = int(k['approving_type'])
+            self.comments_visible = int(k['comments_visible']) == 1
 
     def get_homework(self):
         self.exercises = []
-        try:
-            r = requests.post("http://programmingisagame.netsons.org/get_homeworks.php",
-                              data={'username': self.my_name, 'password': self.my_psw, 'class': self.my_class})
-            j = json.loads(r.text)
-            r2 = requests.post("http://programmingisagame.netsons.org/get_user_solutions.php",
-                                  data={'username': self.my_name, 'password': self.my_psw})
-            k = json.loads(r2.text)
+
+        j, k = Server_call_master.get_homeworks(self.my_name, self.my_psw, self.my_class)
+        if j is not None:
             for i in j:
                 date = i['date'].split('-')[2] + "/" + i['date'].split('-')[1] + "/" + i['date'].split('-')[0]
                 level = 'Facile' if int(i['level']) == 1 else ('Medio' if int(i['level']) == 2 else 'Difficile')
@@ -253,15 +219,13 @@ class Data:
                 mv = 0
                 if validation_type > 0 and ((self_validation and i['creator'] == self.my_name) or
                                             (not self_validation and self.my_name in self.my_proff)):
-                    num = requests.post("http://programmingisagame.netsons.org/get_count_missing_corrections.php",
-                                        data={'username': self.my_name, 'password': self.my_psw, 'class': self.my_class,
-                                              'exercise': i['exercise_id']})
-                    mv = int(num.text)
+                    mv = Server_call_master.get_count_missing_corrections(
+                        {'username': self.my_name, 'password': self.my_psw,
+                         'class': self.my_class, 'exercise': i['exercise_id']})
 
                 ex = Exercise(i['exercise_id'], i['creator'], date, i['title'], i['text'], level, white_paper_mode,
                               i['start_code'], limits, executable, lookable, approved, validation_type, self_validation,
                               missing_votes=mv)
-
 
                 find = False
                 for solution_k in k:
@@ -309,8 +273,10 @@ class Data:
                         cs.keyWords[14].bold = cs_used[37]
                         cs.keyWords[14].bold = True if cs_used[38] == 'T' else False
                         ex.color_styles = cs
-                        ex.delivery_date = solution_k['delivery_date'].split('-')[2] + "/" + solution_k['delivery_date'].split('-')[1] \
-                                           + "/" + solution_k['delivery_date'].split('-')[0]
+                        ex.delivery_date = \
+                            solution_k['delivery_date'].split('-')[2] + "/" + \
+                            solution_k['delivery_date'].split('-')[1] + "/" + \
+                            solution_k['delivery_date'].split('-')[0]
                         ex.solution = solution_k['solution']
                         lev = solution_k['resources_used'].split(',')
                         ex.resources_used = {'lines': int(lev[0]), 'variables': int(lev[1]), 'if': int(lev[2]),
@@ -330,16 +296,16 @@ class Data:
                             or file.__contains__("|"):
                         if path.isfile('styles/_lib.txt'):
                             f = open('styles/_lib.txt', 'r')
-                            for i in f:
-                                if i[len(i.split(':')[0])+1:-1] == file:
-                                        styles_file_name = 'styles/' + i.split(':')[0]+ '.txt'
+                            for c in f:
+                                if c[len(i.split(':')[0]) + 1:-1] == file:
+                                    styles_file_name = 'styles/' + c.split(':')[0] + '.txt'
                             f.close()
 
                         if path.isfile('saves/_lib.txt'):
                             f = open('saves/_lib.txt', 'r')
-                            for i in f:
-                                if i[len(i.split(':')[0])+1:-1] == file:
-                                        saves_file_name = 'saves/' + i.split(':')[0]+ '.txt'
+                            for c in f:
+                                if c[len(i.split(':')[0]) + 1:-1] == file:
+                                    saves_file_name = 'saves/' + c.split(':')[0] + '.txt'
                             f.close()
 
                     if path.isfile(saves_file_name):
@@ -349,17 +315,6 @@ class Data:
                     if path.isfile(styles_file_name):
                         ex.color_styles = self.get_file_color_styles(styles_file_name)
                 self.exercises.append(ex)
-        except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Gamification - Errore di connessione',
-                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                    "connessione<br>Controllare la propria connessione internet</span>",
-                                    ok="Riprova", cancel="Chiudi il programma")
-            if confirm.exec_() == QDialog.Accepted:
-                self.get_homework()
-                confirm.deleteLater()
-            else:
-                confirm.deleteLater()
-                exit()
 
     @staticmethod
     def get_file_color_styles(file):
@@ -407,11 +362,11 @@ class Data:
                 f = open('styles/_lib.txt', 'r')
                 for i in f:
                     if not_find:
-                        if i[len(i.split(':')[0])+1:-1] == file[7:-4]:
+                        if i[len(i.split(':')[0]) + 1:-1] == file[7:-4]:
                             not_find = False
                             file_name = i.split(':')[0]
                         else:
-                            file_name = str(int(i.split(':')[0])+1)
+                            file_name = str(int(i.split(':')[0]) + 1)
                 f.close()
             if not_find:
                 f = open('styles/_lib.txt', 'a')

@@ -1,14 +1,11 @@
 import re
 from functools import partial
-
-import requests
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QPixmap, QIcon
 from PyQt5.QtWidgets import QDialog, QWidget, QVBoxLayout, QLabel, QHBoxLayout, QScrollArea, QTextEdit, \
     QPlainTextEdit, QSplitter, QCheckBox, QButtonGroup, QPushButton, QLineEdit, QAbstractButton
-
 from Data import DefaultColorStyles
-from windows.ConfirmWindow import ConfirmWindow
+import Server_call_master
 
 
 class ClassExerciseComparisonWindow(QDialog):
@@ -95,7 +92,7 @@ class ClassExerciseComparisonWindow(QDialog):
         students_widgets = []
         pos = 1
         for i in class_solutions:
-            students_widgets.append(self.make_student_widget(i, pos, order_by==0))
+            students_widgets.append(self.make_student_widget(i, pos, order_by == 0))
             pos += 1
 
         box = QHBoxLayout(self)
@@ -225,7 +222,7 @@ class ClassExerciseComparisonWindow(QDialog):
 
         evaluation_txet = "In attesa di valutazione" if solution['evaluation'] is None else \
             ("Soluzione convalidata" if self.exercise_window.exercise.validation_type in [1, 3]
-                                   and int(solution['evaluation']) >= 6 else
+                                        and int(solution['evaluation']) >= 6 else
              ("Soluzione non valida" if self.exercise_window.exercise.validation_type in [1, 3]
               else "Valutazione:  " + str(int(float(solution['evaluation'])) if float(solution['evaluation']) % 1 == 0
                                           else round(float(solution['evaluation']), 2)) + "/10"))
@@ -414,10 +411,11 @@ class ClassExerciseComparisonWindow(QDialog):
                 like.setEnabled(False)
                 dislike.setEnabled(False)
             else:
-                like_w.mousePressEvent = partial(self.like_on_click, like, user_like, like_number, dislike, user_dislike,
-                                               dislike_number, solution)
+                like_w.mousePressEvent = partial(self.like_on_click, like, user_like, like_number, dislike,
+                                                 user_dislike,
+                                                 dislike_number, solution)
                 dislike_w.mousePressEvent = partial(self.dislike_on_click, like, user_like, like_number, dislike,
-                                                  user_dislike, dislike_number, solution)
+                                                    user_dislike, dislike_number, solution)
 
             pixmap = QPixmap('img/comments.png')
             pixmap = pixmap.scaled(18, 18)
@@ -434,7 +432,7 @@ class ClassExerciseComparisonWindow(QDialog):
             comments_number = QLabel("0", self)
             comments_number.setFont(font)
             if solution['users_comments'] is not None:
-                comments_number.setText(str(len(solution['users_comments'].split("<b>"))-1))
+                comments_number.setText(str(len(solution['users_comments'].split("<b>")) - 1))
                 self.comments_text[solution['username']] = solution['users_comments']
                 if solution['users_comments'].__contains__("<b>" + self.exercise_window.data.my_name + "</b>"):
                     comments.hide()
@@ -491,9 +489,10 @@ class ClassExerciseComparisonWindow(QDialog):
             comment_send_button.setEnabled(False)
             comment_send_button.setFont(font)
             comment_editor.textChanged.connect(partial(self.comment_edit, comment_editor, comment_send_button))
-            comment_send_button.clicked.connect(partial(self.comment_send, comment_text, self.exercise_window.data.my_name,
-                                                        comment_editor, comments_number, comments, user_comments,
-                                                        solution['username']))
+            comment_send_button.clicked.connect(
+                partial(self.comment_send, comment_text, self.exercise_window.data.my_name,
+                        comment_editor, comments_number, comments, user_comments,
+                        solution['username']))
             box = QVBoxLayout(self)
             box.setContentsMargins(0, 1, 0, 1)
             box.setSpacing(0)
@@ -669,7 +668,6 @@ class ClassExerciseComparisonWindow(QDialog):
             coding_widget = QWidget(self, flags=Qt.Widget)
             coding_widget.setLayout(box)
 
-
         coding_widget.setObjectName("coding_widget")
         coding_widget.setStyleSheet("QWidget#coding_widget {border: 1px solid grey; border-right: 0px solid grey;"
                                     "border-left: 0px solid grey}")
@@ -698,41 +696,30 @@ class ClassExerciseComparisonWindow(QDialog):
         else:
             ris = round(float(form.text()), 2)
 
-        try:
-            r = requests.post("http://programmingisagame.netsons.org/evaluate_exercise.php",
-                              data={'username': self.exercise_window.data.my_name,
-                                    'password': self.exercise_window.data.my_psw,
-                                    'class': self.exercise_window.data.my_class,
-                                    'id': self.exercise_window.exercise.id, 'vote': ris, 'username2': user})
-            if r.text != "":
-                print(r.text)
-                if ris % 1 == 0:
-                    ris = int(ris)
-                widget.hide()
-                img.hide()
-                if form is None:
-                    if ris >= 6:
-                        text.setText("Soluzione convalidata")
-                    else:
-                        text.setText("Soluzione non valida")
-                else:
-                    text.setText("Valutazione:  " + str(ris) + "/10")
+        if Server_call_master.set_variable("/evaluate_exercise.php", {'username': self.exercise_window.data.my_name,
+                                                                      'password': self.exercise_window.data.my_psw,
+                                                                      'class': self.exercise_window.data.my_class,
+                                                                      'id': self.exercise_window.exercise.id,
+                                                                      'vote': ris, 'username2': user}):
+            if ris % 1 == 0:
+                ris = int(ris)
+            widget.hide()
+            img.hide()
+            if form is None:
                 if ris >= 6:
-                    text.setStyleSheet('color: #44bb55')
+                    text.setText("Soluzione convalidata")
                 else:
-                    text.setStyleSheet('color: #bb4455')
-                if user == self.exercise_window.data.my_name:
-                    self.exercise_window.new_evaluation(ris)
-                else:
-                    self.exercise_window.new_evaluation()
-        except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Errore di connessione',
-                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                    "connessione<br>Controllare la connessione internet e riprovare</span>",
-                                    ok="Ok", cancel=None)
-            if confirm.exec_() == QDialog.Accepted:
-                print('ok')
-            confirm.deleteLater()
+                    text.setText("Soluzione non valida")
+            else:
+                text.setText("Valutazione:  " + str(ris) + "/10")
+            if ris >= 6:
+                text.setStyleSheet('color: #44bb55')
+            else:
+                text.setStyleSheet('color: #bb4455')
+            if user == self.exercise_window.data.my_name:
+                self.exercise_window.new_evaluation(ris)
+            else:
+                self.exercise_window.new_evaluation()
 
     def color_strings(self, text):
         texts = []
@@ -847,122 +834,104 @@ class ClassExerciseComparisonWindow(QDialog):
             code_widget.show()
 
     def like_on_click(self, like, user_like, like_number, dislike, user_dislike, dislike_number, solution, event):
-        try:
-            r = requests.post("http://programmingisagame.netsons.org/exercise_add_like.php",
-                              data={'username': self.exercise_window.data.my_name,
-                                    'password': self.exercise_window.data.my_psw,
-                                    'class': self.exercise_window.data.my_class,
-                                    'id': self.exercise_window.exercise.id, 'username2': solution['username']})
-            if r.text != "":
-                if solution['users_like'] is None:
-                    solution['users_like'] = self.exercise_window.data.my_name
-                    like_number.setText("1")
-                    like.hide()
-                    user_like.show()
-                elif solution['users_like'] == self.exercise_window.data.my_name:
-                    solution['users_like'] = None
-                    like_number.setText("0")
-                    like.show()
-                    user_like.hide()
-                elif solution['users_like'].__contains__(self.exercise_window.data.my_name + ",") or \
-                        solution['users_like'].__contains__("," + self.exercise_window.data.my_name):
-                    solution['users_like'] = solution['users_like'].replace(self.exercise_window.data.my_name + ",", "")
-                    solution['users_like'] = solution['users_like'].replace("," + self.exercise_window.data.my_name, "")
-                    like_number.setText(str(int(like_number.text())-1))
-                    like.show()
-                    user_like.hide()
-                else:
-                    solution['users_like'] = solution['users_like'] + ',' + self.exercise_window.data.my_name
-                    like_number.setText(str(int(like_number.text())+1))
-                    like.hide()
-                    user_like.show()
+        if Server_call_master.set_variable("/exercise_add_like.php", {'username': self.exercise_window.data.my_name,
+                                                                      'password': self.exercise_window.data.my_psw,
+                                                                      'class': self.exercise_window.data.my_class,
+                                                                      'id': self.exercise_window.exercise.id,
+                                                                      'username2': solution['username']}):
+            if solution['users_like'] is None:
+                solution['users_like'] = self.exercise_window.data.my_name
+                like_number.setText("1")
+                like.hide()
+                user_like.show()
+            elif solution['users_like'] == self.exercise_window.data.my_name:
+                solution['users_like'] = None
+                like_number.setText("0")
+                like.show()
+                user_like.hide()
+            elif solution['users_like'].__contains__(self.exercise_window.data.my_name + ",") or \
+                    solution['users_like'].__contains__("," + self.exercise_window.data.my_name):
+                solution['users_like'] = solution['users_like'].replace(self.exercise_window.data.my_name + ",", "")
+                solution['users_like'] = solution['users_like'].replace("," + self.exercise_window.data.my_name, "")
+                like_number.setText(str(int(like_number.text()) - 1))
+                like.show()
+                user_like.hide()
+            else:
+                solution['users_like'] = solution['users_like'] + ',' + self.exercise_window.data.my_name
+                like_number.setText(str(int(like_number.text()) + 1))
+                like.hide()
+                user_like.show()
 
-                if solution['users_dislike'] == self.exercise_window.data.my_name:
-                    solution['users_dislike'] = None
-                    dislike.show()
-                    user_dislike.hide()
-                    dislike_number.setText(str(int(dislike_number.text())-1))
-                elif solution['users_dislike'] is not None and \
-                        (solution['users_dislike'].__contains__(self.exercise_window.data.my_name + ",") or
-                         solution['users_dislike'].__contains__("," + self.exercise_window.data.my_name)):
-                    solution['users_dislike'] = \
-                        solution['users_dislike'].replace(self.exercise_window.data.my_name + ",", "")
-                    solution['users_dislike'] = \
-                        solution['users_dislike'].replace("," + self.exercise_window.data.my_name, "")
-                    dislike.show()
-                    user_dislike.hide()
-                    dislike_number.setText(str(int(dislike_number.text())-1))
-        except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Errore di connessione',
-                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                    "connessione<br>Controllare la connessione internet e riprovare</span>",
-                                    ok="Ok", cancel=None)
-            if confirm.exec_() == QDialog.Accepted:
-                print('ok')
-            confirm.deleteLater()
+            if solution['users_dislike'] == self.exercise_window.data.my_name:
+                solution['users_dislike'] = None
+                dislike.show()
+                user_dislike.hide()
+                dislike_number.setText(str(int(dislike_number.text()) - 1))
+            elif solution['users_dislike'] is not None and \
+                    (solution['users_dislike'].__contains__(self.exercise_window.data.my_name + ",") or
+                     solution['users_dislike'].__contains__("," + self.exercise_window.data.my_name)):
+                solution['users_dislike'] = \
+                    solution['users_dislike'].replace(self.exercise_window.data.my_name + ",", "")
+                solution['users_dislike'] = \
+                    solution['users_dislike'].replace("," + self.exercise_window.data.my_name, "")
+                dislike.show()
+                user_dislike.hide()
+                dislike_number.setText(str(int(dislike_number.text()) - 1))
 
     def dislike_on_click(self, like, user_like, like_number, dislike, user_dislike, dislike_number, solution, event):
-        try:
-            r = requests.post("http://programmingisagame.netsons.org/exercise_add_dislike.php",
-                              data={'username': self.exercise_window.data.my_name,
-                                    'password': self.exercise_window.data.my_psw,
-                                    'class': self.exercise_window.data.my_class,
-                                    'id': self.exercise_window.exercise.id, 'username2': solution['username']})
-            if r.text != "":
-                if solution['users_dislike'] is None:
-                    solution['users_dislike'] = self.exercise_window.data.my_name
-                    dislike_number.setText("1")
-                    dislike.hide()
-                    user_dislike.show()
-                elif solution['users_dislike'] == self.exercise_window.data.my_name:
-                    solution['users_dislike'] = None
-                    dislike_number.setText("0")
-                    dislike.show()
-                    user_dislike.hide()
-                elif solution['users_dislike'].__contains__(self.exercise_window.data.my_name + ",") or \
-                        solution['users_dislike'].__contains__("," + self.exercise_window.data.my_name):
-                    solution['users_dislike'] = \
-                        solution['users_dislike'].replace(self.exercise_window.data.my_name + ",", "")
-                    solution['users_dislike'] = \
-                        solution['users_dislike'].replace("," + self.exercise_window.data.my_name, "")
-                    dislike_number.setText(str(int(dislike_number.text())-1))
-                    dislike.show()
-                    user_dislike.hide()
-                else:
-                    solution['users_dislike'] = solution['users_dislike'] + ',' + self.exercise_window.data.my_name
-                    dislike_number.setText(str(int(dislike_number.text())+1))
-                    dislike.hide()
-                    user_dislike.show()
+        if Server_call_master.set_variable("/exercise_add_dislike.php", {'username': self.exercise_window.data.my_name,
+                                                                         'password': self.exercise_window.data.my_psw,
+                                                                         'class': self.exercise_window.data.my_class,
+                                                                         'id': self.exercise_window.exercise.id,
+                                                                         'username2': solution['username']}):
+            if solution['users_dislike'] is None:
+                solution['users_dislike'] = self.exercise_window.data.my_name
+                dislike_number.setText("1")
+                dislike.hide()
+                user_dislike.show()
+            elif solution['users_dislike'] == self.exercise_window.data.my_name:
+                solution['users_dislike'] = None
+                dislike_number.setText("0")
+                dislike.show()
+                user_dislike.hide()
+            elif solution['users_dislike'].__contains__(self.exercise_window.data.my_name + ",") or \
+                    solution['users_dislike'].__contains__("," + self.exercise_window.data.my_name):
+                solution['users_dislike'] = \
+                    solution['users_dislike'].replace(self.exercise_window.data.my_name + ",", "")
+                solution['users_dislike'] = \
+                    solution['users_dislike'].replace("," + self.exercise_window.data.my_name, "")
+                dislike_number.setText(str(int(dislike_number.text()) - 1))
+                dislike.show()
+                user_dislike.hide()
+            else:
+                solution['users_dislike'] = solution['users_dislike'] + ',' + self.exercise_window.data.my_name
+                dislike_number.setText(str(int(dislike_number.text()) + 1))
+                dislike.hide()
+                user_dislike.show()
 
-                if solution['users_like'] == self.exercise_window.data.my_name:
-                    solution['users_like'] = None
-                    like.show()
-                    user_like.hide()
-                    like_number.setText(str(int(like_number.text())-1))
-                elif solution['users_like'] is not None and \
-                        (solution['users_like'].__contains__(self.exercise_window.data.my_name + ",") or
-                         solution['users_like'].__contains__("," + self.exercise_window.data.my_name)):
-                    solution['users_like'] = solution['users_like'].replace(self.exercise_window.data.my_name + ",", "")
-                    solution['users_like'] = solution['users_like'].replace("," + self.exercise_window.data.my_name, "")
-                    like.show()
-                    user_like.hide()
-                    like_number.setText(str(int(like_number.text())-1))
-        except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Errore di connessione',
-                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                    "connessione<br>Controllare la connessione internet e riprovare</span>",
-                                    ok="Ok", cancel=None)
-            if confirm.exec_() == QDialog.Accepted:
-                print('ok')
-            confirm.deleteLater()
+            if solution['users_like'] == self.exercise_window.data.my_name:
+                solution['users_like'] = None
+                like.show()
+                user_like.hide()
+                like_number.setText(str(int(like_number.text()) - 1))
+            elif solution['users_like'] is not None and \
+                    (solution['users_like'].__contains__(self.exercise_window.data.my_name + ",") or
+                     solution['users_like'].__contains__("," + self.exercise_window.data.my_name)):
+                solution['users_like'] = solution['users_like'].replace(self.exercise_window.data.my_name + ",", "")
+                solution['users_like'] = solution['users_like'].replace("," + self.exercise_window.data.my_name, "")
+                like.show()
+                user_like.hide()
+                like_number.setText(str(int(like_number.text()) - 1))
 
-    def comments_on_click(self, comments_area, event):
+    @staticmethod
+    def comments_on_click(comments_area, event):
         if comments_area.isVisible():
             comments_area.hide()
         else:
             comments_area.show()
 
-    def comment_edit(self, text, button):
+    @staticmethod
+    def comment_edit(text, button):
         if text.toPlainText() != "":
             button.setEnabled(True)
         else:
@@ -974,25 +943,15 @@ class ClassExerciseComparisonWindow(QDialog):
         s = s.replace("<", "&#62;")
         s = s.replace("\n", "<br>")
 
-        try:
-            r = requests.post("http://programmingisagame.netsons.org/exercise_add_comment.php",
-                              data={'username': self.exercise_window.data.my_name,
-                                    'password': self.exercise_window.data.my_psw,
-                                    'class': self.exercise_window.data.my_class,
-                                    'id': self.exercise_window.exercise.id, 'username2': user,
-                                    'comment': ("<b>" + name + "</b><br>" + s + "<br><br>")})
-            if r.text != "":
-                self.comments_text[user] = r.text
-                area.setText(self.comments_text[user])
-                text.setText("")
-                number.setText(str(int(number.text())+1))
-                comments.hide()
-                user_comments.show()
-        except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Errore di connessione',
-                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                    "connessione<br>Controllare la connessione internet e riprovare</span>",
-                                    ok="Ok", cancel=None)
-            if confirm.exec_() == QDialog.Accepted:
-                print('ok')
-            confirm.deleteLater()
+        r = Server_call_master.exercise_add_comment({'username': self.exercise_window.data.my_name,
+                                                     'password': self.exercise_window.data.my_psw,
+                                                     'class': self.exercise_window.data.my_class,
+                                                     'id': self.exercise_window.exercise.id, 'username2': user,
+                                                     'comment': ("<b>" + name + "</b><br>" + s + "<br><br>")})
+        if r != "":
+            self.comments_text[user] = r
+            area.setText(self.comments_text[user])
+            text.setText("")
+            number.setText(str(int(number.text()) + 1))
+            comments.hide()
+            user_comments.show()

@@ -1,13 +1,9 @@
-import json
 from functools import partial
-
-import requests
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel, QDialog
 from PyQt5.QtCore import *
-
 from windows.ClassAchievementsComparisonWindow import ClassAchievementsComparisonWindow
-from windows.ConfirmWindow import ConfirmWindow
+import Server_call_master
 
 
 class AchievementsWindow(QWidget):
@@ -31,31 +27,16 @@ class AchievementsWindow(QWidget):
         window_layaut.setSpacing(0)
 
     def update_data(self):
-        try:
-            r = requests.post("http://programmingisagame.netsons.org/update_achievements.php",
-                              data={'username': self.data.my_name, 'password': self.data.my_psw})
-            j = json.loads(r.text.split("-")[0])
-            k = r.text.split("-")[1][1:-1].split(',')
-            for i in range(0, len(j)):
-                achievement = {
-                    'title': j[i]['title'],
-                    'description': j[i]['description'],
-                    'value': int(j[i]['value']),
-                    'level': k[i]
-                }
-                self.achievements.append(achievement)
-                self.titles.append(j[i]['title'])
-        except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Errore di connessione',
-                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                    "connessione<br>Controllare la connessione internet</span>",
-                                    ok="Riprova", cancel="Chiudi il programma")
-            if confirm.exec_() == QDialog.Accepted:
-                self.update_data()
-                confirm.deleteLater()
-            else:
-                confirm.deleteLater()
-                exit()
+        j, k = Server_call_master.update_achievements({'username': self.data.my_name, 'password': self.data.my_psw})
+        for i in range(0, len(j)):
+            achievement = {
+                'title': j[i]['title'],
+                'description': j[i]['description'],
+                'value': int(j[i]['value']),
+                'level': k[i]
+            }
+            self.achievements.append(achievement)
+            self.titles.append(j[i]['title'])
 
     def make_top_widget(self):
         font = QFont()
@@ -264,31 +245,22 @@ class AchievementsWindow(QWidget):
         return self.scroll
 
     def get_award(self, index):
-        try:
-            r = requests.post("http://programmingisagame.netsons.org/get_aword_achievement.php",
-                      data={'username': self.data.my_name, 'password': self.data.my_psw, 'index': index})
-            if r.text != "":
-                self.data.get_user_data()
-                self.soldi.setText(str(self.data.money) + " Soldi")
+        if Server_call_master.set_variable("/get_aword_achievement.php", {'username': self.data.my_name,
+                                                                          'password': self.data.my_psw,
+                                                                          'index': index}):
+            self.data.get_user_data()
+            self.soldi.setText(str(self.data.money) + " Soldi")
 
-                l = 1
-                old = 0
-                for i in self.data.level_progression:
-                    if self.data.level >= i:
-                        l += 1
-                        old = i
+            l = 1
+            old = 0
+            for i in self.data.level_progression:
+                if self.data.level >= i:
+                    l += 1
+                    old = i
 
-                self.level_number.setText('Liv. ' + str(l))
-                self.level_bar.setFixedSize(int(90*(self.data.level-old)/(self.data.level_progression[l-1]-old)), 5)
-                self.controller.open_AchievementsWindow(self.scroll.verticalScrollBar().value())
-        except requests.exceptions.RequestException as e:
-            confirm = ConfirmWindow('Errore di connessione',
-                                    "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di "
-                                    "connessione<br>Controllare la connessione internet e riprovare</span>",
-                                    ok="Ok", cancel=None)
-            if confirm.exec_() == QDialog.Accepted:
-                print('ok')
-            confirm.deleteLater()
+            self.level_number.setText('Liv. ' + str(l))
+            self.level_bar.setFixedSize(int(90*(self.data.level-old)/(self.data.level_progression[l-1]-old)), 5)
+            self.controller.open_AchievementsWindow(self.scroll.verticalScrollBar().value())
 
     def open_leaderboard_window(self):
         confirm = ClassAchievementsComparisonWindow(self.data, self.titles, parent=self)
