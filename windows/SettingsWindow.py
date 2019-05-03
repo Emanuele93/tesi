@@ -3,7 +3,6 @@ from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QFont, QPixmap, QIcon
 from PyQt5.QtWidgets import QDialog, QPushButton, QWidget, QVBoxLayout, QLabel, QHBoxLayout, QScrollArea, QCheckBox, \
     QButtonGroup, QAbstractButton
-from Data import DefaultColorStyles
 import Server_call_master
 
 
@@ -667,10 +666,10 @@ class SettingsWindow(QDialog):
 
         if self.exercise_window is None:
             self.data.color_styles = self.color_styles.__copy__()
-            self.data.write_file_color_styles('favorite_style.txt', self.data.color_styles)
+            self.data.write_file_color_styles('styles/_preferred.txt', self.data.color_styles)
         elif self.exercise_window.exercise.id is None:
             self.data.color_styles = self.color_styles.__copy__()
-            self.data.write_file_color_styles('favorite_style.txt', self.data.color_styles)
+            self.data.write_file_color_styles('styles/_preferred.txt', self.data.color_styles)
             self.exercise_window.set_color_styles(self.color_styles)
         else:
             self.exercise_window.set_color_styles(self.color_styles)
@@ -683,10 +682,10 @@ class SettingsWindow(QDialog):
 
         if self.exercise_window is None:
             self.data.color_styles = self.color_styles.__copy__()
-            self.data.write_file_color_styles('favorite_style.txt', self.data.color_styles)
+            self.data.write_file_color_styles('styles/_preferred.txt', self.data.color_styles)
         elif self.exercise_window.exercise.id is None:
             self.data.color_styles = self.color_styles.__copy__()
-            self.data.write_file_color_styles('favorite_style.txt', self.data.color_styles)
+            self.data.write_file_color_styles('styles/_preferred.txt', self.data.color_styles)
             self.exercise_window.set_color_styles(self.color_styles)
         else:
             self.exercise_window.set_color_styles(self.color_styles)
@@ -787,14 +786,14 @@ class SettingsWindow(QDialog):
 
     def set_preferences(self):
         self.data.color_styles = self.color_styles.__copy__()
-        self.data.write_file_color_styles('favorite_style.txt', self.data.color_styles)
+        self.data.write_file_color_styles('styles/_preferred.txt', self.data.color_styles)
 
     def set_style_preferred(self):
         self.color_styles = self.data.color_styles.__copy__()
         self.color_style_changed(None)
 
     def set_style_default(self):
-        self.color_styles = DefaultColorStyles()
+        self.color_styles = self.data.default_color_styles.__copy__()
         self.color_style_changed(self.color_styles)
 
     def color_style_changed(self, cs):
@@ -823,10 +822,10 @@ class SettingsWindow(QDialog):
 
         if self.exercise_window is None:
             self.data.color_styles = self.color_styles.__copy__()
-            self.data.write_file_color_styles('favorite_style.txt', self.data.color_styles)
+            self.data.write_file_color_styles('styles/_preferred.txt', self.data.color_styles)
         elif self.exercise_window.exercise.id is None:
             self.data.color_styles = self.color_styles.__copy__()
-            self.data.write_file_color_styles('favorite_style.txt', self.data.color_styles)
+            self.data.write_file_color_styles('styles/_preferred.txt', self.data.color_styles)
             self.exercise_window.set_color_styles(cs)
         else:
             self.exercise_window.set_color_styles(cs)

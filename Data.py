@@ -80,6 +80,7 @@ class Data:
         self.approving_type = 0
         self.correction_type = 0
         self.comments_visible = True
+        self.language = 1
         self.student_exercises_visible = True
         self.get_class_components()
 
@@ -100,7 +101,19 @@ class Data:
         self.exercises = []
         self.get_user_data()
 
-        self.color_styles = self.get_my_color_styles()
+        if not path.isfile('styles/_preferred.txt'):
+            dir = "styles/_default_python.txt" if self.language == 1 else "styles/_default_c.txt"
+            f = open(dir, "r")
+            text = f.read()
+            f.close()
+            f = open('styles/_preferred.txt', "w")
+            f.write(text)
+            f.close()
+
+        self.color_styles = self.get_file_color_styles("styles/_preferred.txt")
+
+        self.default_color_styles = self.get_file_color_styles(
+            "styles/_default_python.txt" if self.language == 1 else "styles/_default_c.txt")
 
         self.owned_variables = self.get_owned_variables_numbers()
 
@@ -170,9 +183,6 @@ class Data:
         }
         return lib
 
-    def get_my_color_styles(self):
-        return self.get_file_color_styles("favorite_style.txt")
-
     def get_class_components(self):
         self.my_proff = []
         self.mates = []
@@ -189,6 +199,7 @@ class Data:
             self.correction_type = int(k['correction_type'])
             self.approving_type = int(k['approving_type'])
             self.comments_visible = int(k['comments_visible']) == 1
+            self.language = int(k['language'])
 
     def get_homework(self):
         self.exercises = []
@@ -320,34 +331,25 @@ class Data:
     def get_file_color_styles(file):
         styles = DefaultColorStyles()
         f = open(file, "r")
-        styles.code_background_color = f.readline()[0:-1]
-        styles.code_text_color = f.readline()[0:-1]
-        styles.results_background_color = f.readline()[0:-1]
-        styles.results_text_color = f.readline()[0:-1]
-        styles.error_results_background_color = f.readline()[0:-1]
-        styles.error_results_text_color = f.readline()[0:-1]
+        styles.code_background_color = f.readline()[0:-1].split(' - ')[1]
+        styles.code_text_color = f.readline()[0:-1].split(' - ')[1]
+        styles.results_background_color = f.readline()[0:-1].split(' - ')[1]
+        styles.results_text_color = f.readline()[0:-1].split(' - ')[1]
+        styles.error_results_background_color = f.readline()[0:-1].split(' - ')[1]
+        styles.error_results_text_color = f.readline()[0:-1].split(' - ')[1]
 
-        styles.string_color = f.readline()[0:-1]
-        styles.comment_color = f.readline()[0:-1]
-        styles.multi_line_comment_color = f.readline()[0:-1]
+        styles.string_color = f.readline()[0:-1].split(' - ')[1]
+        styles.comment_color = f.readline()[0:-1].split(' - ')[1]
+        styles.multi_line_comment_color = f.readline()[0:-1].split(' - ')[1]
 
-        styles.keyWords = [
-            KeyWord('if', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
-            KeyWord('elif', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
-            KeyWord('else', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
-            KeyWord('for', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
-            KeyWord('while', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
-            KeyWord('def', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
-            KeyWord('import', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
-            KeyWord('is', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
-            KeyWord('in', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
-            KeyWord('not', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
-            KeyWord('None', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
-            KeyWord('class', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
-            KeyWord('print', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
-            KeyWord('True', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False),
-            KeyWord('False', f.readline()[0:-1], True if f.readline()[0:-1] == 'True' else False)
-        ]
+        keys = []
+        r = f.readline()
+        while r != '':
+            r = r[0:-1].split(' - ')
+            keys.append(KeyWord(r[0], r[1], True if r[2] == 'True' else False))
+            r = f.readline()
+
+        styles.keyWords = keys
         f.close()
         return styles
 
@@ -376,19 +378,19 @@ class Data:
         else:
             f = open(file, "w")
         text = ""
-        text += styles.code_background_color + '\n'
-        text += styles.code_text_color + '\n'
-        text += styles.results_background_color + '\n'
-        text += styles.results_text_color + '\n'
-        text += styles.error_results_background_color + '\n'
-        text += styles.error_results_text_color + '\n'
+        text += "code_background_color - " + styles.code_background_color + '\n'
+        text += "code_text_color - " + styles.code_text_color + '\n'
+        text += "results_background_color - " + styles.results_background_color + '\n'
+        text += "results_text_color - " + styles.results_text_color + '\n'
+        text += "error_results_background_color - " + styles.error_results_background_color + '\n'
+        text += "error_results_text_color - " + styles.error_results_text_color + '\n'
 
-        text += styles.string_color + '\n'
-        text += styles.comment_color + '\n'
-        text += styles.multi_line_comment_color + '\n'
+        text += "string_color - " + styles.string_color + '\n'
+        text += "comment_color - " + styles.comment_color + '\n'
+        text += "multi_line_comment_color - " + styles.multi_line_comment_color + '\n'
 
         for i in styles.keyWords:
-            text += i.color + '\n' + str(i.bold) + '\n'
+            text += i.word + " - " + i.color + ' - ' + str(i.bold) + '\n'
 
         f.write(text)
         f.close()

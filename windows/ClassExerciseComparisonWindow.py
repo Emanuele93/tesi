@@ -4,7 +4,6 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QPixmap, QIcon
 from PyQt5.QtWidgets import QDialog, QWidget, QVBoxLayout, QLabel, QHBoxLayout, QScrollArea, QTextEdit, \
     QPlainTextEdit, QSplitter, QCheckBox, QButtonGroup, QPushButton, QLineEdit, QAbstractButton
-from Data import DefaultColorStyles
 import Server_call_master
 
 
@@ -280,7 +279,7 @@ class ClassExerciseComparisonWindow(QDialog):
         }
 
         color_styles = solution['color_styles'].split(',')
-        cs = DefaultColorStyles()
+        cs = self.exercise_window.data.default_color_styles.__copy__()
         cs.code_background_color = color_styles[0]
         cs.code_text_color = color_styles[1]
         cs.results_background_color = color_styles[2]

@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QDialog
 
 from windows.ConfirmWindow import ConfirmWindow
 
-URL = "http://programmingisagame.netsons.org"
+URL = "http://thegameofprogramming.altervista.org"  # "http://programmingisagame.netsons.org"
 ERROR_message_connection = "<span style=\" color: red;\"> Attenzione, si sono verificati problemi di " \
                                  "connessione<br>Non è stato possibile comunicare col server<br>Controllare la " \
                                  "propria connessione internet</span>"

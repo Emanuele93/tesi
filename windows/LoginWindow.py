@@ -156,4 +156,4 @@ class LoginWindow(QWidget):
     def open_register(self, event):
         self.signin = Signin(self)
         self.signin.show()
-        self.hide()
+        self.close()

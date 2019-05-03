@@ -10,7 +10,7 @@ class Signin(QWidget):
         super(Signin, self).__init__(flags=Qt.Window)
         self.setWindowTitle("Signin")
         self.setWindowIcon(QIcon("img/logo.png"))
-        self.setFixedSize(QSize(500, 600))
+        self.setFixedSize(QSize(500, 650))
         self.login = login
         font = QFont()
         font.setPixelSize(20)
@@ -82,6 +82,34 @@ class Signin(QWidget):
         self.bg.addButton(check_1, 1)
         self.bg.addButton(check_2, 2)
 
+        check_1 = QCheckBox("Python")
+        check_1.setFont(font)
+        check_1.setChecked(True)
+        check_2 = QCheckBox("C/C++")
+        check_2.setFont(font)
+        check_2.setChecked(False)
+
+        box = QHBoxLayout(self)
+        box.setContentsMargins(0, 0, 0, 0)
+        box.setSpacing(50)
+        box.addWidget(check_1, alignment=Qt.AlignVCenter)
+        box.addWidget(check_2, alignment=Qt.AlignVCenter)
+        language = QWidget(self, flags=Qt.Widget)
+        language.setLayout(box)
+        language.hide()
+
+        self.bg2 = QButtonGroup()
+        self.bg2.addButton(check_1, 1)
+        self.bg2.addButton(check_2, 2)
+
+        box = QVBoxLayout(self)
+        box.setSpacing(15)
+        box.setContentsMargins(0, 0, 0, 0)
+        box.addWidget(user_type, alignment=Qt.AlignVCenter)
+        box.addWidget(language, alignment=Qt.AlignVCenter)
+        user_type = QWidget(self, flags=Qt.Widget)
+        user_type.setLayout(box)
+
         button = QPushButton('Registra', self)
         button.setFont(font)
         button.setFixedSize(100, 50)
@@ -129,10 +157,19 @@ class Signin(QWidget):
         box = QVBoxLayout(self)
         box.setContentsMargins(0, 0, 0, 0)
         box.setAlignment(Qt.AlignTop)
-        box.setSpacing(0)
+        box.setSpacing(25)
         box.addWidget(title, alignment=Qt.AlignHCenter)
         box.addWidget(form, alignment=Qt.AlignHCenter)
         box.addWidget(login_widget, alignment=Qt.AlignRight)
+        self.bg.buttonClicked.connect(partial(self.change_user_type, language, box))
+
+    def change_user_type(self, language, box):
+        if self.bg.checkedId() == 2:
+            language.show()
+            box.setSpacing(0)
+        else:
+            language.hide()
+            box.setSpacing(25)
 
     def name_changed(self, name, button):
         if name.text().strip() != '':
@@ -218,7 +255,8 @@ class Signin(QWidget):
         r = Server_call_master.access("/singin.php", ['ok', 'ready', 'username', 'class'],
                                       {'username': user.text().strip(), 'password': password.text().strip(),
                                        'class': classe.text().strip(), 'name': name.text().strip(),
-                                       'surname': surname.text().strip(), 'type': (self.bg.checkedId() - 1)})
+                                       'surname': surname.text().strip(), 'type': (self.bg.checkedId() - 1),
+                                       'language': self.bg2.checkedId()})
         if r == 'ok':
             name.hide()
             subtitle.hide()
@@ -234,7 +272,7 @@ class Signin(QWidget):
             f.close()
         elif r == 'ready':
             self.login.button_on_click(user, password, classe)
-            self.hide()
+            self.close()
         elif r == 'username':
             user.setStyleSheet('color: red')
             password.setStyleSheet('color: black')
@@ -246,4 +284,4 @@ class Signin(QWidget):
 
     def open_login(self, event):
         self.login.show()
-        self.hide()
+        self.close()

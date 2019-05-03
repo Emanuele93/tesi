@@ -1,0 +1,24 @@
+code_background_color - red
+code_text_color - black
+results_background_color - white
+results_text_color - black
+error_results_background_color - white
+error_results_text_color - red
+string_color - #ff0000
+comment_color - #999999
+multi_line_comment_color - #990099
+if - #0000ff - True
+elif - #0000ff - True
+else - #0000ff - True
+for - #0000ff - True
+while - #0000ff - True
+def - #0000ff - True
+import - #0000ff - True
+is - #0000ff - True
+in - #0000ff - True
+not - #0000ff - True
+None - #0000ff - True
+class - #0000ff - True
+print - #0000ff - False
+True - #00ff00 - False
+False - #00ff00 - False
