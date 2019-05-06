@@ -1,18 +1,5 @@
-from os import path
+from os import path, getcwd
 import Server_call_master
-
-
-class KeyWord:
-    def __init__(self, word, color, bold):
-        self.word = word
-        self.color = color
-        self.bold = bold
-
-    def tagged_word(self):
-        tagged = '<span style=\" color: ' + self.color + ';\">' + self.word + '</span>'
-        if self.bold:
-            return '<b>' + tagged + '</b>'
-        return tagged
 
 
 class Exercise:
@@ -102,8 +89,8 @@ class Data:
         self.get_user_data()
 
         if not path.isfile('styles/_preferred.txt'):
-            dir = "styles/_default_python.txt" if self.language == 1 else "styles/_default_c.txt"
-            f = open(dir, "r")
+            directory = "styles/_default_python.txt" if self.language == 1 else "styles/_default_c.txt"
+            f = open(directory, "r")
             text = f.read()
             f.close()
             f = open('styles/_preferred.txt', "w")
@@ -242,7 +229,7 @@ class Data:
                 for solution_k in k:
                     if solution_k['id'] == i['exercise_id']:
                         find = True
-                        cs_used = solution_k['color_styles'].split(',')
+                        cs_used = solution_k['color_styles'].split(' , ')
                         cs = DefaultColorStyles()
                         cs.code_background_color = cs_used[0]
                         cs.code_text_color = cs_used[1]
@@ -253,36 +240,9 @@ class Data:
                         cs.string_color = cs_used[6]
                         cs.comment_color = cs_used[7]
                         cs.multi_line_comment_color = cs_used[8]
-                        cs.keyWords[0].color = cs_used[9]
-                        cs.keyWords[0].bold = True if cs_used[10] == 'T' else False
-                        cs.keyWords[1].bold = cs_used[11]
-                        cs.keyWords[1].bold = True if cs_used[12] == 'T' else False
-                        cs.keyWords[2].bold = cs_used[13]
-                        cs.keyWords[2].bold = True if cs_used[14] == 'T' else False
-                        cs.keyWords[3].bold = cs_used[15]
-                        cs.keyWords[3].bold = True if cs_used[16] == 'T' else False
-                        cs.keyWords[4].bold = cs_used[17]
-                        cs.keyWords[4].bold = True if cs_used[18] == 'T' else False
-                        cs.keyWords[5].bold = cs_used[19]
-                        cs.keyWords[5].bold = True if cs_used[20] == 'T' else False
-                        cs.keyWords[6].bold = cs_used[21]
-                        cs.keyWords[6].bold = True if cs_used[22] == 'T' else False
-                        cs.keyWords[7].bold = cs_used[23]
-                        cs.keyWords[7].bold = True if cs_used[24] == 'T' else False
-                        cs.keyWords[8].bold = cs_used[25]
-                        cs.keyWords[8].bold = True if cs_used[26] == 'T' else False
-                        cs.keyWords[9].bold = cs_used[27]
-                        cs.keyWords[9].bold = True if cs_used[28] == 'T' else False
-                        cs.keyWords[10].bold = cs_used[29]
-                        cs.keyWords[10].bold = True if cs_used[30] == 'T' else False
-                        cs.keyWords[11].bold = cs_used[31]
-                        cs.keyWords[11].bold = True if cs_used[32] == 'T' else False
-                        cs.keyWords[12].bold = cs_used[33]
-                        cs.keyWords[12].bold = True if cs_used[34] == 'T' else False
-                        cs.keyWords[13].bold = cs_used[35]
-                        cs.keyWords[13].bold = True if cs_used[36] == 'T' else False
-                        cs.keyWords[14].bold = cs_used[37]
-                        cs.keyWords[14].bold = True if cs_used[38] == 'T' else False
+                        for j in range(9, len(cs_used)):
+                            el = cs_used[j].split(' - ')
+                            cs.keyWords[el[0]] = (el[1], el[2])
                         ex.color_styles = cs
                         ex.delivery_date = \
                             solution_k['delivery_date'].split('-')[2] + "/" + \
@@ -342,11 +302,11 @@ class Data:
         styles.comment_color = f.readline()[0:-1].split(' - ')[1]
         styles.multi_line_comment_color = f.readline()[0:-1].split(' - ')[1]
 
-        keys = []
+        keys = {}
         r = f.readline()
         while r != '':
             r = r[0:-1].split(' - ')
-            keys.append(KeyWord(r[0], r[1], True if r[2] == 'True' else False))
+            keys[r[0]] = (r[1], True if r[2] == 'True' else False)
             r = f.readline()
 
         styles.keyWords = keys
@@ -389,43 +349,31 @@ class Data:
         text += "comment_color - " + styles.comment_color + '\n'
         text += "multi_line_comment_color - " + styles.multi_line_comment_color + '\n'
 
-        for i in styles.keyWords:
-            text += i.word + " - " + i.color + ' - ' + str(i.bold) + '\n'
+        for i in styles.keyWords.keys():
+            text += i + " - " + styles.keyWords[i][0] + ' - ' + str(styles.keyWords[i][1]) + '\n'
 
         f.write(text)
         f.close()
+
+    @staticmethod
+    def get_path():
+        return getcwd()
 
 
 class DefaultColorStyles:
     def __init__(self):
         self.code_background_color = 'white'
-        self.code_text_color = 'black'
+        self.code_text_color = 'white'
         self.results_background_color = 'white'
-        self.results_text_color = 'black'
+        self.results_text_color = 'white'
         self.error_results_background_color = 'white'
-        self.error_results_text_color = 'red'
+        self.error_results_text_color = 'white'
 
-        self.string_color = '#ff0000'
-        self.comment_color = '#999999'
-        self.multi_line_comment_color = '#990099'
+        self.string_color = 'white'
+        self.comment_color = 'white'
+        self.multi_line_comment_color = 'white'
 
-        self.keyWords = [
-            KeyWord('if', '#0000ff', True),
-            KeyWord('elif', '#0000ff', True),
-            KeyWord('else', '#0000ff', True),
-            KeyWord('for', '#0000ff', True),
-            KeyWord('while', '#0000ff', True),
-            KeyWord('def', '#0000ff', True),
-            KeyWord('import', '#0000ff', True),
-            KeyWord('is', '#0000ff', True),
-            KeyWord('in', '#0000ff', True),
-            KeyWord('not', '#0000ff', True),
-            KeyWord('None', '#0000ff', True),
-            KeyWord('class', '#0000ff', True),
-            KeyWord('print', '#0000ff', False),
-            KeyWord('True', '#00ff00', False),
-            KeyWord('False', '#00ff00', False)
-        ]
+        self.keyWords = {}
 
     def __copy__(self):
         color_styles = DefaultColorStyles()
@@ -441,8 +389,8 @@ class DefaultColorStyles:
         color_styles.comment_color = self.comment_color
         color_styles.multi_line_comment_color = self.multi_line_comment_color
 
-        color_styles.keyWords = []
+        color_styles.keyWords = {}
 
-        for i in self.keyWords:
-            color_styles.keyWords.append(KeyWord(i.word, i.color, i.bold))
+        for i in self.keyWords.keys():
+            color_styles.keyWords[i] = (self.keyWords[i][0], self.keyWords[i][1])
         return color_styles

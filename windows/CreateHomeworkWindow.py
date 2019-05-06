@@ -1094,10 +1094,15 @@ class CreateHomeworkWindow(QWidget):
             text = ''
             for i in range(0, len(texts)):
                 if texts[i] != '' and texts[i][0] != '<':
-                    for word in self.data.color_styles.keyWords:
-                        texts[i], num = self.my_find_and_replace(texts[i], word.word, word.tagged_word(), True)
-                        if self.functions.get(word.word, None) is not None:
-                            self.functions[word.word] = self.functions[word.word] + num
+                    for word in self.data.color_styles.keyWords.keys():
+                        for w in word.split(', '):
+                            tagged = '<span style=\" color: ' + self.data.color_styles.keyWords[word][0] \
+                                     + ';\">' + w + '</span>'
+                            if self.data.color_styles.keyWords[word][1]:
+                                tagged = '<b>' + tagged + '</b>'
+                            texts[i], num = self.my_find_and_replace(texts[i], w, tagged, True)
+                            if self.functions.get(w, None) is not None:
+                                self.functions[w] = self.functions[w] + num
                 text += texts[i]
             if self.white_paper_mode:
                 temp_text = temp_text.replace('<', '&#60;')

@@ -278,7 +278,7 @@ class ClassExerciseComparisonWindow(QDialog):
             'variables': int(solution['resources_used'].split(',')[1])
         }
 
-        color_styles = solution['color_styles'].split(',')
+        color_styles = solution['color_styles'].split(' , ')
         cs = self.exercise_window.data.default_color_styles.__copy__()
         cs.code_background_color = color_styles[0]
         cs.code_text_color = color_styles[1]
@@ -289,36 +289,9 @@ class ClassExerciseComparisonWindow(QDialog):
         cs.string_color = color_styles[6]
         cs.comment_color = color_styles[7]
         cs.multi_line_comment_color = color_styles[8]
-        cs.keyWords[0].color = color_styles[9]
-        cs.keyWords[0].bold = True if color_styles[10] == 'T' else False
-        cs.keyWords[1].bold = color_styles[11]
-        cs.keyWords[1].bold = True if color_styles[12] == 'T' else False
-        cs.keyWords[2].bold = color_styles[13]
-        cs.keyWords[2].bold = True if color_styles[14] == 'T' else False
-        cs.keyWords[3].bold = color_styles[15]
-        cs.keyWords[3].bold = True if color_styles[16] == 'T' else False
-        cs.keyWords[4].bold = color_styles[17]
-        cs.keyWords[4].bold = True if color_styles[18] == 'T' else False
-        cs.keyWords[5].bold = color_styles[19]
-        cs.keyWords[5].bold = True if color_styles[20] == 'T' else False
-        cs.keyWords[6].bold = color_styles[21]
-        cs.keyWords[6].bold = True if color_styles[22] == 'T' else False
-        cs.keyWords[7].bold = color_styles[23]
-        cs.keyWords[7].bold = True if color_styles[24] == 'T' else False
-        cs.keyWords[8].bold = color_styles[25]
-        cs.keyWords[8].bold = True if color_styles[26] == 'T' else False
-        cs.keyWords[9].bold = color_styles[27]
-        cs.keyWords[9].bold = True if color_styles[28] == 'T' else False
-        cs.keyWords[10].bold = color_styles[29]
-        cs.keyWords[10].bold = True if color_styles[30] == 'T' else False
-        cs.keyWords[11].bold = color_styles[31]
-        cs.keyWords[11].bold = True if color_styles[32] == 'T' else False
-        cs.keyWords[12].bold = color_styles[33]
-        cs.keyWords[12].bold = True if color_styles[34] == 'T' else False
-        cs.keyWords[13].bold = color_styles[35]
-        cs.keyWords[13].bold = True if color_styles[36] == 'T' else False
-        cs.keyWords[14].bold = color_styles[37]
-        cs.keyWords[14].bold = True if color_styles[38] == 'T' else False
+        for i in range(9, len(color_styles)):
+            el = color_styles[i].split(' - ')
+            cs.keyWords[el[0]] = (el[1], el[2])
         self.color_styles = cs
 
         box = QVBoxLayout(self)
@@ -810,8 +783,13 @@ class ClassExerciseComparisonWindow(QDialog):
         text = ''
         for i in range(0, len(texts)):
             if texts[i] != '' and texts[i][0] != '<':
-                for word in self.color_styles.keyWords:
-                    texts[i] = self.my_find_and_replace(texts[i], word.word, word.tagged_word(), True)
+                for word in self.color_styles.keyWords.keys():
+                    for w in word.split(', '):
+                        tagged = '<span style=\" color: ' + self.color_styles.keyWords[word][0] \
+                                 + ';\">' + w + '</span>'
+                        if self.color_styles.keyWords[word][1]:
+                            tagged = '<b>' + tagged + '</b>'
+                        texts[i] = self.my_find_and_replace(texts[i], w, tagged, True)
             text += texts[i]
         if self.exercise_window.exercise.white_paper_mode:
             temp_text = temp_text.replace('<', '&#60;')

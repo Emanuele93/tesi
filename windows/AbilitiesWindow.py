@@ -205,7 +205,7 @@ class AbilitiesWindow(QWidget):
         box = QHBoxLayout(self)
         box.setSpacing(20)
         box.addWidget(self.counter_upgrade_widget('if'))
-        box.addWidget(self.counter_upgrade_widget('elif'))
+        box.addWidget(self.counter_upgrade_widget('elif' if self.data.language == 1 else 'else if'))
         box.addWidget(self.counter_upgrade_widget('else'))
         box.setAlignment(Qt.AlignLeft)
         widget_conditions = QWidget(self, flags=Qt.Widget)
@@ -261,7 +261,7 @@ class AbilitiesWindow(QWidget):
 
         box = QHBoxLayout(self)
         box.setContentsMargins(0, 0, 0, 0)
-        box.addWidget(self.counter_upgrade_widget('Funzioni correnti (def)'))
+        box.addWidget(self.counter_upgrade_widget('Funzioni correnti' + (' (def)' if self.data.language == 1 else '')))
         box.setAlignment(Qt.AlignLeft)
         widget_functions = QWidget(self, flags=Qt.Widget)
         widget_functions.setLayout(box)
@@ -292,8 +292,10 @@ class AbilitiesWindow(QWidget):
             name = 'lines'
         elif name == 'Variabili correnti':
             name = 'variables'
-        elif name == 'Funzioni correnti (def)':
+        elif name == 'Funzioni correnti (def)' or name == 'Funzioni correnti':
             name = 'functions'
+        elif name == 'else if':
+            name = 'elif'
 
         lev = self.data.level_variables[name]
         numbers_upgrade = QLabel(self)
@@ -311,6 +313,7 @@ class AbilitiesWindow(QWidget):
         cost.clicked.connect(partial(self.upgrade_counter, name, cost, numbers_upgrade, upgrade_value))
         cost.setFont(font)
         cost.setStyleSheet('background-color: #ffff55')
+        cost.setEnabled(not((name == 'variables' or name == 'functions') and self.data.language != 1))
         self.buttons[name] = cost
 
         if lev < len(self.data.variables_numbers[name]):

@@ -478,8 +478,9 @@ class SettingsWindow(QDialog):
         box.setSpacing(0)
         for i in self.lib.keys():
             box.addWidget(self.color_selector(i, self.lib[i]))
-        for i in self.color_styles.keyWords:
-            box.addWidget(self.color_selector_key_word(i.word, i.color, i.bold))
+        for i in self.color_styles.keyWords.keys():
+            box.addWidget(self.color_selector_key_word(i, self.color_styles.keyWords[i][0],
+                                                       self.color_styles.keyWords[i][1]))
         widget = QWidget(self, flags=Qt.Widget)
         widget.setLayout(box)
 
@@ -539,7 +540,7 @@ class SettingsWindow(QDialog):
         font = QFont()
         font.setPixelSize(15)
         label = QLabel(self)
-        label.setText('Colore della funzione <b>' + word + '</b>')
+        label.setText('Colore di: <b> ' + word + '</b>')
         label.setTextFormat(Qt.RichText)
         label.setFont(font)
 
@@ -658,9 +659,9 @@ class SettingsWindow(QDialog):
             self.color_styles.multi_line_comment_color = self.lib["Colore commenti (''' più linee): "]
 
         else:
-            for i in self.color_styles.keyWords:
-                if i.word == self.current_key[22:len(self.current_key)]:
-                    i.color = color
+            for i in self.color_styles.keyWords.keys():
+                if self.current_key[22:len(self.current_key)] == i.replace("'", ''):
+                    self.color_styles.keyWords[i] = (color, self.color_styles.keyWords[i][1])
 
         self.current_button.setStyleSheet('background-color: ' + color)
 
@@ -676,9 +677,9 @@ class SettingsWindow(QDialog):
             self.data.write_file_color_styles('styles/' + self.exercise_window.exercise.id + '.txt', self.color_styles)
 
     def set_bold(self, word, check):
-        for i in self.color_styles.keyWords:
-            if i.word == word:
-                i.bold = check.isChecked()
+        for i in self.color_styles.keyWords.keys():
+            if i == word:
+                self.color_styles.keyWords[i] = (self.color_styles.keyWords[i][0], check.isChecked())
 
         if self.exercise_window is None:
             self.data.color_styles = self.color_styles.__copy__()
@@ -816,9 +817,9 @@ class SettingsWindow(QDialog):
         self.color_buttons['Colore stringhe: '] \
             .setStyleSheet('background-color: ' + self.color_styles.string_color)
 
-        for i in self.color_styles.keyWords:
-            self.color_keys[i.word].setStyleSheet('background-color: ' + i.color)
-            self.check_keys[i.word].setChecked(i.bold)
+        for i in self.color_styles.keyWords.keys():
+            self.color_keys[i].setStyleSheet('background-color: ' + self.color_styles.keyWords[i][0])
+            self.check_keys[i].setChecked(self.color_styles.keyWords[i][1])
 
         if self.exercise_window is None:
             self.data.color_styles = self.color_styles.__copy__()

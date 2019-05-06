@@ -7,18 +7,12 @@ error_results_text_color - red
 string_color - #ff0000
 comment_color - #999999
 multi_line_comment_color - #990099
-if - #0000ff - True
-elif - #0000ff - True
-else - #0000ff - True
-for - #0000ff - True
-while - #0000ff - True
+if, elif, else - #0000ff - True
+for, while - #0000ff - True
 def - #0000ff - True
 import - #0000ff - True
-is - #0000ff - True
-in - #0000ff - True
-not - #0000ff - True
+is, in, not - #0000ff - True
 None - #0000ff - True
 class - #0000ff - True
 print - #0000ff - False
-True - #00ff00 - False
-False - #00ff00 - False
+True, False - #00ff00 - False

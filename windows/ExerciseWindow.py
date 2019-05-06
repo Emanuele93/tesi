@@ -524,15 +524,16 @@ class ExerciseWindow(QWidget):
                         str(self.resources_used['else']) + "," + str(self.resources_used['for']) + "," + \
                         str(self.resources_used['while']) + "," + str(self.resources_used['def'])
             self.exercise.color_styles = self.color_styles.__copy__()
-            cs = self.exercise.color_styles.code_background_color + "," + self.exercise.color_styles.code_text_color + \
-                 "," + self.exercise.color_styles.results_background_color + "," + \
-                 self.exercise.color_styles.results_text_color + "," + \
-                 self.exercise.color_styles.error_results_background_color + "," + \
-                 self.exercise.color_styles.error_results_text_color + "," + self.exercise.color_styles.string_color + \
-                 "," + self.exercise.color_styles.comment_color + "," + \
+            cs = self.exercise.color_styles.code_background_color + " , " + self.exercise.color_styles.code_text_color + \
+                 " , " + self.exercise.color_styles.results_background_color + " , " + \
+                 self.exercise.color_styles.results_text_color + " , " + \
+                 self.exercise.color_styles.error_results_background_color + " , " + \
+                 self.exercise.color_styles.error_results_text_color + " , " + self.exercise.color_styles.string_color + \
+                 " , " + self.exercise.color_styles.comment_color + " , " + \
                  self.exercise.color_styles.multi_line_comment_color
-            for i in self.exercise.color_styles.keyWords:
-                cs += "," + i.color + "," + ('T' if i.bold else 'F')
+            for i in self.exercise.color_styles.keyWords.keys():
+                cs += " , " + i + " - " + self.exercise.color_styles.keyWords[i][0] + " - " + \
+                      ('T' if self.exercise.color_styles.keyWords[i][1] else 'F')
 
             r = Server_call_master.add_solution(
                 {'username': self.data.my_name, 'password': self.data.my_psw, 'class': self.data.my_class,
@@ -1090,12 +1091,6 @@ class ExerciseWindow(QWidget):
                 self.text_changed = True
                 self.update_function_counters()
                 return
-            '''
-            if (self.exercise.limits['lines'] is not None) and len(text.split('\n')) > self.exercise.limits['lines']:
-                self.code_editor.undo()
-                self.text_changed = True
-                return
-            '''
 
             code_editor_cursor = self.code_editor.textCursor()
             x_cur, y_cur = code_editor_cursor.blockNumber(), code_editor_cursor.columnNumber()
@@ -1106,10 +1101,15 @@ class ExerciseWindow(QWidget):
             text = ''
             for i in range(0, len(texts)):
                 if texts[i] != '' and texts[i][0] != '<':
-                    for word in self.color_styles.keyWords:
-                        texts[i], num = self.my_find_and_replace(texts[i], word.word, word.tagged_word(), True)
-                        if self.resources_used.get(word.word, None) is not None:
-                            self.resources_used[word.word] = self.resources_used[word.word] + num
+                    for word in self.color_styles.keyWords.keys():
+                        for w in word.split(', '):
+                            tagged = '<span style=\" color: ' + self.color_styles.keyWords[word][0] \
+                                     + ';\">' + w + '</span>'
+                            if self.color_styles.keyWords[word][1]:
+                                tagged = '<b>' + tagged + '</b>'
+                            texts[i], num = self.my_find_and_replace(texts[i], w, tagged, True)
+                            if self.resources_used.get(w, None) is not None:
+                                self.resources_used[w] = self.resources_used[w] + num
                 text += texts[i]
             if self.exercise.white_paper_mode:
                 temp_text = temp_text.replace('<', '&#60;')
@@ -1171,7 +1171,6 @@ class ExerciseWindow(QWidget):
     def set_color_styles(self, color_styles):
         self.exercise.color_styles = color_styles
         self.color_styles = self.data.color_styles if self.exercise.color_styles is None else self.exercise.color_styles
-        # Todo da segnare su file
 
         self.code_editor.setStyleSheet("QWidget#code_editor {background-color: "
                                        + self.color_styles.code_background_color

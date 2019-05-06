@@ -7,12 +7,9 @@ error_results_text_color - red
 string_color - #ff0000
 comment_color - #999999
 multi_line_comment_color - #990099
-if - #0000ff - True
-elif - #0000ff - True
-else - #0000ff - True
+if, else if, else - #0000ff - True
 for - #0000ff - True
 while - #0000ff - True
-def - #0000ff - True
 import - #0000ff - True
 is - #0000ff - True
 in - #0000ff - True

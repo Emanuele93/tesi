@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QScr
 from PyQt5.QtCore import *
 from windows.CreateHomeworkWindow import CreateHomeworkWindow
 from windows.ExerciseWindow import ExerciseWindow
+from windows.ExerciseWindowC import ExerciseWindowC
 
 
 class HomeworkCollectionWindow(QWidget):
@@ -403,7 +404,8 @@ class HomeworkCollectionWindow(QWidget):
                 i[1].hide()
                 i[1].show()
                 return
-        cw = ExerciseWindow(exercise, self.data, self)
+        cw = ExerciseWindow(exercise, self.data, self) if self.data.language == 1 else \
+            ExerciseWindowC(exercise, self.data, self)
         self.exercise_windows.append([exercise.id, cw])
         cw.show()
         if show_results:
