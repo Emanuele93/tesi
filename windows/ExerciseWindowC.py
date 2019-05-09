@@ -1,10 +1,6 @@
-import contextlib
-import inspect
-import io
 import subprocess
 import threading
 import ctypes
-import os
 from PyQt5.QtGui import QTextCursor, QFont, QPixmap
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel
 from PyQt5.QtCore import *
@@ -332,7 +328,6 @@ class ExerciseWindowC(ExerciseWindow):
         self.set_border_number(self.variables_used_number, color=color)
         self.set_border_number(self.variables_owned_number, color=color)
         self.set_border_limit(self.variables_limit_number, color=color)
-
 
     def format_text(self):
         if self.text_changed:

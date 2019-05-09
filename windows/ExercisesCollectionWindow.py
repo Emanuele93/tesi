@@ -6,7 +6,9 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QScr
 from PyQt5.QtCore import *
 from Data import Exercise
 from windows.BookExerciseWindow import BookExerciseWindow
+from windows.BookExerciseWindowC import BookExerciseWindowC
 from windows.CreateHomeworkWindow import CreateHomeworkWindow
+from windows.CreateHomeworkWindowC import CreateHomeworkWindowC
 
 
 class ExercisesCollectionWindow(QWidget):
@@ -260,7 +262,10 @@ class ExercisesCollectionWindow(QWidget):
 
     def open_exercise(self, exercise, pos, widget, event):
         if self.pages[pos] is None:
-            self.pages[pos] = BookExerciseWindow(exercise, self.data, widget)
+            if self.data.language == 1:
+                self.pages[pos] = BookExerciseWindow(exercise, self.data, widget)
+            else:
+                self.pages[pos] = BookExerciseWindowC(exercise, self.data, widget)
             self.pages[pos].show()
         else:
             self.pages[pos].hide()
@@ -268,18 +273,28 @@ class ExercisesCollectionWindow(QWidget):
 
     def open_void_page(self):
         if self.pages['0'] is None:
-            self.pages['0'] = BookExerciseWindow(Exercise(None, None, None, "Pagina vuota", None, 'Facile', False, "",
-                                                          {'lines': None, 'variables': None, 'if': None, 'elif': None,
-                                                           'else': None, 'conditions': None, 'for': None, 'while': None,
-                                                           'cycles': None, 'def': None}, True, False, False, 0, False),
-                                                 self.data, None)
+            if self.data.language == 1:
+                self.pages['0'] = BookExerciseWindow(
+                    Exercise(None, None, None, "Pagina vuota", None, 'Facile', False, "",
+                             {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None,
+                              'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None},
+                             True, False, False, 0, False), self.data, None)
+            else:
+                self.pages['0'] = BookExerciseWindowC(
+                    Exercise(None, None, None, "Pagina vuota", None, 'Facile', False, "",
+                             {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None,
+                              'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None},
+                             True, False, False, 0, False), self.data, None)
             self.pages['0'].show()
         else:
             self.pages['0'].show()
 
     def send_button_on_click(self, exercise, event):
         if self.new_exercise is None or self.new_exercise.exercise.title != exercise.title:
-            self.new_exercise = CreateHomeworkWindow(self.data, self, exercise=exercise)
+            if self.data.language == 1:
+                self.new_exercise = CreateHomeworkWindow(self.data, self, exercise=exercise)
+            else:
+                self.new_exercise = CreateHomeworkWindowC(self.data, self, exercise=exercise)
             self.new_exercise.show()
         else:
             self.new_exercise.hide()

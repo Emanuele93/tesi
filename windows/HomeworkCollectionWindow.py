@@ -3,6 +3,7 @@ from PyQt5.QtGui import QFont, QPixmap, QMovie
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel
 from PyQt5.QtCore import *
 from windows.CreateHomeworkWindow import CreateHomeworkWindow
+from windows.CreateHomeworkWindowC import CreateHomeworkWindowC
 from windows.ExerciseWindow import ExerciseWindow
 from windows.ExerciseWindowC import ExerciseWindowC
 
@@ -424,7 +425,10 @@ class HomeworkCollectionWindow(QWidget):
     def open_CreateHomeworkWindow(self):
         self.data.get_class_components()
         #  TODO rimetti le 6 righe sotto al posto di queste 2 ma aggiorna le impostazioni di valutazione
-        self.new_exercise = CreateHomeworkWindow(self.data, self)
+        if self.data.language == 1:
+            self.new_exercise = CreateHomeworkWindow(self.data, self)
+        else:
+            self.new_exercise = CreateHomeworkWindowC(self.data, self)
         self.new_exercise.show()
         '''
         if self.new_exercise is None:

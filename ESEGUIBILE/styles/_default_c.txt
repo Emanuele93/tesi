@@ -1,4 +1,4 @@
-code_background_color - red
+code_background_color - white
 code_text_color - black
 results_background_color - white
 results_text_color - black
