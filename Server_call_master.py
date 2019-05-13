@@ -116,6 +116,7 @@ def access(s, o, d):
         r = requests.post(URL + s, data=d)
         if r.text in o:
             return r.text
+        print(r.text)
         dialog_message(ERROR_message_server_error)
         return None
     except requests.exceptions.RequestException:

@@ -268,14 +268,15 @@ class Data:
                         if path.isfile('styles/_lib.txt'):
                             f = open('styles/_lib.txt', 'r')
                             for c in f:
-                                if c[len(i.split(':')[0]) + 1:-1] == file:
+                                print(c)
+                                if c != "" and c[len(c.split(':')[0]) + 1:-1] == file:
                                     styles_file_name = 'styles/' + c.split(':')[0] + '.txt'
                             f.close()
 
                         if path.isfile('saves/_lib.txt'):
                             f = open('saves/_lib.txt', 'r')
                             for c in f:
-                                if c[len(i.split(':')[0]) + 1:-1] == file:
+                                if c[len(c.split(':')[0]) + 1:-1] == file:
                                     saves_file_name = 'saves/' + c.split(':')[0] + '.txt'
                             f.close()
 

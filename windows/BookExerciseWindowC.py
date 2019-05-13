@@ -48,6 +48,8 @@ class BookExerciseWindowC(BookExerciseWindow):
         self.set_border_number(self.variables_used_number, color=color)
         self.set_border_number(self.variables_owned_number, color=color)
         self.set_border_limit(self.variables_limit_number, color=color)
+        self.hide()
+        self.show()
 
     def get_counter_functions_layout(self):
         font = QFont()

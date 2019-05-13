@@ -906,6 +906,12 @@ class BookExerciseWindow(QWidget):
         self.code_editor.setStyleSheet("QWidget#code_editor {background-color: "
                                        + self.data.color_styles.code_background_color + "; color: "
                                        + self.data.color_styles.code_text_color + ";}")
-        self.results.setStyleSheet("QWidget#results {background-color: " + self.data.color_styles.results_background_color
-                                   + "; color: " + self.data.color_styles.results_text_color + ";}")
+        if self.code_compile:
+            self.results.setStyleSheet("QWidget#results {background-color: "
+                                       + self.data.color_styles.results_background_color
+                                       + "; color: " + self.data.color_styles.results_text_color + ";}")
+        else:
+            self.results.setStyleSheet("QWidget#results {background-color: "
+                                       + self.data.color_styles.error_results_background_color + "; color: "
+                                       + self.data.color_styles.error_results_text_color + ";}")
         self.format_text()

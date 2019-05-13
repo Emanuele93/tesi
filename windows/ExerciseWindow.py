@@ -313,10 +313,10 @@ class ExerciseWindow(QWidget):
         self.watch_button.leaveEvent = self.hide_text
         self.watch_button.setEnabled(self.data.visible or self.data.my_name in self.data.my_proff)
         self.watch_button.hide()
-        if self.exercise.delivery_date is None and self.exercise.lookable and \
-                Server_call_master.check_variable("/check_watch_homework_coin.php",
-                                                  {'username': self.data.my_name, 'password': self.data.my_psw,
-                                                   'id': self.exercise.id}):
+        if self.exercise.delivery_date is None and \
+                (self.data.my_name in self.data.my_proff or Server_call_master.check_variable(
+                    "/check_watch_homework_coin.php", {'username': self.data.my_name, 'password': self.data.my_psw,
+                                                       'id': self.exercise.id})):
                 self.watch_button.show()
         box1 = QHBoxLayout(self)
         box1.setAlignment(Qt.AlignHCenter)
@@ -1197,8 +1197,14 @@ class ExerciseWindow(QWidget):
         self.code_editor.setStyleSheet("QWidget#code_editor {background-color: "
                                        + self.color_styles.code_background_color + "; color: "
                                        + self.color_styles.code_text_color + ";}")
-        self.results.setStyleSheet("QWidget#results {background-color: " + self.color_styles.results_background_color
-                                   + "; color: " + self.color_styles.results_text_color + ";}")
+        if self.code_compile:
+            self.results.setStyleSheet("QWidget#results {background-color: "
+                                       + self.color_styles.results_background_color
+                                       + "; color: " + self.color_styles.results_text_color + ";}")
+        else:
+            self.results.setStyleSheet("QWidget#results {background-color: "
+                                       + self.color_styles.error_results_background_color + "; color: "
+                                       + self.color_styles.error_results_text_color + ";}")
         self.format_text()
 
     def new_evaluation(self, vote=None):

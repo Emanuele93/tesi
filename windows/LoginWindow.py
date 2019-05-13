@@ -128,7 +128,7 @@ class LoginWindow(QWidget):
         button.setEnabled(False)
 
     def button_on_click(self, user, password, classe):
-        r = Server_call_master.access("/login.php", ['ok', 'password', 'username', 'class'],
+        r = Server_call_master.access("/login.php", ['ok', 'password', 'username', 'classe'],
                                       {'username': user.text().strip(), 'password': password.text().strip(),
                                        'class': classe.text().strip()})
         if r == 'ok':
@@ -138,8 +138,8 @@ class LoginWindow(QWidget):
             f.close()
             self.home.data = Data()
             self.home.open_MainWindow()
-            self.home.show()
             self.close()
+            self.home.show()
         elif r == 'username':
             user.setStyleSheet('color: red')
             password.setStyleSheet('color: black')
@@ -155,5 +155,5 @@ class LoginWindow(QWidget):
 
     def open_register(self, event):
         self.signin = Signin(self)
-        self.signin.show()
         self.close()
+        self.signin.show()

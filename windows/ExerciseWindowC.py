@@ -328,6 +328,7 @@ class ExerciseWindowC(ExerciseWindow):
         self.set_border_number(self.variables_used_number, color=color)
         self.set_border_number(self.variables_owned_number, color=color)
         self.set_border_limit(self.variables_limit_number, color=color)
+        self.show()
 
     def format_text(self):
         if self.text_changed:
@@ -498,7 +499,7 @@ class MyThreadC(threading.Thread):
             self.execution_result = result.stdout.decode('ascii')
             self.code_compile = True
         else:
-            self.execution_result = result.stderr.decode('ascii')
+            self.execution_result = result.stderr.decode('ascii').replace(path + ":", "")
             self.code_compile = False
 
     def get_id(self):

@@ -477,6 +477,7 @@ class CreateHomeworkWindowC(CreateHomeworkWindow):
         else:
             self.results.setStyleSheet('color: red')
         self.update_function_counters()
+        self.show()
         return not code_compile
 
     def color_strings(self, text):

@@ -271,8 +271,8 @@ class Signin(QWidget):
             f.write("\n\n\nTrue\n20")
             f.close()
         elif r == 'ready':
-            self.login.button_on_click(user, password, classe)
             self.close()
+            self.login.button_on_click(user, password, classe)
         elif r == 'username':
             user.setStyleSheet('color: red')
             password.setStyleSheet('color: black')
@@ -283,5 +283,5 @@ class Signin(QWidget):
             classe.setStyleSheet('color: red')
 
     def open_login(self, event):
-        self.login.show()
         self.close()
+        self.login.show()
