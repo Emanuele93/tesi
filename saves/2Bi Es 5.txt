@@ -1,0 +1,15 @@
+x, y, z = 8, 3, 7
+
+if z < x < y:
+	print('x è al centro')
+elif x < z:
+	print('z è maggiore di x')
+elif y > z:
+	print("3 è minore di 7")
+if x - z > y:
+	print("3 è maggiore di 1")
+else:
+	print(str(x) + str(y) + str(z) + ' = ' + str(x + y + z) + " ?")
+
+# Il risultato è: 837 = 18 ?
+ 

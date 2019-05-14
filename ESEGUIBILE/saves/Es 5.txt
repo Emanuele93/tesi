@@ -1,15 +1,47 @@
-x, y, z = 8, 3, 7
+#include <time.h>
+#include <stdlib.h>
+#include <stdio.h>
 
-if z < x < y:
-	print('x è al centro')
-elif x < z:
-	print('z è maggiore di x')
-elif y > z:
-	print("3 è minore di 7")
-if x - z > y:
-	print("3 è maggiore di 1")
-else:
-	print(str(x) + str(y) + str(z) + ' = ' + str(x + y + z) + " ?")
+char seleziona_operazione(char operazioni[])
+{
+	srand(time(NULL));
+	return operazioni[rand()%(4)];
+}
 
-# Il risultato è: 837 = 18 ?
- 
+void calcolatrice(int num1, int num2, float &ris, char operazione)
+{
+	switch (operazione)
+	{
+		case '+':
+			ris = num1 + num2;
+			break;
+		case '-':
+			ris = num1 - num2;
+			break;
+		case '*':
+			ris = num1 * num2;
+			break;
+		case '/':
+			if (num2 == 0)
+				ris = -100;
+			else
+				ris = (float)num1 / (float)num2;
+			break;
+	}
+}
+
+int main()
+{
+	srand(time(NULL));
+	char possibilita[] = {'+', '-', '*', '/'};
+	int a = rand()%(10);
+	int b = rand()%(10);
+	float c;
+	char o = seleziona_operazione(possibilita);
+	calcolatrice(a, b, c, o);
+	if(c != -100)
+		printf("%.2lf %c %.2lf = %.2lf", (float)a, o, (float)b, c);
+	else
+		printf("%.2lf %c %.2lf non si puo' fare", (float)a, o, (float)b);
+		
+} 

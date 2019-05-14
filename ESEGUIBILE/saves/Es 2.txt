@@ -1,7 +1,7 @@
-a, b = "Ciao", "Mondo" 
+#include <stdlib.h>
+#include <stdio.h>
 
-print(a + b + "!")
-
-b = "Carlo"
-
-# CiaoMondo!
+int main()
+{
+	printf("Ciao\nMondo");
+} 

@@ -71,6 +71,9 @@ class Data:
         self.student_exercises_visible = True
         self.get_class_components()
 
+        if self.language == 2:
+            self.variables_numbers['lines'] = [1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+
         self.code_result_horizontal_orientation = True if f.readline()[0:-1] == "True" else False
         self.code_font_size = int(f.readline())
         self.code_font_family = 'Courier New'

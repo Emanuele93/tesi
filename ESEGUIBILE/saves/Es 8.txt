@@ -1,9 +1,0 @@
-import random
-L = random.randint(2,9)
-print("Lato: " + str(L))
-
-s = ""
-for i in range(1, L*L+1):
-	s += " X\n" if i%L==0 else " X"
-
-print(s) 

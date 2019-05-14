@@ -2,22 +2,43 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d46dabcd-8ea8-45fa-bcbd-12f39d40a546" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/windows/AbilitiesWindowC.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/windows/ClassExerciseComparisonWindowC.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Data.py" beforeDir="false" afterPath="$PROJECT_DIR$/Data.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ESEGUIBILE/Main.exe" beforeDir="false" afterPath="$PROJECT_DIR$/ESEGUIBILE/Main.exe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/exercises/0 29-04-2019.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/exercises/1 Le variabili.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/exercises/2 Le selezioni.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/exercises/3 I cicli.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/exercises/4 Le funzioni.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/exercises/5 Classe 2Bi.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ESEGUIBILE/exercises/5 Classe 2Bi.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/saves/Es 1.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ESEGUIBILE/saves/Es 1.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/saves/Es 10.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/saves/Es 11.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/saves/Es 2.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ESEGUIBILE/saves/Es 2.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/saves/Es 3.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ESEGUIBILE/saves/Es 3.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/saves/Es 4.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ESEGUIBILE/saves/Es 4.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/saves/Es 5.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ESEGUIBILE/saves/Es 5.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/saves/Es 6.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ESEGUIBILE/saves/Es 6.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/saves/Es 7.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/saves/Es 8.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/saves/Es 9.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ESEGUIBILE/styles/_default_c.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ESEGUIBILE/styles/_default_c.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ESEGUIBILE/styles/_default_python.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ESEGUIBILE/styles/_default_python.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Server_call_master.py" beforeDir="false" afterPath="$PROJECT_DIR$/Server_call_master.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/saves/_lib.txt" beforeDir="false" afterPath="$PROJECT_DIR$/saves/_lib.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/styles/_lib.txt" beforeDir="false" afterPath="$PROJECT_DIR$/styles/_lib.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/windows/BookExerciseWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/windows/BookExerciseWindow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/exercises/0 30-04-2019.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/exercises/1 Le variabili.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/exercises/2 Le selezioni.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/exercises/3 I cicli.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/exercises/4 Le funzioni.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/styles/_default_c.txt" beforeDir="false" afterPath="$PROJECT_DIR$/styles/_default_c.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/styles/_default_python.txt" beforeDir="false" afterPath="$PROJECT_DIR$/styles/_default_python.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/windows/AbilitiesWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/windows/AbilitiesWindow.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/windows/BookExerciseWindowC.py" beforeDir="false" afterPath="$PROJECT_DIR$/windows/BookExerciseWindowC.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/windows/CreateHomeworkWindowC.py" beforeDir="false" afterPath="$PROJECT_DIR$/windows/CreateHomeworkWindowC.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/windows/ExerciseWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/windows/ExerciseWindow.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/windows/ExerciseWindowC.py" beforeDir="false" afterPath="$PROJECT_DIR$/windows/ExerciseWindowC.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/windows/LoginWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/windows/LoginWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/windows/Signin.py" beforeDir="false" afterPath="$PROJECT_DIR$/windows/Signin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/windows/ExercisesCollectionWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/windows/ExercisesCollectionWindow.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -30,8 +51,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="255">
-              <caret line="29" column="42" selection-start-line="29" selection-start-column="42" selection-end-line="29" selection-end-column="42" />
+            <state relative-caret-position="196">
+              <caret line="69" column="45" selection-start-line="69" selection-start-column="45" selection-end-line="69" selection-end-column="45" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
@@ -39,70 +60,13 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Data.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4709">
-              <caret line="278" column="42" selection-start-line="278" selection-start-column="42" selection-end-line="278" selection-end-column="42" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Server_call_master.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="210">
-              <caret line="141" column="4" selection-start-line="141" selection-start-column="4" selection-end-line="141" selection-end-column="4" />
-              <folding>
-                <element signature="e#0#11#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/windows/ExerciseWindow.py">
+        <entry file="file://$PROJECT_DIR$/windows/ExerciseWindowC.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="329">
-              <caret line="318" column="81" lean-forward="true" selection-start-line="318" selection-start-column="81" selection-end-line="318" selection-end-column="81" />
+            <state relative-caret-position="99">
+              <caret line="413" column="45" selection-start-line="413" selection-start-column="45" selection-end-line="413" selection-end-column="45" />
               <folding>
-                <element signature="e#0#15#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/windows/LoginWindow.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="83">
-              <caret line="130" column="90" selection-start-line="130" selection-start-column="90" selection-end-line="130" selection-end-column="90" />
-              <folding>
-                <element signature="e#0#29#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/windows/BookExerciseWindowC.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="748">
-              <caret line="50" column="19" selection-start-line="50" selection-start-column="19" selection-end-line="50" selection-end-column="19" />
-              <folding>
-                <element signature="e#0#51#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/windows/BookExerciseWindow.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="15147">
-              <caret line="899" column="23" selection-start-line="899" selection-start-column="23" selection-end-line="899" selection-end-column="23" />
-              <folding>
-                <element signature="e#0#29#0" expanded="true" />
+                <element signature="e#0#17#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -119,23 +83,7 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>MyThreadC</find>
-      <find>variables_used_number</find>
-      <find>functions_used_number</find>
-      <find>functions_limit_number</find>
-      <find>color_str</find>
-      <find>play</find>
-      <find>self.color</find>
-      <find>?</find>
-      <find>?f</find>
-      <find>BookExerciseWindow</find>
-      <find>intro_elif</find>
-      <find>language</find>
-      <find>.KEYS</find>
-      <find>mythre</find>
-      <find>color_strings</find>
       <find>update_function_counters</find>
-      <find>format</find>
       <find>elif</find>
       <find>CreateHomeworkWindow</find>
       <find>non im</find>
@@ -149,6 +97,22 @@
       <find>watch.png')</find>
       <find>self.watch_button.h</find>
       <find>watch</find>
+      <find>self.pages</find>
+      <find>.c&quot;</find>
+      <find>format</find>
+      <find>color_te</find>
+      <find>color_str</find>
+      <find>ClassExerciseComparisonWindow</find>
+      <find>watch_button_on_click</find>
+      <find>print</find>
+      <find>funzioni</find>
+      <find>play_button_on_click</find>
+      <find>' soldi'</find>
+      <find>lang</find>
+      <find>data.lan</find>
+      <find>Non im</find>
+      <find>- 1</find>
+      <find>*</find>
     </findStrings>
     <replaceStrings>
       <replace>#8855ff</replace>
@@ -202,31 +166,33 @@
         <option value="$PROJECT_DIR$/Signin.py" />
         <option value="$PROJECT_DIR$/Prova.py" />
         <option value="$PROJECT_DIR$/prova.py" />
-        <option value="$PROJECT_DIR$/Main.py" />
         <option value="$PROJECT_DIR$/windows/HomeWindow.py" />
         <option value="$PROJECT_DIR$/windows/ConfirmWindow.py" />
         <option value="$PROJECT_DIR$/windows/ClassAchievementsComparisonWindow.py" />
         <option value="$PROJECT_DIR$/windows/AchievementsWindow.py" />
         <option value="$PROJECT_DIR$/windows/CreateHomeworkWindow.py" />
-        <option value="$PROJECT_DIR$/windows/ClassExerciseComparisonWindow.py" />
-        <option value="$PROJECT_DIR$/windows/AbilitiesWindow.py" />
         <option value="$PROJECT_DIR$/../prova/py/py.py" />
         <option value="$PROJECT_DIR$/windows/SettingsWindow.py" />
-        <option value="$PROJECT_DIR$/windows/ExercisesCollectionWindow.py" />
         <option value="$PROJECT_DIR$/windows/HomeworkCollectionWindow.py" />
-        <option value="$PROJECT_DIR$/windows/CreateHomeworkWindowC.py" />
-        <option value="$PROJECT_DIR$/windows/ExerciseWindowC.py" />
         <option value="$PROJECT_DIR$/windows/BookExerciseWindow.py" />
         <option value="$PROJECT_DIR$/windows/Signin.py" />
-        <option value="$PROJECT_DIR$/windows/BookExerciseWindowC.py" />
-        <option value="$PROJECT_DIR$/Data.py" />
         <option value="$PROJECT_DIR$/Server_call_master.py" />
         <option value="$PROJECT_DIR$/windows/LoginWindow.py" />
         <option value="$PROJECT_DIR$/windows/ExerciseWindow.py" />
+        <option value="$PROJECT_DIR$/Data.py" />
+        <option value="$PROJECT_DIR$/windows/ExercisesCollectionWindow.py" />
+        <option value="$PROJECT_DIR$/windows/ClassExerciseComparisonWindow.py" />
+        <option value="$PROJECT_DIR$/windows/AbilitiesWindow.py" />
+        <option value="$PROJECT_DIR$/Main.py" />
+        <option value="$PROJECT_DIR$/windows/AbilitiesWindowC.py" />
+        <option value="$PROJECT_DIR$/windows/CreateHomeworkWindowC.py" />
+        <option value="$PROJECT_DIR$/windows/ClassExerciseComparisonWindowC.py" />
+        <option value="$PROJECT_DIR$/windows/BookExerciseWindowC.py" />
+        <option value="$PROJECT_DIR$/windows/ExerciseWindowC.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds" extendedState="7">
     <option name="x" value="-10" />
     <option name="y" value="-10" />
     <option name="width" value="1940" />
@@ -404,8 +370,9 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.18968935" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.18968935" />
       <window_info id="Structure" order="1" weight="0.25" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -429,8 +396,6 @@
     </ignored-roots>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/WindowsController.py" />
-    <entry file="file://$PROJECT_DIR$/Vuoto_Prove.py" />
     <entry file="file://$USER_HOME$/venv/Tesi_Python/Lib/site-packages/django/dispatch/dispatcher.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="152">
@@ -552,13 +517,6 @@
     <entry file="file://$APPLICATION_HOME_DIR$/helpers/typeshed/stdlib/2and3/time.pyi">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://C:/Program Files/Python37/Lib/json/decoder.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="323">
-          <caret line="354" selection-start-line="354" selection-end-line="354" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/user_info.txt" />
     <entry file="file://$PROJECT_DIR$/windows/HomeWindow.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -591,26 +549,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="334">
           <caret line="269" lean-forward="true" selection-start-line="269" selection-end-line="269" />
-          <folding>
-            <element signature="e#0#29#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/windows/ClassExerciseComparisonWindow.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="137">
-          <caret line="385" column="30" selection-start-line="385" selection-start-column="30" selection-end-line="385" selection-end-column="30" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/windows/AbilitiesWindow.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="173">
-          <caret line="294" column="58" selection-start-line="294" selection-start-column="58" selection-end-line="294" selection-end-column="58" />
           <folding>
             <element signature="e#0#29#0" expanded="true" />
           </folding>
@@ -663,69 +601,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/windows/ExercisesCollectionWindow.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3859">
-          <caret line="237" column="55" selection-start-line="237" selection-start-column="55" selection-end-line="237" selection-end-column="55" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/windows/ExerciseWindowC.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5508">
-          <caret line="330" selection-start-line="330" selection-end-line="330" />
-          <folding>
-            <element signature="e#0#17#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/windows/CreateHomeworkWindowC.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="7650">
-          <caret line="457" column="21" selection-start-line="457" selection-start-column="21" selection-end-line="457" selection-end-column="21" />
-          <folding>
-            <element signature="e#0#29#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/windows/Signin.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="494">
           <caret line="285" column="18" selection-start-line="285" selection-start-column="7" selection-end-line="285" selection-end-column="18" />
           <folding>
             <element signature="e#0#29#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="29" column="42" selection-start-line="29" selection-start-column="42" selection-end-line="29" selection-end-column="42" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Data.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4709">
-          <caret line="278" column="42" selection-start-line="278" selection-start-column="42" selection-end-line="278" selection-end-column="42" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/windows/BookExerciseWindowC.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="748">
-          <caret line="50" column="19" selection-start-line="50" selection-start-column="19" selection-end-line="50" selection-end-column="19" />
-          <folding>
-            <element signature="e#0#51#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -742,8 +623,52 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/windows/LoginWindow.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="83">
+        <state relative-caret-position="402">
           <caret line="130" column="90" selection-start-line="130" selection-start-column="90" selection-end-line="130" selection-end-column="90" />
+          <folding>
+            <element signature="e#0#29#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Program Files/Python37/Lib/json/decoder.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="289">
+          <caret line="352" selection-start-line="352" selection-end-line="352" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/windows/ClassExerciseComparisonWindow.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5134">
+          <caret line="308" column="45" selection-start-line="308" selection-start-column="33" selection-end-line="308" selection-end-column="45" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Data.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="371">
+          <caret line="74" column="87" selection-start-line="74" selection-start-column="87" selection-end-line="74" selection-end-column="87" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/windows/ExerciseWindow.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="402">
+          <caret line="573" column="29" selection-start-line="573" selection-start-column="8" selection-end-line="573" selection-end-column="29" />
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/windows/AbilitiesWindow.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="10455">
+          <caret line="619" column="77" selection-start-line="619" selection-start-column="77" selection-end-line="619" selection-end-column="77" />
           <folding>
             <element signature="e#0#29#0" expanded="true" />
           </folding>
@@ -752,7 +677,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Server_call_master.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="210">
+        <state relative-caret-position="644">
           <caret line="141" column="4" selection-start-line="141" selection-start-column="4" selection-end-line="141" selection-end-column="4" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
@@ -760,12 +685,69 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/windows/ExerciseWindow.py">
+    <entry file="file://$PROJECT_DIR$/windows/AbilitiesWindowC.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="329">
-          <caret line="318" column="81" lean-forward="true" selection-start-line="318" selection-start-column="81" selection-end-line="318" selection-end-column="81" />
+        <state relative-caret-position="137">
+          <caret line="157" column="42" selection-start-line="157" selection-start-column="42" selection-end-line="157" selection-end-column="42" />
           <folding>
-            <element signature="e#0#15#0" expanded="true" />
+            <element signature="e#0#29#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/windows/ExercisesCollectionWindow.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="746">
+          <caret line="243" lean-forward="true" selection-start-line="243" selection-end-line="243" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/windows/BookExerciseWindowC.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="233" column="45" selection-start-line="233" selection-start-column="45" selection-end-line="233" selection-end-column="45" />
+          <folding>
+            <element signature="e#0#51#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/windows/ClassExerciseComparisonWindowC.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="136">
+          <caret line="39" column="95" selection-start-line="39" selection-start-column="95" selection-end-line="39" selection-end-column="95" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/windows/CreateHomeworkWindowC.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="193">
+          <caret line="494" column="30" lean-forward="true" selection-start-line="494" selection-start-column="30" selection-end-line="494" selection-end-column="30" />
+          <folding>
+            <element signature="e#0#29#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="196">
+          <caret line="69" column="45" selection-start-line="69" selection-start-column="45" selection-end-line="69" selection-end-column="45" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/windows/ExerciseWindowC.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="99">
+          <caret line="413" column="45" selection-start-line="413" selection-start-column="45" selection-end-line="413" selection-end-column="45" />
+          <folding>
+            <element signature="e#0#17#0" expanded="true" />
           </folding>
         </state>
       </provider>

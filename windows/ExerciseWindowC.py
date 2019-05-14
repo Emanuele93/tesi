@@ -4,6 +4,9 @@ import ctypes
 from PyQt5.QtGui import QTextCursor, QFont, QPixmap
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel
 from PyQt5.QtCore import *
+
+import Server_call_master
+from windows.ClassExerciseComparisonWindowC import ClassExerciseComparisonWindowC
 from windows.ExerciseWindow import ExerciseWindow, MyTimer
 
 
@@ -407,8 +410,8 @@ class ExerciseWindowC(ExerciseWindow):
         texts = []
         multi_line_comment, comment, string_start, i, start = False, False, None, 0, 0
         while i < len(text):
-            if i < len(text) - 1 and text[i] == '/' and text[i+1] == '/' and string_start is None \
-                    and not multi_line_comment and not comment:
+            if ((i < len(text) - 1 and text[i] == '/' and text[i+1] == '/') or text[i] == '#') \
+                    and string_start is None and not multi_line_comment and not comment:
                 if i != start:
                     texts.append(text[start:i])
                     start = i
@@ -472,6 +475,23 @@ class ExerciseWindowC(ExerciseWindow):
         texts.append(text[start:i])
         return texts
 
+    def watch_button_on_click(self, button, event):
+        r = Server_call_master.click_watch_homework_coin({'username': self.data.my_name, 'password': self.data.my_psw,
+                                                          'class': self.data.my_class, 'id': self.exercise.id})
+        if r == "":
+            button.hide()
+        else:
+            self.data.watch_homework_coin = (r != "removed")
+
+            a, b = Server_call_master.get_class_exercise_solutions(
+                {'username': self.data.my_name, 'password': self.data.my_psw,
+                 'exercise': self.exercise.id, 'class': self.data.my_class})
+            if a is not None:
+                confirm = ClassExerciseComparisonWindowC(
+                    'Soluzioni - "' + self.exercise.title + '"',a, b, self.exercise.limits, self, parent=self)
+                confirm.exec_()
+                confirm.deleteLater()
+
 
 class MyThreadC(threading.Thread):
     def __init__(self, name, code_editor, execution_temp_vars, path):
@@ -486,7 +506,7 @@ class MyThreadC(threading.Thread):
 
     def run(self):
         compiler = self.path + "\MinGW\\bin\gcc"
-        path = self.path + "\\temp\code.c"
+        path = self.path + "\\temp\code.cpp"
         exe_path = self.path + "\\temp\\ris"
 
         f = open(path, "w")

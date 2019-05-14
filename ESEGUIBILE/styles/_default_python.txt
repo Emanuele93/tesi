@@ -15,5 +15,6 @@ is, in, not - #0000ff - True
 None - #0000ff - True
 class - #0000ff - True
 print - #0000ff - False
+range - #0000ff - False
 True, False - #22ff44 - False
 int, str - #0000ff - True

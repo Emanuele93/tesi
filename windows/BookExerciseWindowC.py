@@ -48,7 +48,6 @@ class BookExerciseWindowC(BookExerciseWindow):
         self.set_border_number(self.variables_used_number, color=color)
         self.set_border_number(self.variables_owned_number, color=color)
         self.set_border_limit(self.variables_limit_number, color=color)
-        self.hide()
         self.show()
 
     def get_counter_functions_layout(self):
@@ -231,8 +230,8 @@ class BookExerciseWindowC(BookExerciseWindow):
         texts = []
         multi_line_comment, comment, string_start, i, start = False, False, None, 0, 0
         while i < len(text):
-            if i < len(text) - 1 and text[i] == '/' and text[i+1] == '/' and string_start is None \
-                    and not multi_line_comment and not comment:
+            if ((i < len(text) - 1 and text[i] == '/' and text[i+1] == '/') or text[i] == '#') \
+                    and string_start is None and not multi_line_comment and not comment:
                 if i != start:
                     texts.append(text[start:i])
                     start = i

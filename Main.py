@@ -8,6 +8,7 @@ from PyQt5.QtCore import *
 
 from Data import Data
 from windows.AbilitiesWindow import AbilitiesWindow
+from windows.AbilitiesWindowC import AbilitiesWindowC
 from windows.AchievementsWindow import AchievementsWindow
 from windows.ExercisesCollectionWindow import ExercisesCollectionWindow
 from windows.HomeWindow import HomeWindow
@@ -63,7 +64,10 @@ class WindowsController(QWidget):
         self.mainWin.change_button.click()
 
     def open_Abilities_Window(self, page, event):
-        self.open_window(AbilitiesWindow(self, self.data, page))
+        if self.data.language == 1:
+            self.open_window(AbilitiesWindow(self, self.data, page))
+        else:
+            self.open_window(AbilitiesWindowC(self, self.data, page))
 
     def open_AchievementsWindow(self, pos):
         self.open_window(AchievementsWindow(self, self.data, pos))

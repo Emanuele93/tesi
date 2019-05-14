@@ -1,2 +1,37 @@
-for i in range(1, 26):
-	print(i)
+#include <time.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+int numeri[100];
+
+int somma(int dim)
+{
+	int s=0, i=0;
+	while(i<dim)
+	{
+		s += numeri[i];
+		i++;
+	}
+	return s;
+}
+
+void riempi(int dim)
+{
+	printf("\n");
+	for(int i=0;i<dim;i++)
+	{
+		numeri[i] = rand()%(10)+1;
+		printf("%d ", numeri[i]);
+	}
+	printf("\n");
+}
+
+int main()
+{
+	srand(time(NULL));
+	for(int i=5;i<30;i=i+5)
+	{
+		riempi(i);
+		printf("Somma: %d\n",somma(i));
+	}
+}

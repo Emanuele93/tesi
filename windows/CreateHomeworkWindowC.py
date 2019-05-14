@@ -484,8 +484,8 @@ class CreateHomeworkWindowC(CreateHomeworkWindow):
         texts = []
         multi_line_comment, comment, string_start, i, start = False, False, None, 0, 0
         while i < len(text):
-            if i < len(text) - 1 and text[i] == '/' and text[i+1] == '/' and string_start is None \
-                    and not multi_line_comment and not comment:
+            if ((i < len(text) - 1 and text[i] == '/' and text[i+1] == '/') or text[i] == '#') \
+                    and string_start is None and not multi_line_comment and not comment:
                 if i != start:
                     texts.append(text[start:i])
                     start = i

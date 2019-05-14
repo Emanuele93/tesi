@@ -1,0 +1,14 @@
+import random
+i = random.randint(1,99)
+
+if i < 10:
+   i = '0' + str(i)
+else:
+   i = str(i)
+
+while i[:2] != '01':
+   i = str(int(i[:2]) - 1) + " " + i
+   if i[1] == " ":
+      i = '0' + i
+
+print(i)

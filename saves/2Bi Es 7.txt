@@ -1,0 +1,10 @@
+import random
+L = random.randint(2,9)
+print("Lato: " + str(L))
+
+for i in range(L):
+	j = L
+	while j > 1:
+		j -= 1
+		print(" X", end="")
+	print(" X") 

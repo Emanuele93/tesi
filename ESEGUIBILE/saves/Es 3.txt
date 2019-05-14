@@ -1,2 +1,26 @@
-x,y = 5,'3'
-print("La somma tra " + str(x) + " e " + y + " è " + str(x + int(y))) 
+#include <time.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+void confornto(int a)
+{
+	if(a <= 3)
+	{
+		printf(" e' un numero basso");
+		return;
+	}
+	else if (a <= 6)
+	{
+		printf(" e' un numero medio");
+		return;
+	}
+	printf(" e' un numero alto");
+}
+
+int main()
+{
+	srand(time(NULL));
+	int r = rand()%(10)+1;
+	printf("%d", r);
+	confornto(r);
+}

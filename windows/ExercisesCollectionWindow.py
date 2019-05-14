@@ -17,7 +17,7 @@ class ExercisesCollectionWindow(QWidget):
         home.setWindowTitle("Eserciziario")
         self.data = data
         self.home = home
-        self.pages = {'0': None}
+        self.pages = {}
         self.new_exercise = None
 
         if self.data.my_name in self.data.my_proff:
@@ -194,7 +194,7 @@ class ExercisesCollectionWindow(QWidget):
         internal_box.setAlignment(Qt.AlignTop)
         internal_box.setContentsMargins(20, 10, 20, 10)
         for i in exercises:
-            ex = QLabel(str(len(self.pages)) + " - " + i.title, self)
+            ex = QLabel(str(len(self.pages)+1) + " - " + i.title, self)
             ex.setFont(font)
             ex.setContentsMargins(20, 10, 20, 10)
             ex.setTextFormat(Qt.RichText)
@@ -242,7 +242,7 @@ class ExercisesCollectionWindow(QWidget):
                 ex = QWidget(self, flags=Qt.Widget)
                 ex.setLayout(prof_box)
 
-            ex.mousePressEvent = partial(self.open_exercise, i, str(len(self.pages)), ex)
+            ex.mousePressEvent = partial(self.open_exercise, i, str(len(self.pages)-1), ex)
             if path.isfile(solution_file):
                 f = open(solution_file, "r")
                 i.solution = f.read()
