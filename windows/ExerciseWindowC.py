@@ -1,13 +1,14 @@
-import subprocess
-import threading
-import ctypes
+import signal
+import os
+import time
+from subprocess import Popen, PIPE, run, DEVNULL
 from PyQt5.QtGui import QTextCursor, QFont, QPixmap
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel
 from PyQt5.QtCore import *
 
 import Server_call_master
 from windows.ClassExerciseComparisonWindowC import ClassExerciseComparisonWindowC
-from windows.ExerciseWindow import ExerciseWindow, MyTimer
+from windows.ExerciseWindow import ExerciseWindow
 
 
 class ExerciseWindowC(ExerciseWindow):
@@ -292,21 +293,50 @@ class ExerciseWindowC(ExerciseWindow):
         self.set_border_number(self.functions_owned_number, color)
         self.set_border_limit(self.functions_limit_number, color)
 
+    def exec_code(self):
+        compiler = "C:\Program Files (x86)\Dev-Cpp\MinGW64\\bin\g++.exe"
+
+        if not os.path.isfile(compiler):
+            compiler = self.data.get_path() + "\MinGW64\\bin\g++"
+
+        path = self.data.get_path() + "\\temp\code.cpp"
+        exe_path = self.data.get_path() + "\\temp\\ris.exe"
+
+        f = open(path, "w")
+        f.write(self.code_editor.toPlainText())
+        f.close()
+        result = run(compiler + " -o " + exe_path + " " + path, stdout=PIPE, stderr=PIPE, stdin=DEVNULL)
+        if result.returncode == 0:
+            result = Popen(exe_path, stdout=PIPE, stderr=PIPE, stdin=DEVNULL)
+            try:
+                result.wait(self.waiting_time)
+                out = result.stdout.read().decode('ascii')
+                err = result.stderr.read().decode('ascii')
+                if err == '':
+                    execution_result = out
+                    code_compile = True
+                else:
+                    execution_result = err
+                    code_compile = False
+            except Exception:
+                result.send_signal(signal.CTRL_BREAK_EVENT)
+                #result.kill()
+                if self.waiting_time < 5:
+                    self.waiting_time = 10
+                else:
+                    self.waiting_time = 3
+                execution_result = "Errore nell'esecuzione del codice.\n" \
+                                   "Ciclo infinito / Esecuzione lenta\n" \
+                                   "Al prossimo play l'applicativo crasherà"
+                code_compile = False
+        else:
+            execution_result = result.stderr.decode('ascii').replace(path + ":", "")
+            code_compile = False
+        return execution_result, code_compile
+
     def play_button_on_click(self, event):
         execution_temp_vars = {}
-
-        t1 = MyThreadC('Thread 1', self.code_editor, execution_temp_vars, self.data.get_path())
-        t2 = MyTimer(t1)
-        t1.start()
-        t2.start()
-        t1.join()
-
-        execution_result = t1.execution_result
-        self.code_compile = t1.code_compile
-        execution_temp_result = t1.execution_temp_result
-
-        if execution_temp_result != '':
-            execution_result = execution_temp_result + '\n' + execution_result
+        execution_result, self.code_compile = self.exec_code()
 
         self.results.setPlainText(execution_result)
         if self.code_compile:
@@ -410,7 +440,7 @@ class ExerciseWindowC(ExerciseWindow):
         texts = []
         multi_line_comment, comment, string_start, i, start = False, False, None, 0, 0
         while i < len(text):
-            if ((i < len(text) - 1 and text[i] == '/' and text[i+1] == '/') or text[i] == '#') \
+            if ((i < len(text) - 1 and text[i] == '/' and text[i + 1] == '/') or text[i] == '#') \
                     and string_start is None and not multi_line_comment and not comment:
                 if i != start:
                     texts.append(text[start:i])
@@ -419,7 +449,7 @@ class ExerciseWindowC(ExerciseWindow):
                        + ';\">' + text[i:len(text)]
                 i += len('<span style=\" color:' + self.color_styles.comment_color + ';\">') + 1
                 comment = True
-            elif i < len(text) - 1 and text[i] == '/' and text[i+1] == '*' and string_start is None \
+            elif i < len(text) - 1 and text[i] == '/' and text[i + 1] == '*' and string_start is None \
                     and not multi_line_comment and not comment:
                 if i != start:
                     texts.append(text[start:i])
@@ -428,7 +458,7 @@ class ExerciseWindowC(ExerciseWindow):
                        + ';\">' + text[i:len(text)]
                 i += len('<span style=\" color:' + self.color_styles.multi_line_comment_color + ';\">') + 1
                 multi_line_comment = True
-            elif i < len(text) - 1 and text[i] == '*' and text[i+1] == '/' and string_start is None \
+            elif i < len(text) - 1 and text[i] == '*' and text[i + 1] == '/' and string_start is None \
                     and multi_line_comment and not comment:
                 text = text[0:i + 2] + '</span>' + text[i + 2:len(text)]
                 i += len('</span>') + 1
@@ -488,51 +518,6 @@ class ExerciseWindowC(ExerciseWindow):
                  'exercise': self.exercise.id, 'class': self.data.my_class})
             if a is not None:
                 confirm = ClassExerciseComparisonWindowC(
-                    'Soluzioni - "' + self.exercise.title + '"',a, b, self.exercise.limits, self, parent=self)
+                    'Soluzioni - "' + self.exercise.title + '"', a, b, self.exercise.limits, self, parent=self)
                 confirm.exec_()
                 confirm.deleteLater()
-
-
-class MyThreadC(threading.Thread):
-    def __init__(self, name, code_editor, execution_temp_vars, path):
-        threading.Thread.__init__(self)
-        self.name = name
-        self.code_editor = code_editor
-        self.execution_temp_vars = execution_temp_vars
-        self.execution_result = ""
-        self.code_compile = False
-        self.execution_temp_result = ""
-        self.path = path
-
-    def run(self):
-        compiler = self.path + "\MinGW\\bin\gcc"
-        path = self.path + "\\temp\code.cpp"
-        exe_path = self.path + "\\temp\\ris"
-
-        f = open(path, "w")
-        f.write(self.code_editor.toPlainText())
-        f.close()
-        result = subprocess.run(compiler + " -o " + exe_path + " " + path, stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE, stdin=subprocess.DEVNULL)
-        if result.returncode == 0:
-            result = subprocess.run(exe_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.DEVNULL)
-            self.execution_result = result.stdout.decode('ascii')
-            self.code_compile = True
-        else:
-            self.execution_result = result.stderr.decode('ascii').replace(path + ":", "")
-            self.code_compile = False
-
-    def get_id(self):
-        if hasattr(self, '_thread_id'):
-            return self._thread_id
-        for id, thread in threading._active.items():
-            if thread is self:
-                return id
-
-    def raise_exception(self):
-        thread_id = self.get_id()
-        res = ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id,
-              ctypes.py_object(SystemExit))
-        if res > 1:
-            ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
-            print('Exception raise failure')

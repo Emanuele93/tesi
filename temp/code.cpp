@@ -1,7 +1,7 @@
-#include <stdlib.h>
-#include <stdio.h>
-
+#include <iostream>
+using namespace std;
 int main()
 {
-	printf("Hello Word");
-} 
+	while(true)
+		cout << "ok";
+}  

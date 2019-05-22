@@ -1,29 +1,59 @@
+import os
+from signal import CTRL_BREAK_EVENT
+from subprocess import run, Popen, PIPE, DEVNULL
 from PyQt5.QtGui import QTextCursor, QFont, QPixmap
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel
 from PyQt5.QtCore import *
 
 from windows.BookExerciseWindow import BookExerciseWindow
-from windows.ExerciseWindow import MyTimer
-from windows.ExerciseWindowC import MyThreadC
 
 
 class BookExerciseWindowC(BookExerciseWindow):
 
+    def exec_code(self):
+        compiler = "C:\Program Files (x86)\Dev-Cpp\MinGW64\\bin\g++.exe"
+
+        if not os.path.isfile(compiler):
+            compiler = self.data.get_path() + "\MinGW64\\bin\g++"
+
+        path = self.data.get_path() + "\\temp\code.cpp"
+        exe_path = self.data.get_path() + "\\temp\\ris.exe"
+
+        f = open(path, "w")
+        f.write(self.code_editor.toPlainText())
+        f.close()
+        result = run(compiler + " -o " + exe_path + " " + path, stdout=PIPE, stderr=PIPE, stdin=DEVNULL)
+        if result.returncode == 0:
+            result = Popen(exe_path, stdout=PIPE, stderr=PIPE, stdin=DEVNULL)
+            try:
+                result.wait(self.waiting_time)
+                out = result.stdout.read().decode('ascii')
+                err = result.stderr.read().decode('ascii')
+                if err == '':
+                    execution_result = out
+                    code_compile = True
+                else:
+                    execution_result = err
+                    code_compile = False
+            except Exception:
+                result.send_signal(CTRL_BREAK_EVENT)
+                #result.kill()
+                if self.waiting_time < 5:
+                    self.waiting_time = 10
+                else:
+                    self.waiting_time = 3
+                execution_result = "Errore nell'esecuzione del codice.\n" \
+                                   "Ciclo infinito / Esecuzione lenta\n" \
+                                   "Al prossimo play l'applicativo crasherà"
+                code_compile = False
+        else:
+            execution_result = result.stderr.decode('ascii').replace(path + ":", "")
+            code_compile = False
+        return execution_result, code_compile
+
     def play_button_on_click(self, event):
         execution_temp_vars = {}
-
-        t1 = MyThreadC('Thread 1', self.code_editor, execution_temp_vars, self.data.get_path())
-        t2 = MyTimer(t1)
-        t1.start()
-        t2.start()
-        t1.join()
-
-        execution_result = t1.execution_result
-        self.code_compile = t1.code_compile
-        execution_temp_result = t1.execution_temp_result
-
-        if execution_temp_result != '':
-            execution_result = execution_temp_result + '\n' + execution_result
+        execution_result, self.code_compile = self.exec_code()
 
         self.results.setPlainText(execution_result)
         if self.code_compile:

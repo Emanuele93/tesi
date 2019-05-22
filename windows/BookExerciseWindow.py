@@ -18,6 +18,7 @@ class BookExerciseWindow(QWidget):
         self.exercise = exercise
         self.data = data
         self.exercise_widget = exercise_widget
+        self.waiting_time = 3
 
         self.text_changed = True
         self.more_options_is_visible = False
@@ -194,10 +195,13 @@ class BookExerciseWindow(QWidget):
         execution_temp_vars = {}
 
         t1 = MyThread('Thread 1', self.code_editor, execution_temp_vars)
-        t2 = MyTimer(t1)
+        t2 = MyTimer(t1, self.waiting_time)
         t1.start()
         t2.start()
         t1.join()
+        print(self.waiting_time)
+        self.waiting_time = t2.waiting_time
+        print(self.waiting_time)
 
         execution_result = t1.execution_result
         self.code_compile = t1.code_compile
