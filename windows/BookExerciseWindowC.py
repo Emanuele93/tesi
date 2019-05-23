@@ -26,7 +26,7 @@ class BookExerciseWindowC(BookExerciseWindow):
         if result.returncode == 0:
             result = Popen(exe_path, stdout=PIPE, stderr=PIPE, stdin=DEVNULL)
             try:
-                result.wait(self.waiting_time)
+                result.wait(self.data.execution_waitng_time)
                 out = result.stdout.read().decode('ascii')
                 err = result.stderr.read().decode('ascii')
                 if err == '':
@@ -38,10 +38,6 @@ class BookExerciseWindowC(BookExerciseWindow):
             except Exception:
                 result.send_signal(CTRL_BREAK_EVENT)
                 #result.kill()
-                if self.waiting_time < 5:
-                    self.waiting_time = 10
-                else:
-                    self.waiting_time = 3
                 execution_result = "Errore nell'esecuzione del codice.\n" \
                                    "Ciclo infinito / Esecuzione lenta\n" \
                                    "Al prossimo play l'applicativo crasherà"

@@ -30,7 +30,6 @@ class ExerciseWindow(QWidget):
         self.more_options_is_visible = False
         self.code_compile = True
         self.watch_homework_coin = False
-        self.waiting_time = 3
         self.resources_used = {'lines': 0, 'variables': 0, 'if': 0, 'elif': 0, 'else': 0, 'conditions': 0,
                                'for': 0, 'while': 0, 'cycles': 0, 'def': 0}
 
@@ -356,11 +355,10 @@ class ExerciseWindow(QWidget):
         execution_temp_vars = {}
 
         t1 = MyThread('Thread 1', self.code_editor, execution_temp_vars)
-        t2 = MyTimer(t1, self.waiting_time)
+        t2 = MyTimer(t1, self.data.execution_waitng_time)
         t1.start()
         t2.start()
         t1.join()
-        self.waiting_time = t2.waiting_time
 
         execution_result = t1.execution_result
         self.code_compile = t1.code_compile
@@ -1279,10 +1277,6 @@ class MyTimer(threading.Thread):
         self.thread.raise_exception()
         self.thread.execution_result = "Errore nell'esecuzione del codice.\n" \
                                        "Ciclo infinito / Esecuzione lenta / Richiesta input"
-        if self.waiting_time < 5:
-            self.waiting_time = 6
-        else:
-            self.waiting_time = 3
         return
 
 

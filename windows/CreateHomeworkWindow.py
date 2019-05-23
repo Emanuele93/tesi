@@ -16,7 +16,6 @@ class CreateHomeworkWindow(QWidget):
         self.setWindowTitle("Creazione di un nuovo esercizio")
         self.setWindowIcon(QIcon("img/logo.png"))
         self.data = data
-        self.waiting_time = 3
         self.text_changed = True
         self.temp_vars = {}
         self.resources_correct = True
@@ -569,13 +568,10 @@ class CreateHomeworkWindow(QWidget):
         self.temp_vars = {}
 
         t1 = MyThread('Thread 1', self.code_editor, self.temp_vars)
-        t2 = MyTimer(t1, self.waiting_time)
+        t2 = MyTimer(t1, self.data.execution_waitng_time)
         t1.start()
         t2.start()
         t1.join()
-        print(self.waiting_time)
-        self.waiting_time = t2.waiting_time
-        print(self.waiting_time)
 
         code_compile = t1.code_compile
         execution_result = t1.execution_result

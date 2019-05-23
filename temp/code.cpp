@@ -1,7 +1,8 @@
-#include <iostream>
-using namespace std;
+#include <stdlib.h>
+#include <stdio.h>
+
 int main()
 {
 	while(true)
-		cout << "ok";
-}  
+		printf("ciao!");
+}

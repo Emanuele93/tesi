@@ -134,7 +134,7 @@ class LoginWindow(QWidget):
         if r == 'ok':
             f = open('user_info.txt', "w")
             f.write(
-                user.text().strip() + "\n" + password.text().strip() + "\n" + classe.text().strip() + "\nTrue\n20")
+                user.text().strip() + "\n" + password.text().strip() + "\n" + classe.text().strip() + "\nTrue\n20\n3")
             f.close()
             self.home.data = Data()
             self.home.open_MainWindow()

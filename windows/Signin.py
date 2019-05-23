@@ -268,7 +268,7 @@ class Signin(QWidget):
             button.hide()
             message.show()
             f = open('user_info.txt', "w")
-            f.write("\n\n\nTrue\n20")
+            f.write("\n\n\nTrue\n20\n3")
             f.close()
         elif r == 'ready':
             self.close()
