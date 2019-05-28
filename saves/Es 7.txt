@@ -1,0 +1,22 @@
+#include <time.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+void proc(int x)
+{
+	int i,j;
+	for(i=0; i<x*x; i++)
+	{
+		if(i%x==0)
+			printf("\n");
+		printf(" X");
+	}
+}
+
+int main()
+{
+	srand(time(NULL));
+	int n = rand()%(9)+1;
+	printf(" n = %d", n);
+	proc(n);
+}

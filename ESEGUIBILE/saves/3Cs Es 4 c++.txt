@@ -1,0 +1,21 @@
+#include <iostream>
+using namespace std;
+
+int a=3, b=5, c=7, d=2;
+
+int funz(int a, int &b)
+{
+	b = a + c - d;
+	a = 4;
+	return d - 4;
+	cout << a << " + ";
+}
+
+int main()
+{
+	int c = b;
+	c = funz(c, d);
+	 cout << b << " + " << c << " - 1 = " << d;
+}
+
+// 5 + 6 - 1 = 10

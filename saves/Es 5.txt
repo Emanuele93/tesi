@@ -8,25 +8,21 @@ char seleziona_operazione(char operazioni[])
 	return operazioni[rand()%(4)];
 }
 
-void calcolatrice(int num1, int num2, float &ris, char operazione)
+float calcolatrice(int num1, int num2, char operazione)
 {
 	switch (operazione)
 	{
 		case '+':
-			ris = num1 + num2;
-			break;
+			return num1 + num2;
 		case '-':
-			ris = num1 - num2;
-			break;
+			return num1 - num2;
 		case '*':
-			ris = num1 * num2;
-			break;
+			return num1 * num2;
 		case '/':
 			if (num2 == 0)
-				ris = -100;
+				return -100;
 			else
-				ris = (float)num1 / (float)num2;
-			break;
+				return (float)num1 / (float)num2;
 	}
 }
 
@@ -38,10 +34,9 @@ int main()
 	int b = rand()%(10);
 	float c;
 	char o = seleziona_operazione(possibilita);
-	calcolatrice(a, b, c, o);
+	c = calcolatrice(a, b, o);
 	if(c != -100)
 		printf("%.2lf %c %.2lf = %.2lf", (float)a, o, (float)b, c);
 	else
 		printf("%.2lf %c %.2lf non si puo' fare", (float)a, o, (float)b);
-		
-} 
+}

@@ -1,0 +1,10 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+int main()
+{
+	printf("\n Hello Word");
+
+	printf("\n\n---------------------------------------\n ");
+	system("Pause");
+} 

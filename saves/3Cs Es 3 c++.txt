@@ -1,0 +1,27 @@
+#include <time.h>
+#include <stdlib.h>
+#include <iostream>
+using namespace std;
+
+void confornto(int a)
+{
+	if(a <= 3)
+	{
+		cout << " e' un numero basso";
+		return;
+	}
+	else if (a <= 6)
+	{
+		cout << " e' un numero medio";
+		return;
+	}
+	cout << " e' un numero alto";
+}
+
+int main()
+{
+	srand(time(NULL));
+	int r = rand()%(9)+1;
+	cout << r;
+	confornto(r);
+}

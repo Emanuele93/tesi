@@ -13,6 +13,7 @@ for, while, do - #0000ff - True
 int, char, float - #000000 - True
 NULL - #0000ff - True
 return, void - #000000 - True
-printf, cout - #0000ff - False
+printf, scanf - #0000ff - False
+cout, cin - #0000ff - False
 srand, time, rand - #0000ff - False
 true, false - #22aa44 - False

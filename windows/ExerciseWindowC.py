@@ -294,37 +294,44 @@ class ExerciseWindowC(ExerciseWindow):
         self.set_border_limit(self.functions_limit_number, color)
 
     def exec_code(self):
-        compiler = "C:\Program Files (x86)\Dev-Cpp\MinGW64\\bin\g++.exe"
-
-        if not os.path.isfile(compiler):
-            compiler = self.data.get_path() + "\MinGW64\\bin\g++"
+        compiler = self.data.compiler_path
 
         path = self.data.get_path() + "\\temp\code.cpp"
         exe_path = self.data.get_path() + "\\temp\\ris.exe"
 
+        print(compiler)
         f = open(path, "w")
         f.write(self.code_editor.toPlainText())
         f.close()
         result = run(compiler + " -o " + exe_path + " " + path, stdout=PIPE, stderr=PIPE, stdin=DEVNULL)
         if result.returncode == 0:
-            result = Popen(exe_path, stdout=PIPE, stderr=PIPE, stdin=DEVNULL)
-            try:
-                result.wait(self.data.execution_waitng_time)
-                out = result.stdout.read().decode('ascii')
-                err = result.stderr.read().decode('ascii')
-                if err == '':
-                    execution_result = out
+            if self.data.execution_cmd:
+                os.system("start /wait cmd /C " + exe_path)
+                if result.returncode == 0:
+                    execution_result = " Codice eseguito correttamente! "
                     code_compile = True
                 else:
-                    execution_result = err
+                    execution_result = result.stderr.decode('ascii').replace(path + ":", "")
                     code_compile = False
-            except Exception:
-                result.send_signal(signal.CTRL_BREAK_EVENT)
-                #result.kill()
-                execution_result = "Errore nell'esecuzione del codice.\n" \
-                                   "Ciclo infinito / Esecuzione lenta\n" \
-                                   "Al prossimo play l'applicativo crasherà"
-                code_compile = False
+            else:
+                result = Popen(exe_path, stdout=PIPE, stderr=PIPE, stdin=DEVNULL)
+                try:
+                    result.wait(self.data.execution_waitng_time)
+                    out = result.stdout.read().decode('ascii')
+                    err = result.stderr.read().decode('ascii')
+                    if err == '':
+                        execution_result = out
+                        code_compile = True
+                    else:
+                        execution_result = err
+                        code_compile = False
+                except Exception:
+                    result.send_signal(signal.CTRL_BREAK_EVENT)
+                    #result.kill()
+                    execution_result = "Errore nell'esecuzione del codice.\n" \
+                                       "Ciclo infinito / Esecuzione lenta\n" \
+                                       "Al prossimo play l'applicativo crasherà"
+                    code_compile = False
         else:
             execution_result = result.stderr.decode('ascii').replace(path + ":", "")
             code_compile = False

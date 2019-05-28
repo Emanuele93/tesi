@@ -1,0 +1,10 @@
+#include <iostream>
+using namespace std;
+
+int main()
+{
+	int a = 5, c;
+	char b = '3';
+	c = (int)(b) - (int)('0');
+	cout << a << " + " << c << " = " << (a + c);
+}

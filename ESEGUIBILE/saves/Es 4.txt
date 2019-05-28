@@ -4,19 +4,20 @@
 
 int a=3, b=5, c=7, d=2;
 
-int funz(int a, int &b)
+int funz(int a, int c)
 {
-	b = a + c - d;
-	a = 4;
-	return d - 4;
+	b = a + c + d;
+	a = 6;
+	d ++;
+	return a;
 	printf("%d + ", a);
 }
 
 int main()
 {
 	int c = b;
-	c = funz(c, d);
-	printf("%d + %d - 1 = %d", b, c, d);
+	c = funz(c, a);
+	printf("%d - %d - 1 = %d", b, c, d);
 }
 
-// 5 + 6 - 1 = 10
+// 10 - 6 - 1 = 3

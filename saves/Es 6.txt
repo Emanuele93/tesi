@@ -2,36 +2,25 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-int numeri[100];
-
-int somma(int dim)
+void proc(int x)
 {
-	int s=0, i=0;
-	while(i<dim)
+	int i,j;
+	for(i=0; i<x; i++)
 	{
-		s += numeri[i];
-		i++;
+		j=0;
+		while(j<x)
+		{
+			printf(" X");
+			j++;
+		}
+		printf("\n");
 	}
-	return s;
-}
-
-void riempi(int dim)
-{
-	printf("\n");
-	for(int i=0;i<dim;i++)
-	{
-		numeri[i] = rand()%(10)+1;
-		printf("%d ", numeri[i]);
-	}
-	printf("\n");
 }
 
 int main()
 {
 	srand(time(NULL));
-	for(int i=5;i<30;i=i+5)
-	{
-		riempi(i);
-		printf("Somma: %d\n",somma(i));
-	}
+	int n = rand()%(9)+1;
+	printf(" n = %d\n", n);
+	proc(n);
 }

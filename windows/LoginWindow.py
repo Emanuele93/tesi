@@ -133,8 +133,8 @@ class LoginWindow(QWidget):
                                        'class': classe.text().strip()})
         if r == 'ok':
             f = open('user_info.txt', "w")
-            f.write(
-                user.text().strip() + "\n" + password.text().strip() + "\n" + classe.text().strip() + "\nTrue\n20\n3")
+            f.write(user.text().strip() + "\n" + password.text().strip() + "\n" + classe.text().strip()
+                    + "\nTrue\n20\n3|False|C:\Program Files (x86)\Dev-Cpp\MinGW64\\bin\g++.exe") #MinGW\\bin\gcc.exe")  #MinGW64\\bin\g++.exe")
             f.close()
             self.home.data = Data()
             self.home.open_MainWindow()

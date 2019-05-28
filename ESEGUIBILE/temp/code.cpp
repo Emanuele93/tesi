@@ -1,6 +1,10 @@
 #include <iostream>
 using namespace std;
+
 int main()
 {
-	cout <<  "Ciao";
+	
+	if(3<12){
+		printf("aaaaa");
+	}
 }  

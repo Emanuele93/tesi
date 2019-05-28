@@ -1,0 +1,10 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+int main()
+{
+	int a = 5, c;
+	char b = '3';
+	c = (int)(b) - (int)('0');
+	printf("%d + %d = %d", a, c, a + c);
+} 

@@ -71,14 +71,20 @@ class Data:
         self.student_exercises_visible = True
         self.get_class_components()
 
-        if self.language == 2:
-            self.variables_numbers['lines'] = [5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100]
-
         self.code_result_horizontal_orientation = True if f.readline()[0:-1] == "True" else False
         self.code_font_size = int(f.readline()[0:-1])
-        self.execution_waitng_time = int(f.readline())
+        execution_mode = f.readline().split('|')
+        self.execution_waitng_time = int(execution_mode[0])
+        self.execution_cmd = execution_mode[1] == "True"
+        self.compiler_path = execution_mode[2]
         self.code_font_family = 'Courier New'
         f.close()
+
+        if self.language == 2:
+            if self.execution_cmd:
+                self.variables_numbers['lines'] = [10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100]
+            else:
+                self.variables_numbers['lines'] = [6, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100]
 
         self.money = None
         self.level = None

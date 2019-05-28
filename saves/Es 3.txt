@@ -20,7 +20,7 @@ void confornto(int a)
 int main()
 {
 	srand(time(NULL));
-	int r = rand()%(10)+1;
+	int r = rand()%(9)+1;
 	printf("%d", r);
 	confornto(r);
 }

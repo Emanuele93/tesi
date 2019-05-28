@@ -1,0 +1,38 @@
+#include <time.h>
+#include <stdlib.h>
+#include <iostream>
+using namespace std;
+
+int numeri[100];
+
+int somma(int dim)
+{
+	int s=0, i=0;
+	while(i<dim)
+	{
+		s += numeri[i];
+		i++;
+	}
+	return s;
+}
+
+void riempi(int dim)
+{
+	cout << "\n";
+	for(int i=0;i<dim;i++)
+	{
+		numeri[i] = rand()%(10)+1;
+		cout << numeri[i] << " ";
+	}
+	cout << "\n";
+}
+
+int main()
+{
+	srand(time(NULL));
+	for(int i = 5; i < 30; i = i + 5)
+	{
+		riempi(i);
+		cout << "Somma: " << somma(i) << "\n";
+	}
+}

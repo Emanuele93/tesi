@@ -1,0 +1,47 @@
+#include <time.h>
+#include <stdlib.h>
+#include <iostream>
+using namespace std;
+
+char seleziona_operazione(char operazioni[])
+{
+	srand(time(NULL));
+	return operazioni[rand()%(4)];
+}
+
+void calcolatrice(int num1, int num2, float &ris, char operazione)
+{
+	switch (operazione)
+	{
+		case '+':
+			ris = num1 + num2;
+			break;
+		case '-':
+			ris = num1 - num2;
+			break;
+		case '*':
+			ris = num1 * num2;
+			break;
+		case '/':
+			if (num2 == 0)
+				ris = -100;
+			else
+				ris = (float)num1 / (float)num2;
+			break;
+	}
+}
+
+int main()
+{
+	srand(time(NULL));
+	char possibilita[] = {'+', '-', '*', '/'};
+	int a = rand()%(10);
+	int b = rand()%(10);
+	float c;
+	char o = seleziona_operazione(possibilita);
+	calcolatrice(a, b, c, o);
+	if(c != -100)
+		cout << a << " " << o << " " << b << " = " << c;
+	else
+		cout << a << " " << o << " " << b << " non si puo' fare";
+}

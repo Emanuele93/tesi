@@ -55,6 +55,7 @@ class ExercisesCollectionWindow(QWidget):
     def make_top_widget(self):
         font = QFont()
         font.setPixelSize(15)
+        self.pages[0] = None
 
         home_button = QPushButton('HOME', self)
         home_button.setFixedSize(100, 50)
@@ -194,7 +195,7 @@ class ExercisesCollectionWindow(QWidget):
         internal_box.setAlignment(Qt.AlignTop)
         internal_box.setContentsMargins(20, 10, 20, 10)
         for i in exercises:
-            ex = QLabel(str(len(self.pages)+1) + " - " + i.title, self)
+            ex = QLabel(str(len(self.pages)) + " - " + i.title, self)
             ex.setFont(font)
             ex.setContentsMargins(20, 10, 20, 10)
             ex.setTextFormat(Qt.RichText)
@@ -272,22 +273,22 @@ class ExercisesCollectionWindow(QWidget):
             self.pages[pos].show()
 
     def open_void_page(self):
-        if self.pages['0'] is None:
+        if self.pages[0] is None:
             if self.data.language == 1:
-                self.pages['0'] = BookExerciseWindow(
+                self.pages[0] = BookExerciseWindow(
                     Exercise(None, None, None, "Pagina vuota", None, 'Facile', False, "",
                              {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None,
                               'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None},
                              True, False, False, 0, False), self.data, None)
             else:
-                self.pages['0'] = BookExerciseWindowC(
+                self.pages[0] = BookExerciseWindowC(
                     Exercise(None, None, None, "Pagina vuota", None, 'Facile', False, "",
                              {'lines': None, 'variables': None, 'if': None, 'elif': None, 'else': None,
                               'conditions': None, 'for': None, 'while': None, 'cycles': None, 'def': None},
                              True, False, False, 0, False), self.data, None)
-            self.pages['0'].show()
+            self.pages[0].show()
         else:
-            self.pages['0'].show()
+            self.pages[0].show()
 
     def send_button_on_click(self, exercise, event):
         if self.new_exercise is None or self.new_exercise.exercise.title != exercise.title:
